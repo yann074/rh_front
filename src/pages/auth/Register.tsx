@@ -3,7 +3,7 @@ import { postData } from "../../service/Api";
 import logocs from "../../assets/logocs.svg";
 import "./Register.css";
 import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
-import { Bold } from "lucide-react";
+
 
 const Register = () => {
   const [form, setForm] = useState({

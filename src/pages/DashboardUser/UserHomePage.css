@@ -1,0 +1,50 @@
+@import url('https://fonts.googleapis.com/css2?family=Sen:wght@400..800&display=swap');
+
+body{
+    margin: 0;
+    padding: 0;
+    font-family: "Sen", serif;
+}
+
+header{
+    width: 100%;
+    height: 20%;
+    background-color: #723E98;
+    display: flex;
+    justify-content: left;
+    padding: 5px;
+
+    & .logo-container{
+      text-align: left;
+      width: 65%;
+      display: flex;
+      align-items: center;
+      margin-left: 60px;
+
+      & img{
+        width: 6%;
+        height: 90%;
+      }
+    }   
+}
+
+nav{
+  height: 110px;
+  display: flex;
+  width: 100%;
+  justify-content: space-around;
+  align-self: center;
+
+  & ol{
+    display: flex;
+    width: 80%;
+    align-items: flex-end;
+    justify-content: space-around;
+    list-style-type: none;
+
+    & a{
+      text-decoration: none;
+      color: rgb(144, 144, 144);
+    }
+  }
+}

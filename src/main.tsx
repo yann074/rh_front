@@ -1,15 +1,53 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import Register from './pages/auth/Register.js'
-import UserHomePage from './pages/DashboardUser/UserHomePage.js'
+import UserHomePage from '@/pages/DashboardUser/UserHomePage.js'
 import { GoogleOAuthProvider } from "@react-oauth/google";
+import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+import Register from '@/pages/auth/Register.js'
+import PersonalInformation from './components/UserSection/PersonalInformation';
+import FinalDetails from './components/UserSection/FinalDetails';
+import Experiences from './components/UserSection/Experiences';
+import Classification from './components/UserSection/Classification';
 
-const CLIENT_ID ='239792615305-dh5fndio5bf43rhha3kji5qe3jpuj7uq.apps.googleusercontent.com'
+const CLIENT_ID = '239792615305-dh5fndio5bf43rhha3kji5qe3jpuj7uq.apps.googleusercontent.com'
+
+//Configurando as rotas
+
+const Router = createBrowserRouter([
+  {
+    path: "/register",
+    element: <Register />
+  },
+
+  {
+    path: "/",
+    element: <UserHomePage />,
+    children: [
+      {
+        path: "/",
+        element: <PersonalInformation />,
+      },
+      {
+        path: "experience",
+        element: <Experiences />
+      },
+      {
+        path: "classification",
+        element: <Classification />
+      },
+      {
+        path: "finaldetails",
+        element: <FinalDetails />,
+      },
+    ]
+  },
+])
+
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <GoogleOAuthProvider clientId={CLIENT_ID}>
-      <UserHomePage />
+      <RouterProvider router={Router} />
     </GoogleOAuthProvider>
   </StrictMode>,
 )

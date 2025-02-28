@@ -5,12 +5,11 @@ import {
     BreadcrumbItem,
     BreadcrumbLink,
     BreadcrumbList,
-    BreadcrumbSeparator,
-    BreadcrumbEllipsis
 } from "@/components/ui/breadcrumb"
-
+import { Outlet, Link } from 'react-router-dom'
 
 const UserInformation = () => {
+   
     return (
         <section className="Home">
             <header>
@@ -21,23 +20,20 @@ const UserInformation = () => {
             <Breadcrumb>
                 <BreadcrumbList>
                     <BreadcrumbItem>
-                        <BreadcrumbLink href="/">Perfil Pessoal</BreadcrumbLink>
+                        <BreadcrumbLink href=""><Link to="/">Perfil Pessoal</Link></BreadcrumbLink>
                     </BreadcrumbItem>
-                    
                     <BreadcrumbItem>
-                        <BreadcrumbLink href="/components">Suas experiências</BreadcrumbLink>
+                        <BreadcrumbLink href=""><Link to="experience">Suas experiências</Link></BreadcrumbLink>
                     </BreadcrumbItem>
-                    
                     <BreadcrumbItem>
-                        <BreadcrumbLink href='/Nada'>Classificações</BreadcrumbLink>
+                        <BreadcrumbLink href=''><Link to="classification">Classificações</Link></BreadcrumbLink>
                     </BreadcrumbItem>
-                    
                     <BreadcrumbItem>
-                        <BreadcrumbLink href="/components">Detalhes Finais</BreadcrumbLink>
+                        <BreadcrumbLink href=""><Link to="/finaldetails">Detalhes Finais</Link></BreadcrumbLink>
                     </BreadcrumbItem>
                 </BreadcrumbList>
             </Breadcrumb>
-            
+            <Outlet/>
         </section>
     );
 }

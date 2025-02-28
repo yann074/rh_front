@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { postData } from "../../service/Api";
-import logocs from "../../assets/logocs.svg";
+import { postData } from "@/service/Api"
+import logocs from "@/assets/logocs.svg"
 import "./Register.css";
 import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
+
 
 
 const Register = () => {
@@ -38,13 +39,13 @@ const Register = () => {
       });
   };
 
-  
+
   const handleGoogleSuccess = (response: CredentialResponse) => {
     if (response.credential) {
       console.log("JWT Token recebido:", response.credential);
       localStorage.setItem("token", response.credential);
 
-      
+
       const decodeJWT = (token: string) => {
         const base64Url = token.split(".")[1];
         const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
@@ -66,7 +67,7 @@ const Register = () => {
           <h1>Crie sua Conta</h1>
         </div>
         <div className="google-button">
-          <GoogleLogin onSuccess={handleGoogleSuccess} onError={() => console.log("Erro no login com Google")}/>
+          <GoogleLogin onSuccess={handleGoogleSuccess} onError={() => console.log("Erro no login com Google")} />
         </div>
 
         <form onSubmit={handleSubmit}>

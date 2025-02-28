@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { postData } from '../../service/Api'
-import logocs from "../../assets/logocs.svg"
+import { postData } from '@/service/Api'
+import logocs from "@/assets/logocs.svg"
 
 export default function Login() {
     const [form, setForm] = useState({

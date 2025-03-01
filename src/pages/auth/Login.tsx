@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import 'bootstrap/dist/css/bootstrap.min.css';
 import { postData } from '@/service/Api'
 import logocs from "@/assets/logocs.svg"
+import { Link } from "react-router-dom"
+import { CredentialResponse, GoogleLogin } from '@react-oauth/google'
 
 export default function Login() {
     const [form, setForm] = useState({
@@ -20,78 +21,49 @@ export default function Login() {
         e.preventDefault();
 
         postData("/login", form)
-        .then((response: { data: { message: string; token: string; }; }) => {
-            console.log(response.data);
-            if (response.data.message === "User is admin") {
-                window.alert("Usuário autenticado");
-                localStorage.setItem('token', response.data.token);
-            } else {
-                window.alert("Usuário autenticado, mas não admin");
-                sessionStorage.setItem('token', response.data.token);
-            }
-        })
-        .catch((error: any) => {
-            console.error("Erro de login:", error);
-            window.alert("Erro ao tentar fazer login.");
-        });
+            .then((response: { data: { message: string; token: string; }; }) => {
+                console.log(response.data);
+                if (response.data.message === "User is admin") {
+                    window.alert("Usuário autenticado");
+                    localStorage.setItem('token', response.data.token);
+                } else {
+                    window.alert("Usuário autenticado, mas não admin");
+                    sessionStorage.setItem('token', response.data.token);
+                }
+            })
+            .catch((error: any) => {
+                console.error("Erro de login:", error);
+                window.alert("Erro ao tentar fazer login.");
+            });
     }
+    function handleGoogleSuccess(_credentialResponse: CredentialResponse): void {
+        throw new Error('Function not implemented.')
+    }
+
     return (
-    
-            <section className='d-flex justify-content-center align-items-center '>
-                <div className="col-md-7 d-flex justify-content-center align-items-center">
-                    <div className="p-5 w-75 border rounded shadow bg-white">
-                        <form onSubmit={handleSubmit} className="row g-3">
-                            <h1 className="text-center mb-4">Acessar</h1>
+        <section className="register">
 
-                            <div className="mb-3">
-                                <input
-                                    name="email"
-                                    type="email"
-                                    placeholder="Digite seu email"
-                                    onChange={handleChange}
-                                    className="form-control p-3 rounded-pill"
-                                    required
-                                />
-                            </div>
-
-                            <div className="mb-3">
-                                <input
-                                    name="password"
-                                    type="password"
-                                    placeholder="Digite sua senha"
-                                    onChange={handleChange}
-                                    className="form-control p-3 rounded-pill "
-                                    required
-                                />
-                            </div>
-
-                            <div className="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <input type="checkbox" id="lembrar" className="me-2" />
-                                    <label htmlFor="lembrar">Lembrar de mim</label>
-                                </div>
-                                <h6 className="text-primary">Esqueceu a senha?</h6>
-                            </div>
-
-                            <button className="btn btn-primary w-100 p-2">Acessar</button>
-                        </form>
-
-                        <h6 className="text-center mt-3">
-                            Não tem uma conta?{" "}
-                            <a href="#" className="text-primary fw-bold">
-                                Registre-se
-                            </a>
-                        </h6>
-                    </div>
+            <div className="register-container">
+                <div className="title">
+                    <h1>Crie sua Conta</h1>
                 </div>
-
-
-                <div className="col-md-4 border-1 d-flex justify-content-center align-items-center ">
-                    <div className="p-4 text-center">
-                        <img src={logocs} alt="Logo" className="img-fluid" />
-                    </div>
+                <div className="google-button">
+                    <GoogleLogin onSuccess={handleGoogleSuccess} onError={() => console.log("Erro no login com Google")} />
                 </div>
+                <form onSubmit={handleSubmit}>
+                    <input placeholder="Email" type="text" name="email" onChange={handleChange} />
+                    <input placeholder="Senha" type="password" name="senha" onChange={handleChange} />
+                </form>
+
+                <button type="submit">Fazer Login</button>
+
+                <div className="return-login">
+                    <p>Não tem uma conta? <a href=""><Link to="/register">Registre-se</Link></a></p>
+                </div>
+            </div>
+            <div className="logo">
+                <img src={logocs} />
+            </div>
         </section>
-
     )
 }

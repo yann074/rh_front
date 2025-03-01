@@ -29,7 +29,7 @@ const UserInformation = () => {
                         <BreadcrumbLink href=''><Link to="classification">Classificações</Link></BreadcrumbLink>
                     </BreadcrumbItem>
                     <BreadcrumbItem>
-                        <BreadcrumbLink href=""><Link to="/finaldetails">Detalhes Finais</Link></BreadcrumbLink>
+                        <BreadcrumbLink href=""><Link to="finaldetails">Detalhes Finais</Link></BreadcrumbLink>
                     </BreadcrumbItem>
                 </BreadcrumbList>
             </Breadcrumb>

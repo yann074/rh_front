@@ -3,6 +3,7 @@ import { postData } from "@/service/Api"
 import logocs from "@/assets/logocs.svg"
 import "./Register.css";
 import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
+import { Link } from 'react-router-dom'
 
 
 
@@ -86,7 +87,7 @@ const Register = () => {
         <button type="submit">Criar Conta</button>
 
         <div className="return-login">
-          <p>Já tem um conta? <a href="#">Login</a></p>
+          <p>Já tem um conta? <a href=""><Link to="/login">Login</Link></a></p>
         </div>
       </div>
     </section>

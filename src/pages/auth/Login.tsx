@@ -3,6 +3,7 @@ import { postData } from '@/service/Api'
 import logocs from "@/assets/logocs.svg"
 import { Link } from "react-router-dom"
 import { CredentialResponse, GoogleLogin } from '@react-oauth/google'
+import axios from 'axios'
 
 export default function Login() {
     const [form, setForm] = useState({

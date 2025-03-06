@@ -15,7 +15,11 @@ const CheckServer = () => {
       });
   }, []);
 
-  return <p>{serverStatus}</p>;
+  useEffect(() => {
+    console.log(serverStatus);
+  }, [serverStatus]);
+
+  return null;
 };
 
 export default CheckServer;

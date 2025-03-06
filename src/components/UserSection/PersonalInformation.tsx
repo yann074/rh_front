@@ -1,5 +1,6 @@
 import { useState } from "react";
 
+
 const PersonalInformation = () => {
 
     const [image, setImage] = useState<string | null>(null);
@@ -50,7 +51,7 @@ const PersonalInformation = () => {
                         {image ? (
                             <img src={image} alt="Foto de perfil" className="profile-image" />
                         ) : (
-                            <img src="/camera-icon.svg" alt="Ícone de câmera" className="camera-icon" />
+                            <img src="/camera-icon.svg" className="camera-icon" />
                         )}
                     </div>
                 </label>

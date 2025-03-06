@@ -3,7 +3,6 @@ import './UserHomePage.css'
 import {
     Breadcrumb,
     BreadcrumbItem,
-    BreadcrumbLink,
     BreadcrumbList,
 } from "@/components/ui/breadcrumb"
 import { Outlet, Link } from 'react-router-dom'
@@ -20,16 +19,16 @@ const UserInformation = () => {
             <Breadcrumb>
                 <BreadcrumbList>
                     <BreadcrumbItem>
-                        <BreadcrumbLink href=""><Link to="/">Perfil Pessoal</Link></BreadcrumbLink>
+                        <Link to="/">Perfil Pessoal</Link>
                     </BreadcrumbItem>
                     <BreadcrumbItem>
-                        <BreadcrumbLink href=""><Link to="experience">Suas experiências</Link></BreadcrumbLink>
+                        <Link to="experience">Suas experiências</Link>
                     </BreadcrumbItem>
                     <BreadcrumbItem>
-                        <BreadcrumbLink href=''><Link to="classification">Classificações</Link></BreadcrumbLink>
+                        <Link to="classification">Classificações</Link>
                     </BreadcrumbItem>
                     <BreadcrumbItem>
-                        <BreadcrumbLink href=""><Link to="finaldetails">Detalhes Finais</Link></BreadcrumbLink>
+                        <Link to="finaldetails">Detalhes Finais</Link>
                     </BreadcrumbItem>
                 </BreadcrumbList>
             </Breadcrumb>

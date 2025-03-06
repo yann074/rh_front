@@ -9,6 +9,8 @@ import FinalDetails from './components/UserSection/FinalDetails';
 import Experiences from './components/UserSection/Experiences';
 import Classification from './components/UserSection/Classification';
 import Login from './pages/auth/Login'
+import '@/index.css'
+
 
 const CLIENT_ID = '239792615305-dh5fndio5bf43rhha3kji5qe3jpuj7uq.apps.googleusercontent.com'
 
@@ -16,11 +18,11 @@ const CLIENT_ID = '239792615305-dh5fndio5bf43rhha3kji5qe3jpuj7uq.apps.googleuser
 
 const rotas = createBrowserRouter([
   {
-    path: "/register",
+    path: "register",
     element: <Register />
   },
   {
-    path: "/login",
+    path: "login",
     element: <Login />
   },
   {

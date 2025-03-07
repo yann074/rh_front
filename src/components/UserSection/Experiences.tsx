@@ -1,4 +1,4 @@
-import { Dialog, DialogContent, DialogTrigger, DialogTitle, DialogHeader, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger, DialogTitle, DialogHeader, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
 
@@ -27,7 +27,9 @@ const Experiences = () => {
                                     <input type="text" className="w-50 p-3" placeholder="Empresa" />
                                 </div>
                                 <DialogFooter>
+                                    <DialogClose asChild>
                                     <Button type="button">Cancelar</Button>
+                                    </DialogClose>
                                     <Button type="submit" className="bg-[#723E98] hover:bg-[#723E98] text-white">Salvar</Button>
                                 </DialogFooter>
                             </form>

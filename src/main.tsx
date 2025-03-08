@@ -11,6 +11,7 @@ import Classification from './components/UserSection/Classification';
 import Login from './pages/auth/Login'
 import '@/index.css'
 import InitialJobs from './pages/Jobs/InitialJobs';
+import JobsSpecific from './pages/Jobs/JobsSpecific';
 
 
 const CLIENT_ID = '239792615305-dh5fndio5bf43rhha3kji5qe3jpuj7uq.apps.googleusercontent.com'
@@ -29,6 +30,10 @@ const rotas = createBrowserRouter([
   {
     path: "home",
     element: <InitialJobs />
+  },
+  {
+    path: `/jobs/:id`,
+    element: <JobsSpecific />
   },
   {
     path: "/",

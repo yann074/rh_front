@@ -1,6 +1,7 @@
 import Footer from "@/components/layouts/Footer";
 import Header from "@/components/layouts/Header";
 import axios from "axios";
+import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 
 interface Job {
@@ -32,6 +33,7 @@ export default function InitialJobs() {
                             <h1 className="text-3xl font-semibold text-center mb-12 bg-[#723E98] text-white p-5 rounded-3xl">VAGAS DE EMPREGO</h1>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+                            {/* FAZER UM IF PARA SE N TIVER VAGA */}
                             {data.map((job) => (
                                 <div
                                     key={job.id}
@@ -41,9 +43,9 @@ export default function InitialJobs() {
                                     <p className="text-gray-600 mb-2"><strong>Salário:</strong> R${job.salario}</p>
                                     <p className="text-gray-600 mb-4"><strong>Localização:</strong> {job.localizacao}</p>
 
-                                    <button className="mt-4 w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition">
+                                    <Link to={`/jobs/${job.id}`} className="btn mt-4 w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition">
                                         Ver vaga
-                                    </button>
+                                    </Link>
                                 </div>
                             ))}
                         </div>

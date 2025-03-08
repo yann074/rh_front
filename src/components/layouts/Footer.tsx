@@ -8,7 +8,7 @@ export default function Footer() {
                 <div className="img_header">
                     <img src={logocs} alt="Logo" className="h-12" />
                 </div>
-                <h4 className="text-gray-600 mt-2">A empresa perfeita para achar seu emprego</h4>
+                <h4 className="text-white-600 mt-2">A empresa perfeita para achar seu emprego</h4>
             </div>
 
             <div className="flex flex-col items-end">

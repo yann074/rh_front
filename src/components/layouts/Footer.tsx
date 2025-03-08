@@ -1,9 +1,9 @@
-import React from "react";
 import logocs from "@/assets/logocs.svg";
+import { Linkedin, Facebook, Instagram, Youtube } from "lucide-react";
 
 export default function Footer() {
     return (
-        <footer className="bg-white-900 text-white p-6 flex justify-between items-center flex-wrap">
+        <footer className="bg-[#723E98] text-white p-6 flex justify-between items-center flex-wrap">
             <div>
                 <div className="img_header">
                     <img src={logocs} alt="Logo" className="h-12" />
@@ -13,20 +13,21 @@ export default function Footer() {
 
             <div className="flex flex-col items-end">
                 <div className="social-icons flex gap-4 mb-2">
-                    <a href="#" className="text-gray-600 text-2xl hover:text-purple-400 transition">
+                    <a href="#" className="text-white text-2xl hover:text-purple-300 transition flex space-x-4">
+                        <Linkedin />
                         <p>LINKEDIN</p>
                     </a>
-                    <a href="#" className="text-gray-600 text-2xl hover:text-purple-400 transition">
+                    <a href="#" className="text-white text-2xl hover:text-purple-300 transition flex space-x-4">
+                        <Facebook />
                         <p>FACEBOOK</p>
                     </a>
-                    <a href="#" className="text-gray-600 text-2xl hover:text-purple-400 transition">
+                    <a href="#" className="text-white text-2xl hover:text-purple-300 transition flex space-x-4">
+                        <Instagram />
                         <p>INSTA</p>
                     </a>
-                    <a href="#" className="text-gray-600 text-2xl hover:text-purple-400 transition">
+                    <a href="#" className="text-white text-2xl hover:text-purple-300 transition flex space-x-4">
+                        <Youtube />
                         <p>YT</p>
-                    </a>
-                    <a href="#" className="text-gray-600 text-2xl hover:text-purple-400 transition">
-                        <p>TTK</p>
                     </a>
                 </div>
 

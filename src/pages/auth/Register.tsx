@@ -7,7 +7,6 @@ import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
 import { toast } from "sonner";
 import Swal from 'sweetalert2';
 
-
 const Register = () => {
   const [form, setForm] = useState({
     name: "",
@@ -17,14 +16,29 @@ const Register = () => {
     confirmarSenha: "",
   });
 
+  const [isTermsChecked, setIsTermsChecked] = useState(false);
+
   const Navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setIsTermsChecked(e.target.checked);
+  };
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (!isTermsChecked) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Atenção',
+        text: 'Você deve aceitar os termos de uso e política de privacidade para prosseguir.',
+      });
+      return;
+    }
 
     if (form.email !== form.confirmarEmail) {
       toast.error("Os emails não coincidem!");
@@ -65,7 +79,7 @@ const Register = () => {
       })
       .catch((error) => {
         console.error("Houve um erro!", error);
-        Swal.fire('Erro!', 'Login falhou. Verifique suas credenciais.', 'error');
+        Swal.fire('Erro!', 'Registro falhou. Verifique suas credenciais.', 'error');
       });
   };
 
@@ -99,18 +113,26 @@ const Register = () => {
         </div>
 
         <form onSubmit={handleSubmit}>
-          <input placeholder="Nome" type="text" name="name" value={form.name} onChange={handleChange} />
-          <input placeholder="Email" type="text" name="email" value={form.email} onChange={handleChange} />
-          <input placeholder="Confirmar email" type="text" name="confirmarEmail" value={form.confirmarEmail} onChange={handleChange} />
-          <input placeholder="Senha" type="password" name="password" value={form.password} onChange={handleChange} />
-          <input placeholder="Confirmar senha" type="password" name="confirmarSenha" value={form.confirmarSenha} onChange={handleChange} />
+          <input placeholder="Nome" id="input-form" type="text" name="name" value={form.name} onChange={handleChange} />
+          <input placeholder="Email" id="input-form" type="text" name="email" value={form.email} onChange={handleChange} />
+          <input placeholder="Confirmar email" id="input-form" type="text" name="confirmarEmail" value={form.confirmarEmail} onChange={handleChange} />
+          <input placeholder="Senha" type="password" id="input-form" name="password" value={form.password} onChange={handleChange} />
+          <input placeholder="Confirmar senha" id="input-form" type="password" name="confirmarSenha" value={form.confirmarSenha} onChange={handleChange} />
+          
+          <div className="terms">
+            <input
+              type="checkbox"
+              id="terms"
+              checked={isTermsChecked}
+              onChange={handleCheckboxChange}
+            />
+            <label htmlFor="terms">
+              Li e estou ciente com os novos termos de uso e Política de Privacidade
+            </label>
+          </div>
+
           <button type="submit">Criar Conta</button>
         </form>
-
-        <div className="terms">
-          <input type="checkbox" id="terms" />
-          <label htmlFor="terms">Li e estou ciente com os novos termos de uso e Política de Privacidade</label>
-        </div>
 
         <div className="return-login">
           <p>Já tem uma conta? <Link to="/login">Login</Link></p>

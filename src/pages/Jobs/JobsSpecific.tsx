@@ -3,6 +3,7 @@ import Header from "@/components/layouts/Header";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 interface Job {
     id: number;
@@ -55,7 +56,14 @@ export default function JobsSpecific() {
                                     <p className="text-gray-600 mb-2"><strong>Tipo de Trabalho:</strong> {data.tipo_trabalho}</p>
                                     <p className="text-gray-600 mb-2"><strong>Formação Necessária:</strong> {data.formacao}</p>
                                     <p className="text-gray-600"><strong>Data de Criação:</strong> {new Date(data.created_at).toLocaleDateString()}</p>
-                                </div>
+                                    
+                                     <Link to={`/aplly/${data.id}`} className="btn mt-4 w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition">
+                                              Candidatar
+                                      </Link>
+                                    
+                                     </div>
+
+                                
                             ) }
                         </div>
                     </div>

@@ -12,6 +12,8 @@ import Login from './pages/auth/Login'
 import '@/index.css'
 import InitialJobs from './pages/Jobs/InitialJobs';
 import JobsSpecific from './pages/Jobs/JobsSpecific';
+import PageAdmin from './pages/admin/PageAdmin';
+import Apply from './components/UserSection/Apply';
 
 
 const CLIENT_ID = '239792615305-dh5fndio5bf43rhha3kji5qe3jpuj7uq.apps.googleusercontent.com'
@@ -30,6 +32,14 @@ const rotas = createBrowserRouter([
   {
     path: "home",
     element: <InitialJobs />
+  },
+  {
+    path:`aplly/:id`,
+    element: <Apply />
+  },
+  {
+    path:"admin",
+    element: <PageAdmin />
   },
   {
     path: `/jobs/:id`,

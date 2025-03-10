@@ -1,25 +1,18 @@
 import logocs from "@/assets/logocs.svg";
+import { Button } from '@/components/ui/button';
 
 export default function Header() {
     return (
-        <header className="flex justify-between items-center px-8 py-4 bg-[#723E98] shadow-md">
-            <div className="img_header">
-                <a href="/"><img  src={logocs} alt="Logo" className="h-12" /> </a>
+        <header className="bg-white border-b sticky top-0 z-10">
+        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+          <div className="flex items-center">
+            <div className="w-12 h-12 bg-purple-700 flex items-center justify-center rounded-md mr-3">
+              <img src={logocs} />
             </div>
-
-            <div className="flex items-center gap-6">
-                <div className="flex gap-4">
-                    <a href="#" className="text-white font-semibold hover:text-purple-300 transition">
-                        A empresa
-                    </a>
-                    <a href="#" className="text-white font-semibold hover:text-purple-300 transition">
-                        Banco de Talentos
-                    </a>
-                </div>
-                <a href="/login" className=" text-white font-semibold px-4 py-2 rounded-3xl hover:bg-purple-700 transition">
-                    Entrar
-                </a>
-            </div>
-        </header>
+            <h1 className="text-xl font-bold">CSRH Instituto</h1>
+          </div>
+          <Button className="bg-purple-700 hover:bg-purple-800 text-white">Entrar</Button>
+        </div>
+      </header>
     );
 }

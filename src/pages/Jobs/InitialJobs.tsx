@@ -1,15 +1,13 @@
-// InitialJobs.tsx
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Briefcase, MapPin, DollarSign, GraduationCap, Package } from 'lucide-react';
+import { Briefcase, MapPin, Loader2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-import logocs from '@/assets/logocs.svg'
 import Header from '@/components/layouts/Header'
 import Footer from '@/components/layouts/Footer'
+import { Link } from 'react-router-dom';
 
-// TypeScript interface based on your PHP model
 interface Vaga {
   id: number;
   titulo: string;
@@ -17,7 +15,7 @@ interface Vaga {
   salario: string;
   requisitos: string;
   localizacao: string;
-  benificios: string;
+  beneficios: string;
   status: string;
   tipo_trabalho: string;
   formacao: string;
@@ -25,20 +23,22 @@ interface Vaga {
   updated_at?: string;
 }
 
-// Interface for the possible API response structures
 interface ApiResponse {
   data?: Vaga[];
   vagas?: Vaga[];
-  [key: string]: any; // For any other potential properties
+  [key: string]: any; 
 }
 
 const InitialJobs: React.FC = () => {
   const [vagas, setVagas] = useState<Vaga[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchVagas = async () => {
+      setIsLoading(true); // Ativar indicador de carregamento
+      setLoading(true);
       try {
         const response = await fetch('http://127.0.0.1:8000/api/all_job');
         if (!response.ok) {
@@ -46,7 +46,6 @@ const InitialJobs: React.FC = () => {
         }
         
         const responseData: ApiResponse = await response.json();
-        
         
         let vagasData: Vaga[] = [];
         
@@ -62,19 +61,49 @@ const InitialJobs: React.FC = () => {
         }
         
         setVagas(vagasData);
-        setLoading(false);
       } catch (err) {
         console.error('Error fetching jobs:', err);
         setError(err instanceof Error ? err.message : 'Erro desconhecido');
+      } finally {
         setLoading(false);
+        setIsLoading(false); // Desativar indicador de carregamento
       }
     };
 
     fetchVagas();
   }, []);
 
-  console.log('Current vagas state:', vagas);
-  console.log('Is vagas an array?', Array.isArray(vagas));
+  const refreshJobs = async () => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const response = await fetch('http://127.0.0.1:8000/api/all_job');
+      if (!response.ok) {
+        throw new Error('Falha ao buscar vagas');
+      }
+      
+      const responseData: ApiResponse = await response.json();
+      
+      let vagasData: Vaga[] = [];
+      
+      if (Array.isArray(responseData)) {      
+        vagasData = responseData;
+      } else if (responseData.data && Array.isArray(responseData.data)) {
+        vagasData = responseData.data;
+      } else if (responseData.vagas && Array.isArray(responseData.vagas)) {
+        vagasData = responseData.vagas;
+      } else {
+        throw new Error('Formato de resposta da API inesperado');
+      }
+      
+      setVagas(vagasData);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro desconhecido');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -87,7 +116,15 @@ const InitialJobs: React.FC = () => {
           <p className="text-gray-500 max-w-2xl mx-auto">Junte-se à nossa equipe e trabalhe com tecnologias de ponta em um ambiente dinâmico.</p>
         </div>
 
-        {loading ? (
+        {/* Indicador de carregamento centralizado */}
+        {isLoading && (
+          <div className="flex justify-center items-center mb-6">
+            <Loader2 className="h-8 w-8 text-purple-700 animate-spin" />
+            <span className="ml-2 text-purple-700">Carregando vagas...</span>
+          </div>
+        )}
+
+        {loading && !isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <Card key={i} className="overflow-hidden">
@@ -113,11 +150,38 @@ const InitialJobs: React.FC = () => {
         ) : error ? (
           <div className="text-center py-8">
             <div className="text-red-500 mb-4">Erro: {error}</div>
-            <Button onClick={() => window.location.reload()}>Tentar Novamente</Button>
+            <Button 
+              onClick={refreshJobs} 
+              disabled={isLoading}
+              className="bg-purple-700 hover:bg-purple-800 text-white"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Carregando...
+                </>
+              ) : (
+                'Tentar Novamente'
+              )}
+            </Button>
           </div>
         ) : vagas.length === 0 ? (
           <div className="text-center py-8">
             <p className="text-gray-500 mb-4">Nenhuma vaga disponível no momento.</p>
+            <Button 
+              onClick={refreshJobs} 
+              disabled={isLoading}
+              variant="outline"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Atualizando...
+                </>
+              ) : (
+                'Atualizar Vagas'
+              )}
+            </Button>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -125,10 +189,10 @@ const InitialJobs: React.FC = () => {
               <Card key={vaga.id} className="overflow-hidden transition hover:shadow-lg">
                 <CardHeader className="pb-4">
                   <div className="flex justify-between items-start">
-                    <CardTitle className="text-xl">{vaga.titulo}</CardTitle>
+                    <CardTitle className="text-xl uppercase">{vaga.titulo}</CardTitle>
                     <Badge className="bg-purple-100 text-purple-800 hover:bg-purple-200">{vaga.status}</Badge>
                   </div>
-                  <CardDescription>Extrema.ts</CardDescription>
+                  <CardDescription>Mersan</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <p className="text-gray-600 mb-4 line-clamp-3">{vaga.descricao}</p>
@@ -140,39 +204,14 @@ const InitialJobs: React.FC = () => {
                     <div className="flex items-center">
                       <Briefcase size={14} className="mr-1" />
                       <span>{vaga.tipo_trabalho || 'Integral'}</span>
-                    </div>
-                    <div className="flex items-center">
-                      <DollarSign size={14} className="mr-1" />
-                      <span>{vaga.salario || 'A combinar'}</span>
-                    </div>
-                    <div className="flex items-center">
-                      <GraduationCap size={14} className="mr-1" />
-                      <span>{vaga.formacao || 'Não especificado'}</span>
-                    </div>
-                  </div>
-                  {vaga.requisitos && (
-                    <div className="mt-4">
-                      <h4 className="text-sm font-medium mb-2">Requisitos:</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {vaga.requisitos.split(',').map((requisito, index) => (
-                          <Badge key={index} variant="outline" className="bg-gray-100">{requisito.trim()}</Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  {vaga.benificios && (
-                    <div className="mt-4">
-                      <h4 className="text-sm font-medium mb-2 flex items-center">
-                        <Package size={14} className="mr-1" />
-                        Benefícios:
-                      </h4>
-                      <p className="text-sm text-gray-600">{vaga.benificios}</p>
-                    </div>
-                  )}
+                    </div>                   
+                  </div>                               
                 </CardContent>
                 <CardFooter>
-                  <Button className="w-full bg-purple-700 hover:bg-purple-800">
-                    Ver Detalhes e Candidatar-se
+                  <Button className="w-full bg-purple-700 hover:bg-purple-800 text-white">
+                    <Link to={`/jobs/${vaga.id}`}> 
+                      Ver Detalhes e Candidatar-se
+                    </Link>
                   </Button>
                 </CardFooter>
               </Card>

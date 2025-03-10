@@ -30,7 +30,7 @@ const rotas = createBrowserRouter([
     element: <Login />
   },
   {
-    path: "home",
+    path: "jobs",
     element: <InitialJobs />
   },
   {

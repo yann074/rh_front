@@ -1,3 +1,4 @@
+import logocs from "@/assets/logocs.svg";
 
 export default function Footer() {
     return (
@@ -7,7 +8,7 @@ export default function Footer() {
             <div>
               <div className="flex items-center mb-4">
                 <div className="w-10 h-10 bg-purple-700 flex items-center justify-center rounded-md mr-2">
-                  <span className="text-white text-xl font-bold">G</span>
+                  <img src={logocs} alt="" />
                 </div>
                 <h3 className="text-lg font-bold">CS Instituto</h3>
               </div>

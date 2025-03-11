@@ -16,13 +16,13 @@ export default function Header() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        // Verificar se existe token no localStorage ou sessionStorage
+        // Verificar se existe token no localStorage
         const token = localStorage.getItem("token") || sessionStorage.getItem("token");
         setIsLoggedIn(!!token);
     }, []);
 
     const handleLogout = () => {
-        // Remover token de ambos os storages
+        // Remover token
         localStorage.removeItem("token");
         sessionStorage.removeItem("token");
         setIsLoggedIn(false);

@@ -14,40 +14,59 @@ import InitialJobs from './pages/Jobs/InitialJobs';
 import JobsSpecific from './pages/Jobs/JobsSpecific';
 import PageAdmin from './pages/admin/PageAdmin';
 import Apply from './components/UserSection/Apply';
-
+import DashBoard from '@/pages/admin/DashBoard'
+import Users from '@/pages/admin/Users'
+import ErrorPage from '@/ErrorPage/ErrorPage';
 
 const CLIENT_ID = '239792615305-dh5fndio5bf43rhha3kji5qe3jpuj7uq.apps.googleusercontent.com'
 
-//Configurando as rotas
-
+// Configurando as rotas
 const rotas = createBrowserRouter([
   {
+    path: 'dashboard',
+    element: <DashBoard />,
+    errorElement: <ErrorPage />, 
+    children: [
+      {
+        path: "bancodetalentos",
+        element: <Users />,
+      },
+    ]
+  },
+  {
     path: "register",
-    element: <Register />
+    element: <Register />,
+    errorElement: <ErrorPage /> 
   },
   {
     path: "login",
-    element: <Login />
+    element: <Login />,
+    errorElement: <ErrorPage /> 
   },
   {
     path: "jobs",
-    element: <InitialJobs />
+    element: <InitialJobs />,
+    errorElement: <ErrorPage /> 
   },
   {
-    path:`aplly/:id`,
-    element: <Apply />
+    path: "apply/:id", 
+    element: <Apply />,
+    errorElement: <ErrorPage /> 
   },
   {
-    path:"admin",
-    element: <PageAdmin />
+    path: "admin",
+    element: <PageAdmin />,
+    errorElement: <ErrorPage /> 
   },
   {
-    path: `/jobs/:id`,
-    element: <JobsSpecific />
+    path: "jobs/:id",
+    element: <JobsSpecific />,
+    errorElement: <ErrorPage /> 
   },
   {
     path: "/",
     element: <UserHomePage />,
+    errorElement: <ErrorPage />, 
     children: [
       {
         path: "/",
@@ -67,8 +86,11 @@ const rotas = createBrowserRouter([
       },
     ]
   },
+  {
+    path: "*", 
+    element: <ErrorPage />
+  }
 ])
-
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

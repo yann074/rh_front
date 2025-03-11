@@ -17,6 +17,7 @@ import DashBoard from '@/pages/admin/DashBoard'
 import Users from '@/components/AdminComp/Users'
 import ErrorPage from '@/ErrorPage/ErrorPage';
 import Candidates from '@/components/AdminComp/Candidates'
+import Jobs from '@/components/AdminComp/Jobs'
 
 const CLIENT_ID = '239792615305-dh5fndio5bf43rhha3kji5qe3jpuj7uq.apps.googleusercontent.com'
 
@@ -34,6 +35,10 @@ const rotas = createBrowserRouter([
       {
         path: "bancodetalentos",
         element: <Candidates />
+      },
+      {
+        path: "adminjobs",
+        element: <Jobs />
       },
     ]
   },

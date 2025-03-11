@@ -150,7 +150,7 @@ const AdminDashboard: React.FC = () => {
             title="Vagas" 
             active={currentView === "vagas"}
             collapsed={collapsed} 
-            to="vagas" 
+            to="adminjobs" 
             onClick={() => setCurrentView("vagas")}
           />
           <SidebarItem 

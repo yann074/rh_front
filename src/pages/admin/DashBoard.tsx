@@ -11,7 +11,7 @@ import {
   LayoutDashboard,
   TrendingUp
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, Outlet } from 'react-router-dom';
 import {
   LineChart,
   Line,
@@ -80,6 +80,7 @@ const resumoDados = {
 const AdminDashboard: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [currentView, setCurrentView] = useState("dashboard");
 
   return (
     <div className="h-screen flex bg-gray-100">
@@ -131,27 +132,34 @@ const AdminDashboard: React.FC = () => {
           <SidebarItem 
             icon={<LayoutDashboard />} 
             title="Dashboard" 
-            active={true} 
+            active={currentView === "dashboard"} 
             collapsed={collapsed} 
             to="/dashboard" 
+            onClick={() => setCurrentView("dashboard")}
           />
           <SidebarItem 
             icon={<Users />} 
             title="Banco de Talentos" 
+            active={currentView === "bancodetalentos"}
             collapsed={collapsed} 
-            to="/bancodetalentos" 
+            to="bancodetalentos" 
+            onClick={() => setCurrentView("bancodetalentos")}
           />
           <SidebarItem 
             icon={<Briefcase />} 
             title="Vagas" 
+            active={currentView === "vagas"}
             collapsed={collapsed} 
-            to="/vagas" 
+            to="vagas" 
+            onClick={() => setCurrentView("vagas")}
           />
           <SidebarItem 
             icon={<UserCircle />} 
             title="Usuários" 
+            active={currentView === "usuarios"}
             collapsed={collapsed} 
-            to="/usuarios" 
+            to="candidates" 
+            onClick={() => setCurrentView("usuarios")}
           />
         </nav>
         
@@ -180,7 +188,12 @@ const AdminDashboard: React.FC = () => {
             >
               <Menu className="h-5 w-5" />
             </Button>
-            <h1 className="text-lg font-semibold">Painel Administrativo</h1>
+            <h1 className="text-lg font-semibold">
+              {currentView === "dashboard" && "Painel Administrativo"}
+              {currentView === "bancodetalentos" && "Banco de Talentos"}
+              {currentView === "vagas" && "Gestão de Vagas"}
+              {currentView === "usuarios" && "Gerenciamento de Usuários"}
+            </h1>
           </div>
           <div className="flex items-center space-x-2">
             <div className="w-8 h-8 rounded-full bg-purple-700 flex items-center justify-center text-white">
@@ -192,184 +205,189 @@ const AdminDashboard: React.FC = () => {
         
         {/* Page Content */}
         <main className="flex-1 overflow-y-auto p-6 bg-gray-100">
-          <div className="max-w-7xl mx-auto">
-            <h2 className="text-2xl font-bold mb-6">Dashboard</h2>
-            
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">Total de Inscritos</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{resumoDados.totalInscritos}</div>
-                  <p className="text-xs text-muted-foreground">candidatos no banco de talentos</p>
-                </CardContent>
-              </Card>
+          {currentView === "dashboard" ? (
+            <div className="max-w-7xl mx-auto">
+              <h2 className="text-2xl font-bold mb-6">Dashboard</h2>
               
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">Crescimento Mensal</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-green-600">{resumoDados.crescimentoMensal}</div>
-                  <p className="text-xs text-muted-foreground">em relação ao mês anterior</p>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">Taxa de Conversão</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{resumoDados.conversaoEmpregos}</div>
-                  <p className="text-xs text-muted-foreground">candidatos empregados</p>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">Vagas Ativas</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{resumoDados.vagasAtivas}</div>
-                  <p className="text-xs text-muted-foreground">oportunidades disponíveis</p>
-                </CardContent>
-              </Card>
-            </div>
-            
-            {/* Charts */}
-            <Tabs defaultValue="diario" className="mb-6">
-              <div className="mb-4 flex items-center justify-between">
-                <h3 className="text-lg font-semibold flex items-center">
-                  <TrendingUp className="h-5 w-5 mr-2 text-purple-700" />
-                  Inscrições de Usuários
-                </h3>
-                <TabsList>
-                  <TabsTrigger value="diario">Diário</TabsTrigger>
-                  <TabsTrigger value="areas">Por Área</TabsTrigger>
-                </TabsList>
+              {/* Stats Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">Total de Inscritos</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{resumoDados.totalInscritos}</div>
+                    <p className="text-xs text-muted-foreground">candidatos no banco de talentos</p>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">Crescimento Mensal</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-green-600">{resumoDados.crescimentoMensal}</div>
+                    <p className="text-xs text-muted-foreground">em relação ao mês anterior</p>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">Taxa de Conversão</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{resumoDados.conversaoEmpregos}</div>
+                    <p className="text-xs text-muted-foreground">candidatos empregados</p>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">Vagas Ativas</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{resumoDados.vagasAtivas}</div>
+                    <p className="text-xs text-muted-foreground">oportunidades disponíveis</p>
+                  </CardContent>
+                </Card>
               </div>
               
-              <TabsContent value="diario">
+              {/* Charts */}
+              <Tabs defaultValue="diario" className="mb-6">
+                <div className="mb-4 flex items-center justify-between">
+                  <h3 className="text-lg font-semibold flex items-center">
+                    <TrendingUp className="h-5 w-5 mr-2 text-purple-700" />
+                    Inscrições de Usuários
+                  </h3>
+                  <TabsList>
+                    <TabsTrigger value="diario">Diário</TabsTrigger>
+                    <TabsTrigger value="areas">Por Área</TabsTrigger>
+                  </TabsList>
+                </div>
+                
+                <TabsContent value="diario">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Inscrições Diárias (Último Mês)</CardTitle>
+                      <CardDescription>
+                        Total de novos candidatos registrados por dia no último mês
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-80">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <LineChart data={dadosUltimoMes} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="dia" />
+                            <YAxis />
+                            <Tooltip />
+                            <Line 
+                              type="monotone" 
+                              dataKey="inscritos" 
+                              stroke="#8884d8" 
+                              activeDot={{ r: 8 }} 
+                              strokeWidth={2}
+                            />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+                
+                <TabsContent value="areas">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Inscrições por Área de Interesse</CardTitle>
+                      <CardDescription>
+                        Distribuição dos candidatos por especialidade
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-80">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart data={dadosPorArea} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="area" />
+                            <YAxis />
+                            <Tooltip />
+                            <Legend />
+                            <Bar dataKey="inscritos" fill="#8884d8" />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              </Tabs>
+              
+              {/* Placeholder Content */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Inscrições Diárias (Último Mês)</CardTitle>
-                    <CardDescription>
-                      Total de novos candidatos registrados por dia no último mês
-                    </CardDescription>
+                    <CardTitle>Últimas Inscrições</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="h-80">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={dadosUltimoMes} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="dia" />
-                          <YAxis />
-                          <Tooltip />
-                          <Line 
-                            type="monotone" 
-                            dataKey="inscritos" 
-                            stroke="#8884d8" 
-                            activeDot={{ r: 8 }} 
-                            strokeWidth={2}
-                          />
-                        </LineChart>
-                      </ResponsiveContainer>
+                    <div className="space-y-4">
+                      {[1, 2, 3].map((i) => (
+                        <div key={i} className="flex items-center space-x-3">
+                          <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-700">
+                            {String.fromCharCode(64 + i)}
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium">Candidato {i}</p>
+                            <p className="text-xs text-gray-500">Desenvolvedor Full Stack</p>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </CardContent>
                 </Card>
-              </TabsContent>
-              
-              <TabsContent value="areas">
+                
                 <Card>
                   <CardHeader>
-                    <CardTitle>Inscrições por Área de Interesse</CardTitle>
-                    <CardDescription>
-                      Distribuição dos candidatos por especialidade
-                    </CardDescription>
+                    <CardTitle>Vagas Populares</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="h-80">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={dadosPorArea} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="area" />
-                          <YAxis />
-                          <Tooltip />
-                          <Legend />
-                          <Bar dataKey="inscritos" fill="#8884d8" />
-                        </BarChart>
-                      </ResponsiveContainer>
+                    <div className="space-y-4">
+                      {[1, 2, 3].map((i) => (
+                        <div key={i} className="border-b pb-3 last:border-b-0 last:pb-0">
+                          <p className="text-sm font-medium">Desenvolvedor {i}</p>
+                          <div className="flex justify-between mt-1">
+                            <p className="text-xs text-gray-500">30 candidatos</p>
+                            <p className="text-xs text-purple-700">Empresa {i}</p>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </CardContent>
                 </Card>
-              </TabsContent>
-            </Tabs>
-            
-            {/* Placeholder Content */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Últimas Inscrições</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {[1, 2, 3].map((i) => (
-                      <div key={i} className="flex items-center space-x-3">
-                        <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-700">
-                          {String.fromCharCode(64 + i)}
+                
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Atividades Recentes</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {[
+                        { acao: "Nova vaga publicada", tempo: "10 min atrás" },
+                        { acao: "Candidato contratado", tempo: "2 horas atrás" },
+                        { acao: "Perfil atualizado", tempo: "5 horas atrás" }
+                      ].map((item, i) => (
+                        <div key={i} className="flex items-center justify-between border-b pb-3 last:border-b-0 last:pb-0">
+                          <p className="text-sm">{item.acao}</p>
+                          <p className="text-xs text-gray-500">{item.tempo}</p>
                         </div>
-                        <div>
-                          <p className="text-sm font-medium">Candidato {i}</p>
-                          <p className="text-xs text-gray-500">Desenvolvedor Full Stack</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader>
-                  <CardTitle>Vagas Populares</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {[1, 2, 3].map((i) => (
-                      <div key={i} className="border-b pb-3 last:border-b-0 last:pb-0">
-                        <p className="text-sm font-medium">Desenvolvedor {i}</p>
-                        <div className="flex justify-between mt-1">
-                          <p className="text-xs text-gray-500">30 candidatos</p>
-                          <p className="text-xs text-purple-700">Empresa {i}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader>
-                  <CardTitle>Atividades Recentes</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {[
-                      { acao: "Nova vaga publicada", tempo: "10 min atrás" },
-                      { acao: "Candidato contratado", tempo: "2 horas atrás" },
-                      { acao: "Perfil atualizado", tempo: "5 horas atrás" }
-                    ].map((item, i) => (
-                      <div key={i} className="flex items-center justify-between border-b pb-3 last:border-b-0 last:pb-0">
-                        <p className="text-sm">{item.acao}</p>
-                        <p className="text-xs text-gray-500">{item.tempo}</p>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
-          </div>
+          ) : (
+            // Outlet para renderizar componentes aninhados (Banco de Talentos, Vagas, Usuários)
+            <Outlet />
+          )}
         </main>
       </div>
     </div>
@@ -383,6 +401,7 @@ interface SidebarItemProps {
   collapsed?: boolean;
   to?: string;
   className?: string;
+  onClick?: () => void;
 }
 
 const SidebarItem: React.FC<SidebarItemProps> = ({ 
@@ -391,7 +410,8 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   active = false,
   collapsed = false,
   to,
-  className = ""
+  className = "",
+  onClick
 }) => {
   const baseClasses = cn(
     "w-full p-2 rounded-md transition-colors flex",
@@ -409,14 +429,14 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
 
   if (to) {
     return (
-      <Link to={to} className={baseClasses}>
+      <Link to={to} className={baseClasses} onClick={onClick}>
         {content}
       </Link>
     );
   }
 
   return (
-    <button className={baseClasses}>
+    <button className={baseClasses} onClick={onClick}>
       {content}
     </button>
   );

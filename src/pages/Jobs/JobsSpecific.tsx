@@ -194,7 +194,7 @@ export default function JobsSpecific() {
                     ) : (
                         <div className="text-center py-10">
                             <p className="text-gray-600">Vaga não encontrada.</p>
-                            <Link to="/jobs" className="text-purple-600 hover:underline mt-4 inline-block">
+                            <Link to="/" className="text-purple-600 hover:underline mt-4 inline-block">
                                 Voltar para lista de vagas
                             </Link>
                         </div>

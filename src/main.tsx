@@ -73,12 +73,12 @@ const rotas = createBrowserRouter([
     errorElement: <ErrorPage /> 
   },
   {
-    path: "/",
+    path: "userhomepage",
     element: <UserHomePage />,
     errorElement: <ErrorPage />, 
     children: [
       {
-        path: "/",
+        path: "userhomepage",
         element: <PersonalInformation />,
       },
       {

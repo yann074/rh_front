@@ -13,7 +13,9 @@ import {
   GraduationCap,
   CheckCircle,
   Clock,
-  XCircle
+  XCircle,
+  Phone,
+  Mail
 } from "lucide-react";
 import { 
   Table, 
@@ -62,6 +64,12 @@ interface Candidate {
   education?: string;
   skills?: string[];
   vacancy?: string;
+  // Campos de informações pessoais
+  telefone?: string;
+  data_nasc?: string;
+  genero?: string;
+  cor?: string;
+  orient_sexual?: string;
 }
 
 export default function CandidateTable() {
@@ -69,33 +77,127 @@ export default function CandidateTable() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterPosition, setFilterPosition] = useState<string>("all");
+  const [userPersonalData, setUserPersonalData] = useState<Record<string, any>>({});
 
   useEffect(() => {
     setLoading(true);
-    axios.get("http://127.0.0.1:8000/api/all")
+    
+    // Primeiro, vamos tentar carregar os dados pessoais dos usuários
+    axios.post("http://127.0.0.1:8000/api/user_personal")
+      .then((personalResponse) => {
+        // Criar um mapa de ID do usuário para dados pessoais
+        const personalMap: Record<string, any> = {};
+        personalResponse.data.forEach((item: any) => {
+          personalMap[item.user_id] = item;
+        });
+        setUserPersonalData(personalMap);
+        
+        // Agora vamos carregar os dados principais
+        return axios.get("http://127.0.0.1:8000/api/all");
+      })
       .then((response) => {
-        // Enriquecer os dados com informações adicionais para demonstração
-        const enrichedCandidates = response.data.data.map((user: any) => ({
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          position: mapToPosition(user.permission),
-          applicationDate: getRandomDate(),
-          status: getRandomStatus(),
-          avatarUrl: "",
-          experience: getRandomExperience(),
-          education: getRandomEducation(),
-          skills: getRandomSkills(),
-          vacancy: getRandomVacancy(mapToPosition(user.permission))
-        }));
+        // Combinar os dados dos usuários com os dados pessoais
+        const enrichedCandidates = response.data.data.map((user: any) => {
+          const personal = userPersonalData[user.id] || {};
+          
+          return {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            position: mapToPosition(user.permission),
+            applicationDate: getRandomDate(),
+            status: getRandomStatus(),
+            avatarUrl: "",
+            experience: getRandomExperience(),
+            education: getRandomEducation(),
+            skills: getRandomSkills(),
+            vacancy: getRandomVacancy(mapToPosition(user.permission)),
+            // Dados pessoais, se disponíveis
+            telefone: personal.telefone || "",
+            data_nasc: personal.data_nasc || "",
+            genero: personal.genero || "",
+            cor: personal.cor || "",
+            orient_sexual: personal.orient_sexual || ""
+          };
+        });
+        
         setCandidates(enrichedCandidates);
         setLoading(false);
       })
       .catch((error) => {
-        console.error("Erro ao buscar candidatos:", error);
-        setLoading(false);
+        console.error("Erro ao buscar dados:", error);
+        
+        // Caso a chamada para user_personal falhe, ainda assim carregamos os dados básicos
+        axios.get("http://127.0.0.1:8000/api/all")
+          .then((response) => {
+            const enrichedCandidates = response.data.data.map((user: any) => ({
+              id: user.id,
+              name: user.name,
+              email: user.email,
+              position: mapToPosition(user.permission),
+              applicationDate: getRandomDate(),
+              status: getRandomStatus(),
+              avatarUrl: "",
+              experience: getRandomExperience(),
+              education: getRandomEducation(),
+              skills: getRandomSkills(),
+              vacancy: getRandomVacancy(mapToPosition(user.permission)),
+              // Adicionar informações pessoais simuladas baseadas nos dados disponíveis
+              telefone: simulatePhoneNumber(user.id),
+              data_nasc: simulateBirthDate(user.id),
+              genero: simulateGender(user.name),
+              cor: simulateRace(user.id),
+              orient_sexual: simulateOrientation(user.id)
+            }));
+            
+            setCandidates(enrichedCandidates);
+            setLoading(false);
+          })
+          .catch((secondError) => {
+            console.error("Erro ao buscar dados alternativos:", secondError);
+            setLoading(false);
+          });
       });
   }, []);
+
+  // Funções para simular dados pessoais caso a API não forneça
+  const simulatePhoneNumber = (id: number) => {
+    return `(${10 + (id % 90)}) 9${id % 10}${id % 10}${id % 10}${id % 10}-${id % 10}${id % 10}${id % 10}${id % 10}`;
+  };
+  
+  const simulateBirthDate = (id: number) => {
+    const year = 1980 + (id % 25);
+    const month = 1 + (id % 12);
+    const day = 1 + (id % 28);
+    return `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+  };
+  
+  const simulateGender = (name: string) => {
+    const genders = ["masculino", "feminino", "não-binário"];
+    const seed = name.length;
+    return genders[seed % genders.length];
+  };
+  
+  const simulateRace = (id: number) => {
+    const races = ["branco", "preto", "pardo", "amarelo", "indígena"];
+    return races[id % races.length];
+  };
+  
+  const simulateOrientation = (id: number) => {
+    const orientations = ["heterossexual", "homossexual", "bissexual"];
+    return orientations[id % orientations.length];
+  };
+
+  // Formatação de datas
+  const formatDate = (dateString: string) => {
+    if (!dateString) return "";
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('pt-BR');
+    } catch (e) {
+      return dateString;
+    }
+  };
 
   // Dados de demonstração
   const getRandomDate = () => {
@@ -215,6 +317,18 @@ export default function CandidateTable() {
     return matchesSearch && matchesPosition;
   });
 
+  const getGenderIcon = (gender: string | undefined) => {
+    if (!gender) return null;
+    
+    if (gender.toLowerCase().includes("masculino")) {
+      return <span className="text-blue-500">♂</span>;
+    } else if (gender.toLowerCase().includes("feminino")) {
+      return <span className="text-pink-500">♀</span>;
+    } else {
+      return <span className="text-purple-500">⚧</span>;
+    }
+  };
+
   return (
     <div className="space-y-6">
       <Card>
@@ -295,8 +409,20 @@ export default function CandidateTable() {
                               </AvatarFallback>
                             </Avatar>
                             <div>
-                              <p className="font-medium">{candidate.name}</p>
-                              <p className="text-sm text-gray-500">{candidate.email}</p>
+                              <div className="flex items-center">
+                                <p className="font-medium">{candidate.name}</p>
+                                {getGenderIcon(candidate.genero)}
+                              </div>
+                              <div className="flex items-center text-sm text-gray-500">
+                                <Mail className="h-3 w-3 mr-1" />
+                                {candidate.email}
+                              </div>
+                              {candidate.telefone && (
+                                <div className="flex items-center text-xs text-gray-400">
+                                  <Phone className="h-3 w-3 mr-1" />
+                                  {candidate.telefone}
+                                </div>
+                              )}
                             </div>
                           </div>
                         </TableCell>
@@ -343,6 +469,25 @@ export default function CandidateTable() {
                                 <Calendar className="mr-2 h-4 w-4 text-purple-600" />
                                 Agendar Entrevista
                               </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuLabel>Informações Pessoais</DropdownMenuLabel>
+                              <DropdownMenuItem>
+                                <Calendar className="mr-2 h-4 w-4 text-gray-600" />
+                                Nascimento: {formatDate(candidate.data_nasc || "")}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem>
+                                <User className="mr-2 h-4 w-4 text-gray-600" />
+                                Gênero: {candidate.genero || "Não informado"}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem>
+                                <User className="mr-2 h-4 w-4 text-gray-600" />
+                                Cor/Raça: {candidate.cor || "Não informado"}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem>
+                                <User className="mr-2 h-4 w-4 text-gray-600" />
+                                Orientação: {candidate.orient_sexual || "Não informado"}
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
                               <DropdownMenuItem className="text-red-600" onClick={() => handleReject(candidate.id)}>
                                 <Trash className="mr-2 h-4 w-4" />
                                 Rejeitar

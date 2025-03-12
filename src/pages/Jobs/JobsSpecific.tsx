@@ -13,7 +13,7 @@ interface Vaga {
     salario: string;
     requisitos: string;
     localizacao: string;
-    benificios: string; 
+    beneficios: string; 
     status: string;
     tipo_trabalho: string;
     formacao: string;
@@ -181,7 +181,7 @@ export default function JobsSpecific() {
                                     <div className="mb-8">
                                         <h2 className="text-xl font-semibold mb-2 text-[#723E98]">Benefícios</h2>
                                         <div className="bg-gray-50 p-4 rounded-xl">
-                                            <p className="text-gray-800">{data.benificios}</p>
+                                            <p className="text-gray-800">{data.beneficios}</p>
                                         </div>
                                     </div>
                                     

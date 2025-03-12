@@ -48,6 +48,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { JobDetailsDialog } from "./JobsDetailsDialog";
+import { Link, Outlet } from "react-router-dom";
 
 interface Vaga {
     id: number;
@@ -57,7 +58,7 @@ interface Vaga {
     requisitos: string;
     localizacao: string;
     beneficios?: string;
-    benificios?: string; 
+    benificios?: string;
     status: string;
     tipo_trabalho: string;
     formacao: string;
@@ -77,6 +78,8 @@ export default function JobsTable() {
     const [selectedVaga, setSelectedVaga] = useState<Vaga | null>(null);
     const [loadingDetails, setLoadingDetails] = useState(false);
     const [detailsError, setDetailsError] = useState<string | null>(null);
+
+
 
     useEffect(() => {
         setLoading(true);
@@ -200,7 +203,7 @@ export default function JobsTable() {
         return text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
     };
 
-    
+
     const getBeneficios = (vaga: Vaga) => {
         return vaga.beneficios || vaga.benificios || "";
     };
@@ -215,9 +218,12 @@ export default function JobsTable() {
                             Gerencie todas as vagas cadastradas na plataforma.
                         </CardDescription>
                     </div>
-                    <Button className="bg-purple-600 hover:bg-purple-700">
-                        Adicionar Nova Vaga
-                    </Button>
+                    <Link to="/dashboard/createjobs">
+                        <Button className="bg-purple-600 hover:bg-purple-700">
+                            Adicionar Nova Vaga
+                        </Button>
+                    </Link>
+                    <Outlet />
                 </CardHeader>
                 <CardContent>
                     <div className="flex flex-col md:flex-row gap-4 mb-6">
@@ -240,7 +246,7 @@ export default function JobsTable() {
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="all">Todos os status</SelectItem>
-                                    <SelectItem value="aberta">Aberta</SelectItem>
+                                    <SelectItem value="ativo">Ativo</SelectItem>
                                     <SelectItem value="fechada">Fechada</SelectItem>
                                     <SelectItem value="em análise">Em Análise</SelectItem>
                                     <SelectItem value="pendente">Pendente</SelectItem>

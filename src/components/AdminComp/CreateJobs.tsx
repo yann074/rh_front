@@ -1,7 +1,7 @@
 import React, { useState, FormEvent, ChangeEvent } from 'react';
 import axios from 'axios';
-import { toast } from 'sonner';
-import { useNavigate } from 'react-router-dom'; // Import do React Router Dom
+import Swal from 'sweetalert2'; // Importando SweetAlert2 em vez de sonner
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -14,7 +14,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 // Constantes para limites de caracteres
 const MAX_REQUISITOS_LENGTH = 255; // Ajuste este valor conforme seu banco de dados
-const MAX_DESCRICAO_LENGTH = 1000; // Ajuste este valor conforme seu banco de dados
+const MAX_DESCRICAO_LENGTH = 500; // Ajuste este valor conforme seu banco de dados
 const MAX_BENEFICIOS_LENGTH = 500; // Ajuste este valor conforme seu banco de dados
 
 interface FormData {
@@ -80,14 +80,17 @@ const JobCreationForm: React.FC = () => {
         }
       });
       
-      // Exibe o toast de sucesso
-      toast.success('Vaga criada com sucesso!', {
-        description: 'A vaga foi publicada e já está disponível.',
-        duration: 3000,
-        onAutoClose: () => {
-          // Navega para a página anterior após o toast fechar
-          navigate(-1);
-        }
+      // Exibe o SweetAlert2 de sucesso
+      Swal.fire({
+        title: 'Vaga criada com sucesso!',
+        text: 'A vaga foi publicada e já está disponível.',
+        icon: 'success',
+        confirmButtonText: 'OK',
+        timer: 3000,
+        timerProgressBar: true
+      }).then(() => {
+        // Navega para a página anterior após fechar o alert
+        navigate(-1);
       });
       
       // Reset form
@@ -104,17 +107,16 @@ const JobCreationForm: React.FC = () => {
       });
       setActiveTab("sobre");
       
-      
-      setTimeout(() => {
-        navigate(-1);
-      }, 3500); 
-      
     } catch (err: any) {
       const errorMessage = err.response?.data?.message || err.message || 'Ocorreu um erro desconhecido';
       setError(errorMessage);
       
-      toast.error('Erro ao criar vaga', {
-        description: 'Ocorreu um erro ao tentar criar a vaga. Tente novamente.',
+      // Exibe o SweetAlert2 de erro
+      Swal.fire({
+        title: 'Erro ao criar vaga',
+        text: 'Ocorreu um erro ao tentar criar a vaga. Tente novamente.',
+        icon: 'error',
+        confirmButtonText: 'OK'
       });
     } finally {
       setIsSubmitting(false);

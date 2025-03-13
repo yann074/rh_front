@@ -1,19 +1,15 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import UserHomePage from '@/pages/DashboardUser/UserHomePage.js'
+import UserHomePage from '@/pages/DashboardUser/CandidateInformation.js'
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import Register from '@/pages/auth/Register.js'
-import PersonalInformation from './components/UserSection/PersonalInformation';
-import FinalDetails from './components/UserSection/FinalDetails';
-import Experiences from './components/UserSection/Experiences';
-import Classification from './components/UserSection/Classification';
 import Login from './pages/auth/Login'
 import '@/index.css'
 import InitialJobs from './pages/Jobs/InitialJobs';
 import JobsSpecific from './pages/Jobs/JobsSpecific';
 import Apply from './components/UserSection/Apply';
-import DashBoard from '@/pages/admin/DashBoard'
+import DashBoard from '@/pages/admin/DashBoard';
 import Users from '@/components/AdminComp/Users'
 import ErrorPage from '@/ErrorPage/ErrorPage';
 import Candidates from '@/components/AdminComp/Candidates'
@@ -75,25 +71,7 @@ const rotas = createBrowserRouter([
   {
     path: "userhomepage",
     element: <UserHomePage />,
-    errorElement: <ErrorPage />, 
-    children: [
-      {
-        path: "userhomepage",
-        element: <PersonalInformation />,
-      },
-      {
-        path: "experience",
-        element: <Experiences />
-      },
-      {
-        path: "classification",
-        element: <Classification />
-      },
-      {
-        path: "finaldetails",
-        element: <FinalDetails />,
-      },
-    ]
+    errorElement: <ErrorPage />,
   },
   {
     path: "*", 

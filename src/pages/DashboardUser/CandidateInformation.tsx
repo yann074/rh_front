@@ -11,13 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { 
-  Loader2, User, Save, 
-  CheckCircle, Briefcase, 
-  Camera, Phone, Mail, Calendar, 
-  Linkedin, Award, Heart, Home
-} from 'lucide-react';
-import logocs from '@/assets/logocs.svg'
+import { Loader2, User, Save, CheckCircle, Briefcase, Camera, Phone, Mail, Calendar, Linkedin, Award, Heart, Home } from 'lucide-react';
 
 // Definition of types
 interface UserData {
@@ -44,7 +38,7 @@ interface CandidatoData {
   genero: string;
 }
 
-const UserHomePage: React.FC = () => {
+const CandidateInformation: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [saving, setSaving] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<string>("pessoal");
@@ -66,35 +60,35 @@ const UserHomePage: React.FC = () => {
     cor: '',
     genero: ''
   });
-  
+
   // Calcular o progresso do perfil
   const calculateProfileProgress = () => {
     let personalProgress = 0;
     let diversityProgress = 0;
-    
+
     // Verificar campos pessoais
     const personalFields = ['email_sec', 'cpf', 'telefone', 'data_nasc', 'linkedin', 'fotoPreview'];
     personalFields.forEach(field => {
       if (candidatoData[field as keyof CandidatoData]) personalProgress++;
     });
     personalProgress = Math.round((personalProgress / personalFields.length) * 100);
-    
+
     // Verificar campos de diversidade
     const diversityFields = ['sexo', 'orient_sexual', 'cor', 'genero'];
     diversityFields.forEach(field => {
       if (candidatoData[field as keyof CandidatoData]) diversityProgress++;
     });
     diversityProgress = Math.round((diversityProgress / diversityFields.length) * 100);
-    
+
     return { personalProgress, diversityProgress };
   };
-  
+
   const { personalProgress, diversityProgress } = calculateProfileProgress();
   const totalProgress = Math.round((personalProgress + diversityProgress) / 2);
-  
+
   // token from storage
   const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-  
+
   useEffect(() => {
     // User autenticado
     if (!token) {
@@ -111,10 +105,10 @@ const UserHomePage: React.FC = () => {
       });
       return;
     }
-    
+
     fetchUserData();
   }, []);
-  
+
   const fetchUserData = async () => {
     try {
       const response = await axios.get('http://127.0.0.1:8000/api/all', {
@@ -122,7 +116,7 @@ const UserHomePage: React.FC = () => {
           'Authorization': `Bearer ${token}`
         }
       });
-    
+
       setUserData({
         id: response.data.id,
         // Garantir que estamos buscando o email e nome do usuário corretamente
@@ -131,9 +125,9 @@ const UserHomePage: React.FC = () => {
         role: response.data.role || '',
         created_at: response.data.created_at || ''
       });
-      
-      // usuario ja tem perfil?
-      checkExistingCandidatoData();
+
+      // Removed checkExistingCandidatoData call
+      setLoading(false);
     } catch (error) {
       console.error('Erro ao buscar dados do usuário:', error);
       Swal.fire({
@@ -144,75 +138,31 @@ const UserHomePage: React.FC = () => {
         background: '#ffffff',
         confirmButtonColor: '#6d28d9'
       });
-    } finally {
       setLoading(false);
     }
   };
-  
-  const checkExistingCandidatoData = async () => {
-    try {
-      const response = await axios.get('http://127.0.0.1:8000/api/user_personal', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      if (response.data) {
-        
-        setCandidatoData({
-          user_id: response.data.user_id,
-          email_sec: response.data.email_sec || '',
-          cpf: response.data.cpf || '',
-          telefone: response.data.telefone || '',
-          data_nasc: response.data.data_nasc || '',
-          linkedin: response.data.linkedin || '',
-          pcd: response.data.pcd || false,
-          foto: null,
-          fotoPreview: response.data.foto || '',
-          sexo: response.data.sexo || '',
-          orient_sexual: response.data.orient_sexual || '',
-          cor: response.data.cor || '',
-          genero: response.data.genero || ''
-        });
-        
-        Swal.fire({
-          title: 'Perfil Encontrado',
-          text: 'Seu perfil já contém algumas informações. Você pode completar ou atualizar os dados.',
-          icon: 'info',
-          confirmButtonText: 'Continuar',
-          background: '#ffffff',
-          confirmButtonColor: '#6d28d9'
-        });
-      }
-    } catch (error) {
-      
-      if (axios.isAxiosError(error) && error.response?.status === 404) {
-        console.log('Perfil não encontrado, criando novo perfil...');
-      } else {
-        console.error('Erro ao verificar perfil existente:', error);
-      }
-    }
-  };
-  
+
+  // Removed checkExistingCandidatoData function entirely
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const { name, value } = e.target;
     setCandidatoData(prev => ({ ...prev, [name]: value }));
   };
-  
+
   const handleSwitchChange = (checked: boolean): void => {
     setCandidatoData(prev => ({ ...prev, pcd: checked }));
   };
-  
+
   const handleSelectChange = (value: string, field: keyof CandidatoData): void => {
     setCandidatoData(prev => ({ ...prev, [field]: value }));
   };
-  
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const file = e.target.files?.[0];
     if (file) {
       // Store the file object for form submission
       setCandidatoData(prev => ({ ...prev, foto: file }));
-      
+
       // Create preview URL for display
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -222,15 +172,15 @@ const UserHomePage: React.FC = () => {
       reader.readAsDataURL(file);
     }
   };
-  
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
     try {
       setSaving(true);
-      
+
       // Create FormData for file upload
       const formData = new FormData();
-      
+
       // Add all fields to FormData
       formData.append('email_sec', candidatoData.email_sec);
       formData.append('cpf', candidatoData.cpf);
@@ -242,26 +192,26 @@ const UserHomePage: React.FC = () => {
       formData.append('orient_sexual', candidatoData.orient_sexual);
       formData.append('cor', candidatoData.cor);
       formData.append('genero', candidatoData.genero);
-      
+
       // Arquivo de foto
       if (candidatoData.foto) {
         formData.append('foto', candidatoData.foto);
       }
-      
+
       // Mudar isso dps
-      const method = candidatoData.user_id ? 'put' : 'post';
+      const method = 'post';
       const endpoint = 'http://127.0.0.1:8000/api/user_personal';
-      
+
       await axios({
         method,
         url: endpoint,
         data: formData,
         headers: {
           'Authorization': `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data'  
+          'Content-Type': 'multipart/form-data'
         }
       });
-      
+
       Swal.fire({
         title: 'Sucesso!',
         text: 'Seus dados foram salvos com sucesso.',
@@ -284,7 +234,9 @@ const UserHomePage: React.FC = () => {
       setSaving(false);
     }
   };
-  
+
+  // Rest of the component remains the same...
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50">
@@ -296,7 +248,7 @@ const UserHomePage: React.FC = () => {
       </div>
     );
   }
-  
+
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Navbar */}
@@ -309,16 +261,16 @@ const UserHomePage: React.FC = () => {
               </div>
               <span className="text-xl font-bold text-slate-800">Candidato Talento</span>
             </div>
-            
+
             <div className="flex items-center space-x-4">
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 className="text-slate-600 hover:text-indigo-600 hover:bg-indigo-50"
               >
                 <Home className="h-5 w-5 mr-2" />
                 Dashboard
               </Button>
-              
+
               <div className="flex items-center space-x-3">
                 <span className="text-sm text-slate-600 hidden md:inline-block">Olá, {userData.name || "Usuário"}</span>
                 <Avatar className="h-9 w-9 border border-slate-200">
@@ -335,7 +287,7 @@ const UserHomePage: React.FC = () => {
           </div>
         </div>
       </nav>
-      
+
       {/* Header */}
       <div className="bg-indigo-700 text-white py-12 px-4">
         <div className="container mx-auto max-w-6xl">
@@ -346,13 +298,13 @@ const UserHomePage: React.FC = () => {
                 Complete suas informações para aumentar suas chances nas oportunidades de emprego e se destacar para os recrutadores.
               </p>
             </div>
-            
+
             <div className="mt-6 md:mt-0">
               <div className="bg-white/10 rounded-lg p-4 backdrop-blur-sm">
                 <div className="flex items-center space-x-3">
                   <div className="relative h-16 w-16">
-                    <div 
-                      className="absolute inset-0 rounded-full" 
+                    <div
+                      className="absolute inset-0 rounded-full"
                       style={{
                         background: `conic-gradient(#4f46e5 ${totalProgress}%, transparent ${totalProgress}%)`,
                       }}
@@ -361,7 +313,7 @@ const UserHomePage: React.FC = () => {
                       <span className="text-white font-bold">{totalProgress}%</span>
                     </div>
                   </div>
-                  
+
                   <div>
                     <h3 className="font-medium text-white">Completando seu perfil</h3>
                     <p className="text-indigo-200 text-sm">Perfis completos recebem 3x mais oportunidades</p>
@@ -372,7 +324,7 @@ const UserHomePage: React.FC = () => {
           </div>
         </div>
       </div>
-      
+
       <div className="container mx-auto max-w-6xl px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Sidebar */}
@@ -387,7 +339,7 @@ const UserHomePage: React.FC = () => {
                   </Badge>
                 )}
               </div>
-              
+
               <div className="px-6 pt-0 pb-6">
                 <div className="relative -mt-16 mb-4 flex justify-center">
                   <div className="relative">
@@ -400,8 +352,8 @@ const UserHomePage: React.FC = () => {
                         </AvatarFallback>
                       )}
                     </Avatar>
-                    <Button 
-                      size="sm" 
+                    <Button
+                      size="sm"
                       className="absolute bottom-0 right-0 rounded-full bg-indigo-600 hover:bg-indigo-700 h-10 w-10 p-0 shadow-md"
                       onClick={() => document.getElementById('foto-upload')?.click()}
                     >
@@ -416,7 +368,7 @@ const UserHomePage: React.FC = () => {
                     </Button>
                   </div>
                 </div>
-                
+
                 <div className="text-center mb-6">
                   <h2 className="text-2xl font-bold text-slate-800">{userData.name || "Usuário"}</h2>
                   <p className="text-slate-500 flex items-center justify-center mt-1">
@@ -424,7 +376,7 @@ const UserHomePage: React.FC = () => {
                     {userData.email}
                   </p>
                 </div>
-                
+
                 <div className="space-y-5">
                   <div className="space-y-2">
                     <Label htmlFor="linkedin" className="text-slate-600 flex items-center text-sm">
@@ -440,14 +392,14 @@ const UserHomePage: React.FC = () => {
                       className="border-slate-200 focus:border-indigo-500 focus:ring-indigo-500"
                     />
                   </div>
-                  
+
                   <div className="flex items-center justify-between bg-indigo-50 p-4 rounded-lg">
                     <Label htmlFor="pcd" className="flex items-center text-slate-700 font-medium">
                       <Award className="h-5 w-5 mr-2 text-indigo-600" />
                       Pessoa com deficiência
                     </Label>
-                    <Switch 
-                      id="pcd" 
+                    <Switch
+                      id="pcd"
                       checked={candidatoData.pcd}
                       onCheckedChange={handleSwitchChange}
                       className="data-[state=checked]:bg-indigo-600"
@@ -456,7 +408,7 @@ const UserHomePage: React.FC = () => {
                 </div>
               </div>
             </Card>
-            
+
             {/* Profile Progress */}
             <Card className="border-none shadow-md rounded-xl">
               <CardHeader className="pb-2 border-b border-slate-100">
@@ -471,7 +423,7 @@ const UserHomePage: React.FC = () => {
                     </div>
                     <Progress value={personalProgress} className="h-2 bg-slate-100" />
                   </div>
-                  
+
                   <div>
                     <div className="flex justify-between mb-2">
                       <span className="text-sm text-slate-600 font-medium">Diversidade</span>
@@ -479,7 +431,7 @@ const UserHomePage: React.FC = () => {
                     </div>
                     <Progress value={diversityProgress} className="h-2 bg-slate-100" />
                   </div>
-                  
+
                   <div className="bg-amber-50 border border-amber-100 rounded-lg p-4">
                     <div className="flex">
                       <div className="flex-shrink-0">
@@ -496,7 +448,7 @@ const UserHomePage: React.FC = () => {
               </CardContent>
             </Card>
           </div>
-          
+
           {/* Main Content */}
           <div className="lg:col-span-8">
             <Card className="border-none shadow-md rounded-xl">
@@ -504,17 +456,17 @@ const UserHomePage: React.FC = () => {
                 <CardHeader className="border-b border-slate-100 bg-white rounded-t-xl">
                   <div className="flex flex-col md:flex-row md:items-center md:justify-between">
                     <CardTitle className="text-xl text-slate-800">Editar Informações</CardTitle>
-                    
+
                     <div className="mt-4 md:mt-0">
                       <TabsList className="grid grid-cols-2 bg-slate-100 p-1">
-                        <TabsTrigger 
-                          value="pessoal" 
+                        <TabsTrigger
+                          value="pessoal"
                           className="font-medium rounded-md data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm"
                         >
                           Dados Pessoais
                         </TabsTrigger>
-                        <TabsTrigger 
-                          value="diversidade" 
+                        <TabsTrigger
+                          value="diversidade"
                           className="font-medium rounded-md data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm"
                         >
                           Diversidade
@@ -523,7 +475,7 @@ const UserHomePage: React.FC = () => {
                     </div>
                   </div>
                 </CardHeader>
-                
+
                 <CardContent className="pt-6">
                   <form onSubmit={handleSubmit}>
                     <TabsContent value="pessoal" className="mt-0 space-y-6">
@@ -543,7 +495,7 @@ const UserHomePage: React.FC = () => {
                             className="border-slate-200 focus:border-indigo-500 focus:ring-indigo-500"
                           />
                         </div>
-                        
+
                         <div className="space-y-2">
                           <Label htmlFor="cpf" className="flex items-center text-slate-700">
                             <CheckCircle className="h-4 w-4 mr-2 text-indigo-500" />
@@ -558,7 +510,7 @@ const UserHomePage: React.FC = () => {
                             className="border-slate-200 focus:border-indigo-500 focus:ring-indigo-500"
                           />
                         </div>
-                        
+
                         <div className="space-y-2">
                           <Label htmlFor="telefone" className="flex items-center text-slate-700">
                             <Phone className="h-4 w-4 mr-2 text-indigo-500" />
@@ -573,7 +525,7 @@ const UserHomePage: React.FC = () => {
                             className="border-slate-200 focus:border-indigo-500 focus:ring-indigo-500"
                           />
                         </div>
-                        
+
                         <div className="space-y-2">
                           <Label htmlFor="data_nasc" className="flex items-center text-slate-700">
                             <Calendar className="h-4 w-4 mr-2 text-indigo-500" />
@@ -589,7 +541,7 @@ const UserHomePage: React.FC = () => {
                           />
                         </div>
                       </div>
-                      
+
                       <div className="bg-blue-50 rounded-lg p-4 border border-blue-100">
                         <div className="flex">
                           <div className="flex-shrink-0">
@@ -603,7 +555,7 @@ const UserHomePage: React.FC = () => {
                         </div>
                       </div>
                     </TabsContent>
-                    
+
                     <TabsContent value="diversidade" className="mt-0 space-y-6">
                       <div className="bg-indigo-50 p-5 rounded-lg mb-6 border border-indigo-100">
                         <div className="flex items-start">
@@ -616,12 +568,12 @@ const UserHomePage: React.FC = () => {
                           </div>
                         </div>
                       </div>
-                    
+
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
                           <Label htmlFor="sexo" className="text-slate-700 font-medium">Sexo Biológico</Label>
-                          <Select 
-                            value={candidatoData.sexo} 
+                          <Select
+                            value={candidatoData.sexo}
                             onValueChange={(value) => handleSelectChange(value, 'sexo')}
                           >
                             <SelectTrigger id="sexo" className="border-slate-200 focus:border-indigo-500 focus:ring-indigo-500">
@@ -634,11 +586,11 @@ const UserHomePage: React.FC = () => {
                             </SelectContent>
                           </Select>
                         </div>
-                        
+
                         <div className="space-y-2">
                           <Label htmlFor="genero" className="text-slate-700 font-medium">Identidade de Gênero</Label>
-                          <Select 
-                            value={candidatoData.genero} 
+                          <Select
+                            value={candidatoData.genero}
                             onValueChange={(value) => handleSelectChange(value, 'genero')}
                           >
                             <SelectTrigger id="genero" className="border-slate-200 focus:border-indigo-500 focus:ring-indigo-500">
@@ -655,11 +607,11 @@ const UserHomePage: React.FC = () => {
                             </SelectContent>
                           </Select>
                         </div>
-                        
+
                         <div className="space-y-2">
                           <Label htmlFor="orient_sexual" className="text-slate-700 font-medium">Orientação Sexual</Label>
-                          <Select 
-                            value={candidatoData.orient_sexual} 
+                          <Select
+                            value={candidatoData.orient_sexual}
                             onValueChange={(value) => handleSelectChange(value, 'orient_sexual')}
                           >
                             <SelectTrigger id="orient_sexual" className="border-slate-200 focus:border-indigo-500 focus:ring-indigo-500">
@@ -676,11 +628,11 @@ const UserHomePage: React.FC = () => {
                             </SelectContent>
                           </Select>
                         </div>
-                        
+
                         <div className="space-y-2">
                           <Label htmlFor="cor" className="text-gray-700">Cor/Raça/Etnia</Label>
-                          <Select 
-                            value={candidatoData.cor} 
+                          <Select
+                            value={candidatoData.cor}
                             onValueChange={(value) => handleSelectChange(value, 'cor')}
                           >
                             <SelectTrigger id="cor" className="border-gray-300 focus:border-purple-500 focus:ring-purple-500">
@@ -699,11 +651,11 @@ const UserHomePage: React.FC = () => {
                         </div>
                       </div>
                     </TabsContent>
-                    
+
                     <div className="mt-8 pt-6 border-t border-gray-100">
-                      <Button 
-                        type="submit" 
-                        className="w-full md:w-auto bg-purple-700 hover:bg-purple-800" 
+                      <Button
+                        type="submit"
+                        className="w-full md:w-auto bg-purple-700 hover:bg-purple-800"
                         disabled={saving}
                       >
                         {saving ? (
@@ -730,4 +682,4 @@ const UserHomePage: React.FC = () => {
   );
 };
 
-export default UserHomePage;
+export default CandidateInformation;

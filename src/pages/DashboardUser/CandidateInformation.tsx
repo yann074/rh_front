@@ -118,13 +118,14 @@ const CandidateInformation: React.FC = () => {
       });
 
       setUserData({
-        id: response.data.id,
-        // Garantir que estamos buscando o email e nome do usuário corretamente
-        email: response.data.email || '',  // Email principal
-        name: response.data.name || '',    // Nome cadastrado
-        role: response.data.role || '',
-        created_at: response.data.created_at || ''
+        id: response.data.data[1]?.id,
+        email: response.data.data[1]?.email || '',
+        name: response.data.data[1]?.name || '',
+        role: response.data.data[1]?.permission || '',
+        created_at: response.data.data[1]?.created_at || '',
       });
+      
+      console.log(response.data)
 
       // Removed checkExistingCandidatoData call
       setLoading(false);

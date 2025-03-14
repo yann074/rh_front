@@ -54,7 +54,7 @@ const rotas = createBrowserRouter([
     errorElement: <ErrorPage /> 
   },
   {
-    path: "jobs",
+    path: "/",
     element: <InitialJobs />,
     errorElement: <ErrorPage /> 
   },

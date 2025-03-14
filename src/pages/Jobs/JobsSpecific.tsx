@@ -135,7 +135,7 @@ export default function JobsSpecific() {
                                     className="text-purple-700 hover:text-purple-900 hover:bg-purple-100" 
                                     asChild
                                 >
-                                    <Link to="/jobs" className="flex items-center">
+                                    <Link to="/" className="flex items-center">
                                         <ChevronLeft className="h-4 w-4 mr-1" />
                                         Voltar para lista de vagas
                                     </Link>

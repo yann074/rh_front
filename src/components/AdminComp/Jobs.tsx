@@ -203,11 +203,6 @@ export default function JobsTable() {
         return text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
     };
 
-
-    const getBeneficios = (vaga: Vaga) => {
-        return vaga.beneficios || vaga.benificios || "";
-    };
-
     return (
         <div className="space-y-6">
             <Card>

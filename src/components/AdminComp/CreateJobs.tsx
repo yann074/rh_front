@@ -1,6 +1,6 @@
 import React, { useState, FormEvent, ChangeEvent } from 'react';
 import axios from 'axios';
-import Swal from 'sweetalert2'; // Importando SweetAlert2 em vez de sonner
+import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -74,7 +74,7 @@ const JobCreationForm: React.FC = () => {
     setError(null);
 
     try {
-      const response = await axios.post('http://127.0.0.1:8000/api/new_job', formData, {
+      await axios.post('http://127.0.0.1:8000/api/new_job', formData, {
         headers: {
           'Content-Type': 'application/json',
         }

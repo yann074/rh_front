@@ -77,118 +77,61 @@ export default function CandidateTable() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterPosition, setFilterPosition] = useState<string>("all");
-  const [userPersonalData, setUserPersonalData] = useState<Record<string, any>>({});
 
   useEffect(() => {
     setLoading(true);
     
-    // Primeiro, vamos tentar carregar os dados pessoais dos usuários
-    axios.post("http://127.0.0.1:8000/api/user_personal")
-      .then((personalResponse) => {
-        // Criar um mapa de ID do usuário para dados pessoais
-        const personalMap: Record<string, any> = {};
-        personalResponse.data.forEach((item: any) => {
-          personalMap[item.user_id] = item;
-        });
-        setUserPersonalData(personalMap);
-        
-        // Agora vamos carregar os dados principais
-        return axios.get("http://127.0.0.1:8000/api/all");
-      })
+    // Fetch user data
+    axios.get("http://127.0.0.1:8000/api/all")
       .then((response) => {
-        // Combinar os dados dos usuários com os dados pessoais
-        const enrichedCandidates = response.data.data.map((user: any) => {
-          const personal = userPersonalData[user.id] || {};
-          
-          return {
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            position: mapToPosition(user.permission),
-            applicationDate: getRandomDate(),
-            status: getRandomStatus(),
-            avatarUrl: "",
-            experience: getRandomExperience(),
-            education: getRandomEducation(),
-            skills: getRandomSkills(),
-            vacancy: getRandomVacancy(mapToPosition(user.permission)),
-            // Dados pessoais, se disponíveis
-            telefone: personal.telefone || "",
-            data_nasc: personal.data_nasc || "",
-            genero: personal.genero || "",
-            cor: personal.cor || "",
-            orient_sexual: personal.orient_sexual || ""
-          };
-        });
+        // Create base candidates from first API response
+        const baseUsers = response.data.data || [];
         
-        setCandidates(enrichedCandidates);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error("Erro ao buscar dados:", error);
-        
-        // Caso a chamada para user_personal falhe, ainda assim carregamos os dados básicos
-        axios.get("http://127.0.0.1:8000/api/all")
-          .then((response) => {
-            const enrichedCandidates = response.data.data.map((user: any) => ({
-              id: user.id,
-              name: user.name,
-              email: user.email,
-              position: mapToPosition(user.permission),
-              applicationDate: getRandomDate(),
-              status: getRandomStatus(),
-              avatarUrl: "",
-              experience: getRandomExperience(),
-              education: getRandomEducation(),
-              skills: getRandomSkills(),
-              vacancy: getRandomVacancy(mapToPosition(user.permission)),
-              // Adicionar informações pessoais simuladas baseadas nos dados disponíveis
-              telefone: simulatePhoneNumber(user.id),
-              data_nasc: simulateBirthDate(user.id),
-              genero: simulateGender(user.name),
-              cor: simulateRace(user.id),
-              orient_sexual: simulateOrientation(user.id)
-            }));
+        // Fetch personal data separately
+        return axios.post("http://127.0.0.1:8000/api/user_personal")
+          .then((personalResponse) => {
+            // Create a map of user_id to personal data
+            const personalMap: Record<string, any> = {};
+            personalResponse.data.forEach((item: any) => {
+              personalMap[item.user_id] = item;
+            });
+            
+            // Combine user data with personal data
+            const enrichedCandidates = baseUsers.map((user: any) => {
+              const personal = personalMap[user.id] || {};
+              
+              return {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                position: mapToPosition(user.permission),
+                applicationDate: personal.application_date || "",
+                status: personal.status || "Em Análise",
+                avatarUrl: personal.avatar_url || "",
+                experience: personal.experience || "",
+                education: personal.education || "",
+                skills: personal.skills ? personal.skills.split(',') : [],
+                vacancy: personal.vacancy || "",
+                // Personal data
+                telefone: personal.telefone || "",
+                data_nasc: personal.data_nasc || "",
+                genero: personal.genero || "",
+                cor: personal.cor || "",
+                orient_sexual: personal.orient_sexual || ""
+              };
+            });
             
             setCandidates(enrichedCandidates);
             setLoading(false);
-          })
-          .catch((secondError) => {
-            console.error("Erro ao buscar dados alternativos:", secondError);
-            setLoading(false);
           });
+      })
+      .catch((error) => {
+        console.error("Erro ao buscar dados:", error);
+        setLoading(false);
       });
   }, []);
 
-  // Funções para simular dados pessoais caso a API não forneça
-  const simulatePhoneNumber = (id: number) => {
-    return `(${10 + (id % 90)}) 9${id % 10}${id % 10}${id % 10}${id % 10}-${id % 10}${id % 10}${id % 10}${id % 10}`;
-  };
-  
-  const simulateBirthDate = (id: number) => {
-    const year = 1980 + (id % 25);
-    const month = 1 + (id % 12);
-    const day = 1 + (id % 28);
-    return `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
-  };
-  
-  const simulateGender = (name: string) => {
-    const genders = ["masculino", "feminino", "não-binário"];
-    const seed = name.length;
-    return genders[seed % genders.length];
-  };
-  
-  const simulateRace = (id: number) => {
-    const races = ["branco", "preto", "pardo", "amarelo", "indígena"];
-    return races[id % races.length];
-  };
-  
-  const simulateOrientation = (id: number) => {
-    const orientations = ["heterossexual", "homossexual", "bissexual"];
-    return orientations[id % orientations.length];
-  };
-
-  // Formatação de datas
+   // Formatação de datas
   const formatDate = (dateString: string) => {
     if (!dateString) return "";
     try {
@@ -199,20 +142,6 @@ export default function CandidateTable() {
     }
   };
 
-  // Dados de demonstração
-  const getRandomDate = () => {
-    const days = Math.floor(Math.random() * 60);
-    const date = new Date();
-    date.setDate(date.getDate() - days);
-    return date.toLocaleDateString('pt-BR');
-  };
-
-  const getRandomStatus = (): "Aprovado" | "Em Análise" | "Entrevista" | "Rejeitado" | "Contratado" => {
-    const statuses: ["Aprovado", "Em Análise", "Entrevista", "Rejeitado", "Contratado"] = 
-      ["Aprovado", "Em Análise", "Entrevista", "Rejeitado", "Contratado"];
-    return statuses[Math.floor(Math.random() * statuses.length)];
-  };
-
   const mapToPosition = (permission: string): string => {
     const positions: Record<string, string> = {
       "Admin": "Desenvolvedor Sênior",
@@ -221,33 +150,6 @@ export default function CandidateTable() {
       "Guest": "Analista de Dados"
     };
     return positions[permission] || "Desenvolvedor Full Stack";
-  };
-
-  const getRandomExperience = (): string => {
-    const experiences = ["1-2 anos", "3-5 anos", "5+ anos", "Menos de 1 ano", "7+ anos"];
-    return experiences[Math.floor(Math.random() * experiences.length)];
-  };
-
-  const getRandomEducation = (): string => {
-    const education = ["Graduação", "Pós-graduação", "Mestrado", "Bootcamp", "Técnico"];
-    return education[Math.floor(Math.random() * education.length)];
-  };
-
-  const getRandomSkills = (): string[] => {
-    const allSkills = ["React", "Node.js", "Python", "Java", "SQL", "UX/UI", "TypeScript", "PHP", "AWS", "Docker"];
-    const numSkills = Math.floor(Math.random() * 4) + 1;
-    const shuffled = [...allSkills].sort(() => 0.5 - Math.random());
-    return shuffled.slice(0, numSkills);
-  };
-
-  const getRandomVacancy = (position: string): string => {
-    if (position.includes("Desenvolvedor")) {
-      return `Vaga ${Math.floor(Math.random() * 5) + 1} - ${position}`;
-    } else if (position.includes("Designer")) {
-      return `Vaga ${Math.floor(Math.random() * 3) + 1} - ${position}`;
-    } else {
-      return `Vaga ${Math.floor(Math.random() * 2) + 1} - ${position}`;
-    }
   };
 
   const getStatusColor = (status: string) => {

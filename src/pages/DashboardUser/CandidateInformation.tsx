@@ -118,11 +118,11 @@ const CandidateInformation: React.FC = () => {
       });
 
       setUserData({
-        id: response.data.data[1]?.id,
-        email: response.data.data[1]?.email || '',
-        name: response.data.data[1]?.name || '',
-        role: response.data.data[1]?.permission || '',
-        created_at: response.data.data[1]?.created_at || '',
+        id: response.data.data[2]?.id,
+        email: response.data.data[2]?.email || '',
+        name: response.data.data[2]?.name || '',
+        role: response.data.data[2]?.permission || '',
+        created_at: response.data.data[2]?.created_at || '',
       });
       
       console.log(response.data)

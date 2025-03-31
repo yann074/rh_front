@@ -13,15 +13,15 @@ import BackgroundImage from '@/assets/fundo.jpg';
 
 interface Vaga {
   id: number;
-  titulo: string;
-  descricao: string;
-  salario: string;
-  requisitos: string;
-  localizacao: string;
-  beneficios: string;
+  title: string;
+  description: string;
+  salary: string;
+  requirements: string;
+  location: string;
+  benefits: string;
   status: string;
-  tipo_trabalho: string;
-  formacao: string;
+  job_type: string;
+  education: string;
   empresa?: string; // Adicionando campo para empresa
   created_at?: string;
   updated_at?: string;
@@ -56,7 +56,7 @@ const InitialJobs: React.FC = () => {
     setIsLoading(true);
     setLoading(true);
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/all_job');
+      const response = await fetch('http://127.0.0.1:8000/api/opportunities');
       if (!response.ok) {
         throw new Error('Falha ao buscar vagas');
       }
@@ -99,16 +99,16 @@ const InitialJobs: React.FC = () => {
     // Apply text search if provided
     if (term.trim()) {
       result = result.filter(vaga => 
-        vaga.titulo.toLowerCase().includes(term.toLowerCase()) ||
-        vaga.descricao.toLowerCase().includes(term.toLowerCase()) ||
-        vaga.localizacao.toLowerCase().includes(term.toLowerCase()) ||
+        vaga.title.toLowerCase().includes(term.toLowerCase()) ||
+        vaga.description.toLowerCase().includes(term.toLowerCase()) ||
+        vaga.location.toLowerCase().includes(term.toLowerCase()) ||
         (vaga.empresa && vaga.empresa.toLowerCase().includes(term.toLowerCase()))
       );
     }
     
     // Apply category filter
     if (filter !== 'all') {
-      result = result.filter(vaga => vaga.tipo_trabalho.toLowerCase() === filter.toLowerCase());
+      result = result.filter(vaga => vaga.job_type.toLowerCase() === filter.toLowerCase());
     }
     
     setFilteredVagas(result);
@@ -294,7 +294,7 @@ const InitialJobs: React.FC = () => {
                 <Card key={vaga.id} className="overflow-hidden border-0 shadow-md transition-all duration-300 hover:shadow-xl bg-white hover:translate-y-[-5px]">
                   <CardHeader className="pb-4 border-b">
                     <div className="flex justify-between items-start mb-2">
-                      <CardTitle className="text-xl font-bold">{vaga.titulo}</CardTitle>
+                      <CardTitle className="text-xl font-bold">{vaga.title}</CardTitle>
                       <Badge className={getJobStatusColor(vaga.status)}>
                         {vaga.status}
                       </Badge>
@@ -306,17 +306,17 @@ const InitialJobs: React.FC = () => {
                   </CardHeader>
                   
                   <CardContent className="pt-4">
-                    <p className="text-gray-600 mb-4 line-clamp-3 h-[4.5rem]">{vaga.descricao}</p>
+                    <p className="text-gray-600 mb-4 line-clamp-3 h-[4.5rem]">{vaga.description}</p>
                     
                     <div className="flex flex-wrap gap-2 mb-4">
                       <Badge variant="outline" className="flex items-center gap-1">
                         <MapPin size={14} />
-                        {vaga.localizacao || 'Remoto'}
+                        {vaga.location || 'Remoto'}
                       </Badge>
                       
-                      <Badge variant="outline" className={`flex items-center gap-1 ${getWorkTypeColor(vaga.tipo_trabalho)}`}>
+                      <Badge variant="outline" className={`flex items-center gap-1 ${getWorkTypeColor(vaga.job_type)}`}>
                         <Briefcase size={14} />
-                        {vaga.tipo_trabalho || 'Integral'}
+                        {vaga.job_type || 'Integral'}
                       </Badge>
                       
                       <Badge variant="outline" className="flex items-center gap-1">

@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Loader2, User, Save, CheckCircle, Briefcase, Camera, Phone, Mail, Calendar, Linkedin, Award, Heart, Home } from 'lucide-react';
+import { Loader2, User, Save, CheckCircle, Briefcase, Camera, Phone, Mail, Calendar, Linkedin, Award, Heart, Home, SearchX } from 'lucide-react';
 
 // Definition of types
 interface UserData {
@@ -25,41 +25,47 @@ interface UserData {
 
 interface CandidatoData {
   user_id?: number;
-  email_sec: string;
+  secondary_email: string;
   cpf: string;
-  telefone: string;
-  data_nasc: string;
+  phone: string;
+  birth_date: string;
   linkedin: string;
   pcd: boolean;
-  foto: File | null;
-  fotoPreview: string;
-  sexo: string;
-  orient_sexual: string;
-  cor: string;
-  genero: string;
+  photo: File | null;
+  photoPreview: string;
+  sex: string;
+  sexual_orientation: string;
+  race: string;
+  gender: string;
 }
 
 const CandidateInformation: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [saving, setSaving] = useState<boolean>(false);
-  const [activeTab, setActiveTab] = useState<string>("pessoal");
+  const [activeTab, setActiveTab] = useState<string>("pessoal")
+
+  const [sexUser, setSexUser] = useState<string[]>([]);
+  const [gender, setGender] = useState<string[]>([]);
+  const [orientation, setOrientation] = useState<string[]>([]);
+  const [color, setColor] = useState<string[]>([]);
+
   const [userData, setUserData] = useState<UserData>({
     email: '',
     name: ''
   });
   const [candidatoData, setCandidatoData] = useState<CandidatoData>({
-    email_sec: '',
+    secondary_email: '',
     cpf: '',
-    telefone: '',
-    data_nasc: '',
+    phone: '',
+    birth_date: '',
     linkedin: '',
     pcd: false,
-    foto: null,
-    fotoPreview: '',
-    sexo: '',
-    orient_sexual: '',
-    cor: '',
-    genero: ''
+    photo: null,
+    photoPreview: '',
+    sex: '',
+    sexual_orientation: '',
+    race: '',
+    gender: ''
   });
 
   // Calcular o progresso do perfil
@@ -68,14 +74,14 @@ const CandidateInformation: React.FC = () => {
     let diversityProgress = 0;
 
     // Verificar campos pessoais
-    const personalFields = ['email_sec', 'cpf', 'telefone', 'data_nasc', 'linkedin', 'fotoPreview'];
+    const personalFields = ['secondary_email', 'cpf', 'phone', 'birth_date', 'linkedin', 'photoPreview'];
     personalFields.forEach(field => {
       if (candidatoData[field as keyof CandidatoData]) personalProgress++;
     });
     personalProgress = Math.round((personalProgress / personalFields.length) * 100);
 
     // Verificar campos de diversidade
-    const diversityFields = ['sexo', 'orient_sexual', 'cor', 'genero'];
+    const diversityFields = ['sex', 'sexual_orientation', 'race', 'gender'];
     diversityFields.forEach(field => {
       if (candidatoData[field as keyof CandidatoData]) diversityProgress++;
     });
@@ -112,11 +118,24 @@ const CandidateInformation: React.FC = () => {
 
   const fetchUserData = async () => {
     try {
-      const response = await axios.get('http://127.0.0.1:8000/api/all', {
+      const response = await axios.get('http://127.0.0.1:8000/api/users', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
+      //para retornar as opções de sexo
+      const sexUserResponse = await axios.get('http://127.0.0.1:8000/api/enums/sex-user');
+
+
+      //tirar
+      console.log("Dados da API /enums/sex-user:", sexUserResponse.data);
+      const sexUserData = sexUserResponse.data.data;
+
+      setSexUser(sexUserData.sexo);
+      setGender(sexUserData.gender);
+      setOrientation(sexUserData.orient);
+      setColor(sexUserData.color);
+
 
       setUserData({
         id: response.data.data[2]?.id,
@@ -125,7 +144,8 @@ const CandidateInformation: React.FC = () => {
         role: response.data.data[2]?.permission || '',
         created_at: response.data.data[2]?.created_at || '',
       });
-      
+
+
       console.log(response.data)
 
       // Removed checkExistingCandidatoData call
@@ -163,13 +183,13 @@ const CandidateInformation: React.FC = () => {
     const file = e.target.files?.[0];
     if (file) {
       // Store the file object for form submission
-      setCandidatoData(prev => ({ ...prev, foto: file }));
+      setCandidatoData(prev => ({ ...prev, photo: file }));
 
       // Create preview URL for display
       const reader = new FileReader();
       reader.onloadend = () => {
         const result = reader.result as string;
-        setCandidatoData(prev => ({ ...prev, fotoPreview: result }));
+        setCandidatoData(prev => ({ ...prev, photoPreview: result }));
       };
       reader.readAsDataURL(file);
     }
@@ -184,20 +204,20 @@ const CandidateInformation: React.FC = () => {
       const formData = new FormData();
 
       // Add all fields to FormData
-      formData.append('email_sec', candidatoData.email_sec);
+      formData.append('secondary_email', candidatoData.secondary_email);
       formData.append('cpf', candidatoData.cpf);
-      formData.append('telefone', candidatoData.telefone);
-      formData.append('data_nasc', candidatoData.data_nasc);
+      formData.append('phone', candidatoData.phone);
+      formData.append('birth_date', candidatoData.birth_date);
       formData.append('linkedin', candidatoData.linkedin);
       formData.append('pcd', candidatoData.pcd ? '1' : '0');
-      formData.append('sexo', candidatoData.sexo);
-      formData.append('orient_sexual', candidatoData.orient_sexual);
-      formData.append('cor', candidatoData.cor);
-      formData.append('genero', candidatoData.genero);
+      formData.append('sex', candidatoData.sex);
+      formData.append('sexual_orientation', candidatoData.sexual_orientation);
+      formData.append('race', candidatoData.race);
+      formData.append('gender', candidatoData.gender);
 
-      // Arquivo de foto
-      if (candidatoData.foto) {
-        formData.append('foto', candidatoData.foto);
+      // Arquivo de photo
+      if (candidatoData.photo) {
+        formData.append('photo', candidatoData.photo);
       }
 
       // Mudar isso dps
@@ -276,8 +296,8 @@ const CandidateInformation: React.FC = () => {
               <div className="flex items-center space-x-3">
                 <span className="text-sm text-slate-600 hidden md:inline-block">Olá, {userData.name || "Usuário"}</span>
                 <Avatar className="h-9 w-9 border border-slate-200">
-                  {candidatoData.fotoPreview ? (
-                    <AvatarImage src={candidatoData.fotoPreview} alt="Foto de perfil" />
+                  {candidatoData.photoPreview ? (
+                    <AvatarImage src={candidatoData.photoPreview} alt="photo de perfil" />
                   ) : (
                     <AvatarFallback className="bg-indigo-100 text-indigo-600">
                       {userData.name ? userData.name.charAt(0).toUpperCase() : "U"}
@@ -346,8 +366,8 @@ const CandidateInformation: React.FC = () => {
                 <div className="relative -mt-16 mb-4 flex justify-center">
                   <div className="relative">
                     <Avatar className="h-32 w-32 ring-4 ring-white shadow-md">
-                      {candidatoData.fotoPreview ? (
-                        <AvatarImage src={candidatoData.fotoPreview} alt="Foto de perfil" />
+                      {candidatoData.photoPreview ? (
+                        <AvatarImage src={candidatoData.photoPreview} alt="photo de perfil" />
                       ) : (
                         <AvatarFallback className="bg-indigo-100 text-indigo-800">
                           <User className="h-12 w-12" />
@@ -357,11 +377,11 @@ const CandidateInformation: React.FC = () => {
                     <Button
                       size="sm"
                       className="absolute bottom-0 right-0 rounded-full bg-indigo-600 hover:bg-indigo-700 h-10 w-10 p-0 shadow-md"
-                      onClick={() => document.getElementById('foto-upload')?.click()}
+                      onClick={() => document.getElementById('photo-upload')?.click()}
                     >
                       <Camera className="h-5 w-5" />
                       <input
-                        id="foto-upload"
+                        id="photo-upload"
                         type="file"
                         className="hidden"
                         accept="image/*"
@@ -483,16 +503,16 @@ const CandidateInformation: React.FC = () => {
                     <TabsContent value="pessoal" className="mt-0 space-y-6">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
-                          <Label htmlFor="email_sec" className="flex items-center text-slate-700">
+                          <Label htmlFor="secondary_email" className="flex items-center text-slate-700">
                             <Mail className="h-4 w-4 mr-2 text-indigo-500" />
                             Email Secundário
                           </Label>
                           <Input
-                            id="email_sec"
-                            name="email_sec"
+                            id="secondary_email"
+                            name="secondary_email"
                             type="email"
                             placeholder="email@exemplo.com"
-                            value={candidatoData.email_sec}
+                            value={candidatoData.secondary_email}
                             onChange={handleInputChange}
                             className="border-slate-200 focus:border-indigo-500 focus:ring-indigo-500"
                           />
@@ -514,30 +534,30 @@ const CandidateInformation: React.FC = () => {
                         </div>
 
                         <div className="space-y-2">
-                          <Label htmlFor="telefone" className="flex items-center text-slate-700">
+                          <Label htmlFor="phone" className="flex items-center text-slate-700">
                             <Phone className="h-4 w-4 mr-2 text-indigo-500" />
-                            Telefone
+                            phone
                           </Label>
                           <Input
-                            id="telefone"
-                            name="telefone"
+                            id="phone"
+                            name="phone"
                             placeholder="(00) 00000-0000"
-                            value={candidatoData.telefone}
+                            value={candidatoData.phone}
                             onChange={handleInputChange}
                             className="border-slate-200 focus:border-indigo-500 focus:ring-indigo-500"
                           />
                         </div>
 
                         <div className="space-y-2">
-                          <Label htmlFor="data_nasc" className="flex items-center text-slate-700">
+                          <Label htmlFor="birth_date" className="flex items-center text-slate-700">
                             <Calendar className="h-4 w-4 mr-2 text-indigo-500" />
                             Data de Nascimento
                           </Label>
                           <Input
-                            id="data_nasc"
-                            name="data_nasc"
+                            id="birth_date"
+                            name="birth_date"
                             type="date"
-                            value={candidatoData.data_nasc}
+                            value={candidatoData.birth_date}
                             onChange={handleInputChange}
                             className="border-slate-200 focus:border-indigo-500 focus:ring-indigo-500"
                           />
@@ -573,84 +593,89 @@ const CandidateInformation: React.FC = () => {
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
-                          <Label htmlFor="sexo" className="text-slate-700 font-medium">Sexo Biológico</Label>
+                          <Label htmlFor="sex" className="text-slate-700 font-medium">sex Biológico</Label>
                           <Select
-                            value={candidatoData.sexo}
-                            onValueChange={(value) => handleSelectChange(value, 'sexo')}
+                            value={candidatoData.sex}
+                            onValueChange={(value) => handleSelectChange(value, 'sex')}
                           >
-                            <SelectTrigger id="sexo" className="border-slate-200 focus:border-indigo-500 focus:ring-indigo-500">
+                            <SelectTrigger id="sex" className="border-slate-200 focus:border-indigo-500 focus:ring-indigo-500">
                               <SelectValue placeholder="Selecione uma opção" />
                             </SelectTrigger>
                             <SelectContent className="bg-white border border-slate-200">
-                              <SelectItem value="masculino">Masculino</SelectItem>
-                              <SelectItem value="feminino">Feminino</SelectItem>
-                              <SelectItem value="prefiro_nao_informar">Prefiro não informar</SelectItem>
+                              {sexUser.map((sex, index) => (
+                                <SelectItem key={index} value={sex.toLowerCase().replace(/\s+/g, '_')}>
+                                  {sex}
+                                </SelectItem>
+                              ))}
                             </SelectContent>
                           </Select>
                         </div>
 
                         <div className="space-y-2">
-                          <Label htmlFor="genero" className="text-slate-700 font-medium">Identidade de Gênero</Label>
+                          <Label htmlFor="gender" className="text-slate-700 font-medium">
+                            Identidade de Gênero
+                          </Label>
                           <Select
-                            value={candidatoData.genero}
-                            onValueChange={(value) => handleSelectChange(value, 'genero')}
+                            value={candidatoData.gender}
+                            onValueChange={(value) => handleSelectChange(value, 'gender')}
                           >
-                            <SelectTrigger id="genero" className="border-slate-200 focus:border-indigo-500 focus:ring-indigo-500">
+                            <SelectTrigger id="gender" className="border-slate-200 focus:border-indigo-500 focus:ring-indigo-500">
                               <SelectValue placeholder="Selecione uma opção" />
                             </SelectTrigger>
                             <SelectContent className="bg-white border border-slate-200">
-                              <SelectItem value="homem_cis">Homem Cisgênero</SelectItem>
-                              <SelectItem value="mulher_cis">Mulher Cisgênero</SelectItem>
-                              <SelectItem value="homem_trans">Homem Transgênero</SelectItem>
-                              <SelectItem value="mulher_trans">Mulher Transgênero</SelectItem>
-                              <SelectItem value="nao_binario">Não-Binário</SelectItem>
-                              <SelectItem value="outro">Outro</SelectItem>
-                              <SelectItem value="prefiro_nao_informar">Prefiro não informar</SelectItem>
+                              {gender.map((gen, index) => (
+                                <SelectItem key={index} value={gen}>
+                                  {gen}
+                                </SelectItem>
+                              ))}
                             </SelectContent>
                           </Select>
                         </div>
 
+
                         <div className="space-y-2">
-                          <Label htmlFor="orient_sexual" className="text-slate-700 font-medium">Orientação Sexual</Label>
+                          <Label htmlFor="sexual_orientation" className="text-slate-700 font-medium">
+                            Orientação Sexual
+                          </Label>
                           <Select
-                            value={candidatoData.orient_sexual}
-                            onValueChange={(value) => handleSelectChange(value, 'orient_sexual')}
+                            value={candidatoData.sexual_orientation}
+                            onValueChange={(value) => handleSelectChange(value, 'sexual_orientation')}
                           >
-                            <SelectTrigger id="orient_sexual" className="border-slate-200 focus:border-indigo-500 focus:ring-indigo-500">
+                            <SelectTrigger id="sexual_orientation" className="border-slate-200 focus:border-indigo-500 focus:ring-indigo-500">
                               <SelectValue placeholder="Selecione uma opção" />
                             </SelectTrigger>
                             <SelectContent className="bg-white border border-gray-200">
-                              <SelectItem value="heterossexual">Heterossexual</SelectItem>
-                              <SelectItem value="homossexual">Homossexual</SelectItem>
-                              <SelectItem value="bissexual">Bissexual</SelectItem>
-                              <SelectItem value="pansexual">Pansexual</SelectItem>
-                              <SelectItem value="assexual">Assexual</SelectItem>
-                              <SelectItem value="outro">Outro</SelectItem>
-                              <SelectItem value="prefiro_nao_informar">Prefiro não informar</SelectItem>
+                              {orientation.map((orient, index) => (
+                                <SelectItem key={index} value={orient}>
+                                  {orient}
+                                </SelectItem>
+                              ))}
                             </SelectContent>
                           </Select>
                         </div>
 
+
+
                         <div className="space-y-2">
-                          <Label htmlFor="cor" className="text-gray-700">Cor/Raça/Etnia</Label>
+                          <Label htmlFor="race" className="text-gray-700">Race/Raça/Etnia</Label>
                           <Select
-                            value={candidatoData.cor}
-                            onValueChange={(value) => handleSelectChange(value, 'cor')}
+                            value={candidatoData.race}
+                            onValueChange={(value) => handleSelectChange(value, 'race')}
                           >
-                            <SelectTrigger id="cor" className="border-gray-300 focus:border-purple-500 focus:ring-purple-500">
+                            <SelectTrigger id="race" className="border-gray-300 focus:border-purple-500 focus:ring-purple-500">
                               <SelectValue placeholder="Selecione uma opção" />
                             </SelectTrigger>
                             <SelectContent className="bg-white border border-gray-200">
-                              <SelectItem value="branco">Branco</SelectItem>
-                              <SelectItem value="preto">Preto</SelectItem>
-                              <SelectItem value="pardo">Pardo</SelectItem>
-                              <SelectItem value="amarelo">Amarelo</SelectItem>
-                              <SelectItem value="indigena">Indígena</SelectItem>
-                              <SelectItem value="outro">Outro</SelectItem>
-                              <SelectItem value="prefiro_nao_informar">Prefiro não informar</SelectItem>
+                              {color.map((cor, index) => (
+                                <SelectItem key={index} value={cor}>
+                                  {cor}
+                                </SelectItem>
+                              ))}
                             </SelectContent>
                           </Select>
                         </div>
+
+
                       </div>
                     </TabsContent>
 

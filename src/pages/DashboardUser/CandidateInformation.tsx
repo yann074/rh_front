@@ -119,16 +119,27 @@ const CandidateInformation: React.FC = () => {
 
   const fetchUserData = async () => {
     try {
-      // Passo 1: Obter o CSRF cookie (obrigatório para Laravel Sanctum)
-      await axios.get('http://127.0.0.1:8000/sanctum/csrf-cookie', {
-        withCredentials: true,
+
+      const userProfileResponse = await axios.get('http://127.0.0.1:8000/api/userprofile', {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
       });
-  
-      // Passo 2: Buscar dados do usuário autenticado
-      const response = await axios.get('http://127.0.0.1:8000/api/userprofile', {
-        withCredentials: true,
-      });
-  
+      
+      //SEMPRE GUARDAR NO LOCALSTORAGE, NAO APAGA ESSE COMENTARIO
+      //CONSEGUI PORRA
+    
+      console.log('Usuário autenticado:', userProfileResponse.data);
+      console.log('Token usado:', localStorage.getItem('token'));
+      
+      const user = userProfileResponse.data;
+
+        setUserData({
+          name: user.name,
+          email: user.email,
+          role: user.permission, // ou 'user.role', depende do seu backend
+        });
+
       // Passo 3: Buscar enums
       const sexUserResponse = await axios.get('http://127.0.0.1:8000/api/enums/sex-user');
   
@@ -138,14 +149,7 @@ const CandidateInformation: React.FC = () => {
       setGender(sexUserData.gender);
       setOrientation(sexUserData.orient);
       setColor(sexUserData.color);
-  
-      setUserData({
-        id: response.data.data.id,
-        email: response.data.data.email || '',
-        name: response.data.data.name || '',
-        role: response.data.data.permission || '',
-        created_at: response.data.data.created_at || '',
-      });
+
   
       setLoading(false);
     } catch (error) {

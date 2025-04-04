@@ -67,11 +67,7 @@ const LoginPage = () => {
         });
 
         // Armazena o token e redireciona
-        if (response.data.message === "User is admin") {
-          sessionStorage.setItem("token", response.data.data.token);
-        } else {
-          sessionStorage.setItem("token", response.data.data.token);
-        }
+        sessionStorage.setItem("token", response.data.data.token);
 
         navigate("/");
       })

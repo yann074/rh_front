@@ -97,6 +97,7 @@ const CandidateInformation: React.FC = () => {
   const token = localStorage.getItem('token') || sessionStorage.getItem('token');
 
   useEffect(() => {
+    
     // User autenticado
     if (!token) {
       Swal.fire({
@@ -111,44 +112,41 @@ const CandidateInformation: React.FC = () => {
         window.location.href = '/login';
       });
       return;
-    }
+    } 
 
     fetchUserData();
   }, []);
 
   const fetchUserData = async () => {
     try {
-      const response = await axios.get('http://127.0.0.1:8000/api/users', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+      // Passo 1: Obter o CSRF cookie (obrigatório para Laravel Sanctum)
+      await axios.get('http://127.0.0.1:8000/sanctum/csrf-cookie', {
+        withCredentials: true,
       });
-      //para retornar as opções de sexo
+  
+      // Passo 2: Buscar dados do usuário autenticado
+      const response = await axios.get('http://127.0.0.1:8000/api/userprofile', {
+        withCredentials: true,
+      });
+  
+      // Passo 3: Buscar enums
       const sexUserResponse = await axios.get('http://127.0.0.1:8000/api/enums/sex-user');
-
-
-      //tirar
-      console.log("Dados da API /enums/sex-user:", sexUserResponse.data);
+  
+      // Resto do seu código...
       const sexUserData = sexUserResponse.data.data;
-
       setSexUser(sexUserData.sexo);
       setGender(sexUserData.gender);
       setOrientation(sexUserData.orient);
       setColor(sexUserData.color);
-
-
+  
       setUserData({
-        id: response.data.data[2]?.id,
-        email: response.data.data[2]?.email || '',
-        name: response.data.data[2]?.name || '',
-        role: response.data.data[2]?.permission || '',
-        created_at: response.data.data[2]?.created_at || '',
+        id: response.data.data.id,
+        email: response.data.data.email || '',
+        name: response.data.data.name || '',
+        role: response.data.data.permission || '',
+        created_at: response.data.data.created_at || '',
       });
-
-
-      console.log(response.data)
-
-      // Removed checkExistingCandidatoData call
+  
       setLoading(false);
     } catch (error) {
       console.error('Erro ao buscar dados do usuário:', error);

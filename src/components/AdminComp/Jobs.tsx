@@ -52,16 +52,16 @@ import { Link, Outlet } from "react-router-dom";
 
 interface Vaga {
     id: number;
-    titulo: string;
-    descricao: string;
-    salario: string;
-    requisitos: string;
-    localizacao: string;
-    beneficios?: string;
-    benificios?: string;
+    title: string;
+    description: string;
+    salary: string;
+    requirements: string;
+    location: string;
+    benefits?: string;
     status: string;
-    tipo_trabalho: string;
-    formacao: string;
+    job_type: string;
+    education: string;
+    companies_id: string;
     created_at?: string;
     updated_at?: string;
 }
@@ -83,7 +83,7 @@ export default function JobsTable() {
 
     useEffect(() => {
         setLoading(true);
-        axios.get("http://127.0.0.1:8000/api/all_job")
+        axios.get("http://127.0.0.1:8000/api/opportunities")
             .then((response) => {
                 let vagasData: Vaga[] = [];
 
@@ -191,10 +191,10 @@ export default function JobsTable() {
 
     // Filtrar vagas
     const filteredVagas = vagas.filter(vaga => {
-        const matchesSearch = vaga.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            vaga.descricao.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesSearch = vaga.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            vaga.description.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesStatus = filterStatus === "all" || vaga.status.toLowerCase() === filterStatus.toLowerCase();
-        const matchesTipo = filterTipo === "all" || vaga.tipo_trabalho.toLowerCase() === filterTipo.toLowerCase();
+        const matchesTipo = filterTipo === "all" || vaga.job_type.toLowerCase() === filterTipo.toLowerCase();
         return matchesSearch && matchesStatus && matchesTipo;
     });
 
@@ -295,8 +295,8 @@ export default function JobsTable() {
                                                 <TableCell className="font-medium">{vaga.id}</TableCell>
                                                 <TableCell>
                                                     <div>
-                                                        <p className="font-medium">{vaga.titulo}</p>
-                                                        <p className="text-sm text-gray-500">{truncateText(vaga.descricao, 50)}</p>
+                                                        <p className="font-medium">{vaga.title}</p>
+                                                        <p className="text-sm text-gray-500">{truncateText(vaga.description, 50)}</p>
                                                     </div>
                                                 </TableCell>
                                                 <TableCell>
@@ -307,25 +307,25 @@ export default function JobsTable() {
                                                 <TableCell>
                                                     <div className="flex items-center gap-2">
                                                         <MapPin className="h-4 w-4 text-gray-400" />
-                                                        <span>{vaga.localizacao || "Não especificado"}</span>
+                                                        <span>{vaga.location || "Não especificado"}</span>
                                                     </div>
                                                 </TableCell>
                                                 <TableCell>
                                                     <div className="flex items-center gap-2">
                                                         <Briefcase className="h-4 w-4 text-blue-600" />
-                                                        <span>{vaga.tipo_trabalho || "Não especificado"}</span>
+                                                        <span>{vaga.job_type || "Não especificado"}</span>
                                                     </div>
                                                 </TableCell>
                                                 <TableCell>
                                                     <div className="flex items-center gap-2">
                                                         <GraduationCap className="h-4 w-4 text-amber-600" />
-                                                        <span>{vaga.formacao || "Não especificado"}</span>
+                                                        <span>{vaga.education || "Não especificado"}</span>
                                                     </div>
                                                 </TableCell>
                                                 <TableCell>
                                                     <div className="flex items-center gap-2">
                                                         <DollarSign className="h-4 w-4 text-green-600" />
-                                                        <span>{vaga.salario || "A combinar"}</span>
+                                                        <span>{vaga.salary || "A combinar"}</span>
                                                     </div>
                                                 </TableCell>
                                                 <TableCell>

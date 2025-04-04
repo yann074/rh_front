@@ -43,7 +43,8 @@ const JobCreationForm: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>("sobre");
   const [jobTypes, setJobTypes] = useState<string[]>([]);
-const [companies, setCompanies] = useState<Company[]>([]);
+  const [statusTypes, setStatusTypes] = useState<string[]>([]);
+  const [companies, setCompanies] = useState<Company[]>([]);
 
   const [formData, setFormData] = useState<FormData>({
     title: '',
@@ -82,11 +83,13 @@ const [companies, setCompanies] = useState<Company[]>([]);
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [jobTypeRes, companyRes] = await Promise.all([
+        const [jobTypeRes, statusRes, companyRes] = await Promise.all([
           axios.get('http://127.0.0.1:8000/api/enums/job-type'),
+          axios.get('http://127.0.0.1:8000/api/enums/status'),
           axios.get('http://127.0.0.1:8000/api/companies'),
         ]);
 
+        setStatusTypes(statusRes.data.data);
         setJobTypes(jobTypeRes.data.data);
         setCompanies(companyRes.data.data);
       } catch (error) {
@@ -363,18 +366,21 @@ const [companies, setCompanies] = useState<Company[]>([]);
                 <Label htmlFor="select-status">Status da vaga</Label>
                 <Select
                   value={formData.status}
-                  onValueChange={handleSelectChange('status')}
+                  onValueChange={handleSelectChange("status")}
                 >
                   <SelectTrigger id="select-status">
                     <SelectValue placeholder="Selecione o status da vaga" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="ativo">Ativa</SelectItem>
-                    <SelectItem value="rascunho">Rascunho</SelectItem>
-                    <SelectItem value="pausada">Pausada</SelectItem>
+                    {statusTypes.map((status) => (
+                      <SelectItem key={status} value={status.toLowerCase()}>
+                        {status.charAt(0).toUpperCase() + status.slice(1)}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
+
 
               <Alert className="mt-6">
                 <CheckCircle className="h-4 w-4" />

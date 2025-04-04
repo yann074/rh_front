@@ -8,15 +8,16 @@ import { ChevronLeft } from "lucide-react";
 
 interface Vaga {
     id: number;
-    titulo: string;
-    descricao: string;
-    salario: string;
-    requisitos: string;
-    localizacao: string;
-    beneficios: string; 
+    title: string;
+    description: string;
+    salary: string;
+    requirements: string;
+    location: string;
+    benefits: string; 
     status: string;
-    tipo_trabalho: string;
-    formacao: string;
+    job_type: string;
+    education: string;
+    companies_id?: string;
     created_at?: string;
     updated_at?: string;
 }
@@ -34,7 +35,7 @@ export default function JobsSpecific() {
             setError(null);
             
             try {
-                const endpoint = `http://127.0.0.1:8000/api/all_specific/${id}`;
+                const endpoint = `http://127.0.0.1:8000/api/opportunities/${id}`;
                 console.log(`Buscando vaga: ${endpoint}`);
                 
                 const response = await axios.get(endpoint);
@@ -145,21 +146,21 @@ export default function JobsSpecific() {
                             <div className="bg-white rounded-3xl shadow-md overflow-hidden">
                                 <div className="bg-[#723E98] p-6">
                                     <h1 className="text-3xl font-semibold text-center text-white uppercase">
-                                        {data.titulo}
+                                        {data.title}
                                     </h1>
                                 </div>
                                 
                                 <div className="p-8">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                                         <div className="bg-purple-50 p-4 rounded-xl">
-                                            <p className="text-gray-800 mb-2"><strong>Salário:</strong> R${data.salario}</p>
-                                            <p className="text-gray-800 mb-2"><strong>Localização:</strong> {data.localizacao}</p>
-                                            <p className="text-gray-800 mb-2"><strong>Tipo de Trabalho:</strong> {data.tipo_trabalho}</p>
+                                            <p className="text-gray-800 mb-2"><strong>Salário:</strong> R${data.salary}</p>
+                                            <p className="text-gray-800 mb-2"><strong>Localização:</strong> {data.location}</p>
+                                            <p className="text-gray-800 mb-2"><strong>Tipo de Trabalho:</strong> {data.job_type}</p>
                                             <p className="text-gray-800"><strong>Status:</strong> {data.status}</p>
                                         </div>
                                         
                                         <div className="bg-purple-50 p-4 rounded-xl">
-                                            <p className="text-gray-800 mb-2"><strong>Formação Necessária:</strong> {data.formacao}</p>
+                                            <p className="text-gray-800 mb-2"><strong>Formação Necessária:</strong> {data.education}</p>
                                             <p className="text-gray-800 mb-2"><strong>Data de Publicação:</strong> {data.created_at ? formatDate(data.created_at) : '-'}</p>
                                         </div>
                                     </div>
@@ -167,21 +168,21 @@ export default function JobsSpecific() {
                                     <div className="mb-6">
                                         <h2 className="text-xl font-semibold mb-2 text-[#723E98]">Descrição</h2>
                                         <div className="bg-gray-50 p-4 rounded-xl">
-                                            <p className="text-gray-800">{data.descricao}</p>
+                                            <p className="text-gray-800">{data.description}</p>
                                         </div>
                                     </div>
                                     
                                     <div className="mb-6">
-                                        <h2 className="text-xl font-semibold mb-2 text-[#723E98]">Requisitos</h2>
+                                        <h2 className="text-xl font-semibold mb-2 text-[#723E98]">requirements</h2>
                                         <div className="bg-gray-50 p-4 rounded-xl">
-                                            <p className="text-gray-800">{data.requisitos}</p>
+                                            <p className="text-gray-800">{data.requirements}</p>
                                         </div>
                                     </div>
                                     
                                     <div className="mb-8">
                                         <h2 className="text-xl font-semibold mb-2 text-[#723E98]">Benefícios</h2>
                                         <div className="bg-gray-50 p-4 rounded-xl">
-                                            <p className="text-gray-800">{data.beneficios}</p>
+                                            <p className="text-gray-800">{data.benefits}</p>
                                         </div>
                                     </div>
                                     

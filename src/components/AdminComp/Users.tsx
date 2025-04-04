@@ -65,10 +65,10 @@ export default function UserTable() {
 
   useEffect(() => {
     setLoading(true);
-    axios.get("http://127.0.0.1:8000/api/all")
+    axios.get("http://127.0.0.1:8000/api/users")
       .then((response) => {
         
-        const enrichedUsers = response.data.data.map((user: User) => ({
+        const enrichedUsers = response.data.data.Usuarios.map((user: User) => ({
           ...user,
           lastActive: getRandomDate(),
           status: getRandomStatus(),

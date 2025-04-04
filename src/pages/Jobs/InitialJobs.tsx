@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -22,9 +23,14 @@ interface Vaga {
   status: string;
   job_type: string;
   education: string;
-  empresa?: string; // Adicionando campo para empresa
+  companies_id?: string; // Adicionando campo para companies_id empresas
   created_at?: string;
   updated_at?: string;
+}
+
+interface Company {
+  id: number;
+  name: string;
 }
 
 interface ApiResponse {
@@ -41,6 +47,7 @@ const InitialJobs: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [activeFilter, setActiveFilter] = useState<string>('all');
+  const [companies, setCompanies] = useState<Company[]>([]);
 
   useEffect(() => {
     fetchVagas();
@@ -57,15 +64,21 @@ const InitialJobs: React.FC = () => {
     setLoading(true);
     try {
       const response = await fetch('http://127.0.0.1:8000/api/opportunities');
+
+      const [companyRes] = await Promise.all([
+        axios.get('http://127.0.0.1:8000/api/companies'),
+      ])
+      setCompanies(companyRes.data.data);
+
       if (!response.ok) {
         throw new Error('Falha ao buscar vagas');
       }
-      
+
       const responseData: ApiResponse = await response.json();
-      
+
       let vagasData: Vaga[] = [];
-      
-      if (Array.isArray(responseData)) {      
+
+      if (Array.isArray(responseData)) {
         vagasData = responseData;
       } else if (responseData.data && Array.isArray(responseData.data)) {
         vagasData = responseData.data;
@@ -75,13 +88,13 @@ const InitialJobs: React.FC = () => {
         console.error('Unexpected API response structure:', responseData);
         throw new Error('Formato de resposta da API inesperado');
       }
-      
-      
+
+
       const vagasWithCompany = vagasData.map(vaga => ({
         ...vaga,
-        empresa: vaga.empresa || "Mersan" // Use a empresa existente ou "Mersan" como padrão
+        companies_id: vaga.companies_id || "Mersan" // Use a companies_id existente ou "Mersan" como padrão
       }));
-      
+
       setVagas(vagasWithCompany);
       setFilteredVagas(vagasWithCompany);
     } catch (err) {
@@ -95,22 +108,22 @@ const InitialJobs: React.FC = () => {
 
   const filterJobs = (filter: string, term: string = searchTerm) => {
     let result = [...vagas];
-    
+
     // Apply text search if provided
     if (term.trim()) {
-      result = result.filter(vaga => 
+      result = result.filter(vaga =>
         vaga.title.toLowerCase().includes(term.toLowerCase()) ||
         vaga.description.toLowerCase().includes(term.toLowerCase()) ||
         vaga.location.toLowerCase().includes(term.toLowerCase()) ||
-        (vaga.empresa && vaga.empresa.toLowerCase().includes(term.toLowerCase()))
+        (vaga.companies_id && vaga.companies_id.toLowerCase().includes(term.toLowerCase()))
       );
     }
-    
+
     // Apply category filter
     if (filter !== 'all') {
       result = result.filter(vaga => vaga.job_type.toLowerCase() === filter.toLowerCase());
     }
-    
+
     setFilteredVagas(result);
   };
 
@@ -120,7 +133,7 @@ const InitialJobs: React.FC = () => {
   };
 
   const getWorkTypeColor = (type: string) => {
-    switch(type?.toLowerCase()) {
+    switch (type?.toLowerCase()) {
       case 'remoto':
         return 'bg-emerald-100 text-emerald-800';
       case 'presencial':
@@ -134,7 +147,7 @@ const InitialJobs: React.FC = () => {
   };
 
   const getJobStatusColor = (status: string) => {
-    switch(status?.toLowerCase()) {
+    switch (status?.toLowerCase()) {
       case 'ativo':
         return 'bg-green-100 text-green-800';
       case 'urgente':
@@ -151,7 +164,7 @@ const InitialJobs: React.FC = () => {
       <Header />
 
       {/* Hero Section with Background Image */}
-      <div 
+      <div
         className="text-white py-16 relative"
         style={{
           backgroundImage: `url(${BackgroundImage})`,
@@ -161,17 +174,17 @@ const InitialJobs: React.FC = () => {
       >
         {/* Overlay to ensure text readability */}
         <div className="absolute inset-0 bg-black bg-opacity-50"></div>
-        
+
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-4xl font-bold mb-6">Encontre a Carreira Ideal para Você</h1>
             <p className="text-xl mb-8">Conectando profissionais talentosos com as melhores oportunidades do mercado</p>
-            
+
             <div className="relative max-w-2xl mx-auto">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
               <Input
                 type="text"
-                placeholder="Busque por cargo, empresa ou localização..."
+                placeholder="Busque por cargo, companies_id ou localização..."
                 className="pl-10 pr-4 py-6 rounded-full bg-white text-gray-800 w-full focus:ring-2 focus:ring-purple-500"
                 value={searchTerm}
                 onChange={handleSearch}
@@ -200,7 +213,7 @@ const InitialJobs: React.FC = () => {
                 </Button>
               </div>
             </div>
-            
+
             <div className="bg-white p-2 rounded-lg shadow-sm mb-6">
               <TabsList className="w-full grid grid-cols-4">
                 <TabsTrigger value="all" className="data-[state=active]:bg-purple-100 data-[state=active]:text-purple-800">
@@ -247,8 +260,8 @@ const InitialJobs: React.FC = () => {
         ) : error ? (
           <div className="text-center py-16 bg-white rounded-lg shadow-sm">
             <div className="text-red-500 mb-4 text-lg">Erro: {error}</div>
-            <Button 
-              onClick={fetchVagas} 
+            <Button
+              onClick={fetchVagas}
               disabled={isLoading}
               className="bg-purple-700 hover:bg-purple-800 text-white"
             >
@@ -271,11 +284,11 @@ const InitialJobs: React.FC = () => {
               <h3 className="mt-4 text-lg font-medium text-gray-900">Nenhuma vaga encontrada</h3>
               <p className="mt-2 text-gray-500">Não encontramos vagas com os filtros selecionados.</p>
               <div className="mt-6">
-                <Button 
+                <Button
                   onClick={() => {
                     setSearchTerm('');
                     setActiveFilter('all');
-                  }} 
+                  }}
                   className="bg-purple-700 hover:bg-purple-800 text-white"
                 >
                   Limpar Filtros
@@ -290,58 +303,63 @@ const InitialJobs: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredVagas.map((vaga) => (
-                <Card key={vaga.id} className="overflow-hidden border-0 shadow-md transition-all duration-300 hover:shadow-xl bg-white hover:translate-y-[-5px]">
-                  <CardHeader className="pb-4 border-b">
-                    <div className="flex justify-between items-start mb-2">
-                      <CardTitle className="text-xl font-bold">{vaga.title}</CardTitle>
-                      <Badge className={getJobStatusColor(vaga.status)}>
-                        {vaga.status}
-                      </Badge>
-                    </div>
-                    <CardDescription className="flex items-center gap-1">
-                      <Building size={14} />
-                      <span>{vaga.empresa}</span>
-                    </CardDescription>
-                  </CardHeader>
-                  
-                  <CardContent className="pt-4">
-                    <p className="text-gray-600 mb-4 line-clamp-3 h-[4.5rem]">{vaga.description}</p>
-                    
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      <Badge variant="outline" className="flex items-center gap-1">
-                        <MapPin size={14} />
-                        {vaga.location || 'Remoto'}
-                      </Badge>
-                      
-                      <Badge variant="outline" className={`flex items-center gap-1 ${getWorkTypeColor(vaga.job_type)}`}>
-                        <Briefcase size={14} />
-                        {vaga.job_type || 'Integral'}
-                      </Badge>
-                      
-                      <Badge variant="outline" className="flex items-center gap-1">
-                        <Clock size={14} />
-                        Integral
-                      </Badge>
-                    </div>
-                    
-                    <div className="mt-2 flex items-center text-sm text-gray-500">
-                      <Calendar size={14} className="mr-1" />
-                      <span>Publicada há 2 dias</span>
-                    </div>
-                  </CardContent>
-                  
-                  <CardFooter className="pt-4 border-t">
-                    <Button 
-                      className="w-full bg-purple-700 hover:bg-purple-800 text-white transition-all duration-300 rounded-lg flex items-center justify-center gap-2"
-                    >
-                      <Link to={`/jobs/${vaga.id}`} className="w-full h-full flex items-center justify-center"> 
-                        Ver Detalhes e Candidatar-se
-                      </Link>
-                    </Button>
-                  </CardFooter>
-                </Card>
-              ))}
+              {filteredVagas.map((vaga) => {
+                const company = companies.find((c) => c.id === Number(vaga.companies_id));
+
+                return (
+                  <Card key={vaga.id} className="overflow-hidden border-0 shadow-md transition-all duration-300 hover:shadow-xl bg-white hover:translate-y-[-5px]">
+                    <CardHeader className="pb-4 border-b">
+                      <div className="flex justify-between items-start mb-2">
+                        <CardTitle className="text-xl font-bold">{vaga.title}</CardTitle>
+                        <Badge className={getJobStatusColor(vaga.status)}>
+                          {vaga.status}
+                        </Badge>
+                      </div>
+                      <CardDescription className="flex items-center gap-1">
+                        <Building size={14} />
+                        <span>{company ? company.name : "Empresa não informada"}</span>
+                      </CardDescription>
+                    </CardHeader>
+
+                    <CardContent className="pt-4">
+                      <p className="text-gray-600 mb-4 line-clamp-3 h-[4.5rem]">{vaga.description}</p>
+
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        <Badge variant="outline" className="flex items-center gap-1">
+                          <MapPin size={14} />
+                          {vaga.location || 'Remoto'}
+                        </Badge>
+
+                        <Badge variant="outline" className={`flex items-center gap-1 ${getWorkTypeColor(vaga.job_type)}`}>
+                          <Briefcase size={14} />
+                          {vaga.job_type || 'Integral'}
+                        </Badge>
+
+                        <Badge variant="outline" className="flex items-center gap-1">
+                          <Clock size={14} />
+                          Integral
+                        </Badge>
+                      </div>
+
+                      <div className="mt-2 flex items-center text-sm text-gray-500">
+                        <Calendar size={14} className="mr-1" />
+                        <span>Publicada há 2 dias</span>
+                      </div>
+                    </CardContent>
+
+                    <CardFooter className="pt-4 border-t">
+                      <Button
+                        className="w-full bg-purple-700 hover:bg-purple-800 text-white transition-all duration-300 rounded-lg flex items-center justify-center gap-2"
+                      >
+                        <Link to={`/opportunities/${vaga.id}`} className="w-full h-full flex items-center justify-center">
+                          Ver Detalhes e Candidatar-se
+                        </Link>
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                );
+              })}
+
             </div>
           </>
         )}
@@ -353,12 +371,12 @@ const InitialJobs: React.FC = () => {
           <div className="max-w-xl mx-auto text-center">
             <h2 className="text-2xl font-bold mb-4">Receba Novas Oportunidades</h2>
             <p className="text-gray-600 mb-6">Cadastre-se para receber as melhores vagas da sua área diretamente no seu email.</p>
-            
+
             <div className="flex flex-col sm:flex-row gap-3">
-              <Input 
-                type="email" 
-                placeholder="Seu melhor email" 
-                className="flex-grow py-6 rounded-lg" 
+              <Input
+                type="email"
+                placeholder="Seu melhor email"
+                className="flex-grow py-6 rounded-lg"
               />
               <Button className="bg-purple-700 hover:bg-purple-800 text-white py-6 rounded-lg">
                 Inscrever-se

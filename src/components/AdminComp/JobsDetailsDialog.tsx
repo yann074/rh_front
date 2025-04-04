@@ -38,16 +38,16 @@ import {
 
 interface Vaga {
   id: number;
-  titulo: string;
-  descricao: string;
-  salario: string;
-  requisitos: string;
-  localizacao: string;
-  beneficios?: string;
-  benificios?: string;
+  title: string;
+  description: string;
+  salary: string;
+  requirements: string;
+  location: string;
+  benefits?: string;
   status: string;
-  tipo_trabalho: string;
-  formacao: string;
+  job_type: string;
+  education: string;
+  companies_id: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -81,8 +81,8 @@ export function JobDetailsDialog({
     }
   };
 
-  const getBeneficios = (vaga: Vaga) => {
-    return vaga.beneficios || vaga.benificios || "Não especificado";
+  const getbenefits = (vaga: Vaga) => {
+    return vaga.benefits || vaga.benefits || "Não especificado";
   };
 
   const getStatusColor = (status: string) => {
@@ -153,15 +153,15 @@ export function JobDetailsDialog({
               <div className="flex justify-between items-start">
                 <div>
                   <DialogTitle className="text-2xl font-bold text-gray-900">
-                    {selectedVaga.titulo}
+                    {selectedVaga.title}
                   </DialogTitle>
                   <div className="flex mt-2 gap-2 items-center">
                     <Badge className={`${getStatusColor(selectedVaga.status)} px-3 py-1`}>
                       {selectedVaga.status}
                     </Badge>
                     <Badge className="bg-gray-100 text-gray-800 px-3 py-1 flex items-center">
-                      {getTipoTrabalhoIcon(selectedVaga.tipo_trabalho)}
-                      <span className="ml-1">{selectedVaga.tipo_trabalho}</span>
+                      {getTipoTrabalhoIcon(selectedVaga.job_type)}
+                      <span className="ml-1">{selectedVaga.job_type}</span>
                     </Badge>
                     <p className="text-sm text-gray-500 flex items-center">
                       <Calendar className="h-4 w-4 inline mr-1" /> 
@@ -175,8 +175,8 @@ export function JobDetailsDialog({
             <Tabs defaultValue="detalhes" className="px-6">
               <TabsList className="mb-4 w-full justify-start">
                 <TabsTrigger value="detalhes">Detalhes</TabsTrigger>
-                <TabsTrigger value="requisitos">Requisitos</TabsTrigger>
-                <TabsTrigger value="beneficios">Benefícios</TabsTrigger>
+                <TabsTrigger value="requirements">requirements</TabsTrigger>
+                <TabsTrigger value="benefits">Benefícios</TabsTrigger>
               </TabsList>
               
               <TabsContent value="detalhes" className="mt-0">
@@ -189,7 +189,7 @@ export function JobDetailsDialog({
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-gray-700 whitespace-pre-line">{selectedVaga.descricao}</p>
+                      <p className="text-gray-700 whitespace-pre-line">{selectedVaga.description}</p>
                     </CardContent>
                   </Card>
                   
@@ -202,7 +202,7 @@ export function JobDetailsDialog({
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <p className="text-gray-700 font-medium">{selectedVaga.salario || "A combinar"}</p>
+                        <p className="text-gray-700 font-medium">{selectedVaga.salary || "A combinar"}</p>
                       </CardContent>
                     </Card>
                     
@@ -214,7 +214,7 @@ export function JobDetailsDialog({
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <p className="text-gray-700">{selectedVaga.localizacao || "Não especificado"}</p>
+                        <p className="text-gray-700">{selectedVaga.location || "Não especificado"}</p>
                       </CardContent>
                     </Card>
                     
@@ -226,7 +226,7 @@ export function JobDetailsDialog({
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <p className="text-gray-700">{selectedVaga.formacao || "Não especificado"}</p>
+                        <p className="text-gray-700">{selectedVaga.education || "Não especificado"}</p>
                       </CardContent>
                     </Card>
                     
@@ -245,12 +245,12 @@ export function JobDetailsDialog({
                 </div>
               </TabsContent>
               
-              <TabsContent value="requisitos" className="mt-0">
+              <TabsContent value="requirements" className="mt-0">
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center">
                       <BadgeCheck className="mr-2 h-5 w-5 text-amber-600" />
-                      Requisitos para a Vaga
+                      requirements para a Vaga
                     </CardTitle>
                     <CardDescription>
                       Habilidades e qualificações necessárias para esta posição
@@ -258,13 +258,13 @@ export function JobDetailsDialog({
                   </CardHeader>
                   <CardContent>
                     <div className="whitespace-pre-line text-gray-700">
-                      {selectedVaga.requisitos}
+                      {selectedVaga.requirements}
                     </div>
                   </CardContent>
                 </Card>
               </TabsContent>
               
-              <TabsContent value="beneficios" className="mt-0">
+              <TabsContent value="benefits" className="mt-0">
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center">
@@ -277,7 +277,7 @@ export function JobDetailsDialog({
                   </CardHeader>
                   <CardContent>
                     <div className="whitespace-pre-line text-gray-700">
-                      {getBeneficios(selectedVaga)}
+                      {getbenefits(selectedVaga)}
                     </div>
                   </CardContent>
                 </Card>

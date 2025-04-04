@@ -1,4 +1,4 @@
-import React, { useState, FormEvent, ChangeEvent } from 'react';
+import React, { useState, FormEvent, ChangeEvent, useEffect } from 'react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
@@ -13,54 +13,64 @@ import { AlertCircle, CheckCircle, InfoIcon } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 // Constantes para limites de caracteres
-const MAX_REQUISITOS_LENGTH = 255; // Ajuste este valor conforme seu banco de dados
-const MAX_DESCRICAO_LENGTH = 500; // Ajuste este valor conforme seu banco de dados
-const MAX_BENEFICIOS_LENGTH = 500; // Ajuste este valor conforme seu banco de dados
+const MAX_REQUIREMENTS_LENGTH = 255; // Ajuste este valor conforme seu banco de dados
+const MAX_DESCRIPTION_LENGTH = 500; // Ajuste este valor conforme seu banco de dados
+const MAX_BENEFITS_LENGTH = 500; // Ajuste este valor conforme seu banco de dados
 
-interface FormData {
-  titulo: string;
-  descricao: string;
-  salario: string;
-  requisitos: string;
-  localizacao: string;
-  beneficios: string;
-  status: 'ativo' | 'rascunho' | 'pausada';
-  tipo_trabalho: 'presencial' | 'hibrido' | 'remoto';
-  formacao: string;
+interface Company {
+  id: number;
+  name: string;
 }
 
-type TabType = 'sobre' | 'requisitos' | 'beneficios' | 'configuracoes';
+interface FormData {
+  title: string;
+  description: string;
+  salary: string;
+  requirements: string;
+  location: string;
+  benefits: string;
+  status: 'ativo' | 'rascunho' | 'pausada';
+  job_type: 'Presencial' | 'Remoto' | 'Hibrido';
+  education: string,
+  companies_id: string
+}
+
+type TabType = 'sobre' | 'requirements' | 'benefits' | 'configuracoes';
 
 const JobCreationForm: React.FC = () => {
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>("sobre");
+  const [jobTypes, setJobTypes] = useState<string[]>([]);
+const [companies, setCompanies] = useState<Company[]>([]);
+
   const [formData, setFormData] = useState<FormData>({
-    titulo: '',
-    descricao: '',
-    salario: '',
-    requisitos: '',
-    localizacao: '',
-    beneficios: '',
+    title: '',
+    description: '',
+    salary: '',
+    requirements: '',
+    location: '',
+    benefits: '',
     status: 'ativo',
-    tipo_trabalho: 'presencial',
-    formacao: ''
+    job_type: 'Presencial',
+    education: '',
+    companies_id: ''
   });
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     let processedValue = value;
-    
+
     // Limitar tamanho dos campos de texto
-    if (name === 'requisitos' && value.length > MAX_REQUISITOS_LENGTH) {
-      processedValue = value.substring(0, MAX_REQUISITOS_LENGTH);
-    } else if (name === 'descricao' && value.length > MAX_DESCRICAO_LENGTH) {
-      processedValue = value.substring(0, MAX_DESCRICAO_LENGTH);
-    } else if (name === 'beneficios' && value.length > MAX_BENEFICIOS_LENGTH) {
-      processedValue = value.substring(0, MAX_BENEFICIOS_LENGTH);
+    if (name === 'requirements' && value.length > MAX_REQUIREMENTS_LENGTH) {
+      processedValue = value.substring(0, MAX_REQUIREMENTS_LENGTH);
+    } else if (name === 'description' && value.length > MAX_DESCRIPTION_LENGTH) {
+      processedValue = value.substring(0, MAX_DESCRIPTION_LENGTH);
+    } else if (name === 'benefits' && value.length > MAX_BENEFITS_LENGTH) {
+      processedValue = value.substring(0, MAX_BENEFITS_LENGTH);
     }
-    
+
     setFormData(prev => ({ ...prev, [name]: processedValue }));
   };
 
@@ -68,18 +78,39 @@ const JobCreationForm: React.FC = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  //buscar enums
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [jobTypeRes, companyRes] = await Promise.all([
+          axios.get('http://127.0.0.1:8000/api/enums/job-type'),
+          axios.get('http://127.0.0.1:8000/api/companies'),
+        ]);
+
+        setJobTypes(jobTypeRes.data.data);
+        setCompanies(companyRes.data.data);
+      } catch (error) {
+        console.error('Erro ao carregar enums e empresas:', error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     setError(null);
 
+    console.log("Enviando formData:", formData);
     try {
-      await axios.post('http://127.0.0.1:8000/api/new_job', formData, {
+      await axios.post('http://127.0.0.1:8000/api/opportunities', formData, {
         headers: {
           'Content-Type': 'application/json',
         }
       });
-      
+
       // Exibe o SweetAlert2 de sucesso
       Swal.fire({
         title: 'Vaga criada com sucesso!',
@@ -92,25 +123,26 @@ const JobCreationForm: React.FC = () => {
         // Navega para a página anterior após fechar o alert
         navigate(-1);
       });
-      
+
       // Reset form
       setFormData({
-        titulo: '',
-        descricao: '',
-        salario: '',
-        requisitos: '',
-        localizacao: '',
-        beneficios: '',
+        title: '',
+        description: '',
+        salary: '',
+        requirements: '',
+        location: '',
+        benefits: '',
         status: 'ativo',
-        tipo_trabalho: 'presencial',
-        formacao: ''
+        job_type: 'Presencial',
+        education: '',
+        companies_id: ''
       });
       setActiveTab("sobre");
-      
+
     } catch (err: any) {
       const errorMessage = err.response?.data?.message || err.message || 'Ocorreu um erro desconhecido';
       setError(errorMessage);
-      
+
       // Exibe o SweetAlert2 de erro
       Swal.fire({
         title: 'Erro ao criar vaga',
@@ -124,7 +156,7 @@ const JobCreationForm: React.FC = () => {
   };
 
   const nextTab = () => {
-    const tabs: TabType[] = ["sobre", "requisitos", "beneficios", "configuracoes"];
+    const tabs: TabType[] = ["sobre", "requirements", "benefits", "configuracoes"];
     const currentIndex = tabs.indexOf(activeTab);
     if (currentIndex < tabs.length - 1) {
       setActiveTab(tabs[currentIndex + 1]);
@@ -132,7 +164,7 @@ const JobCreationForm: React.FC = () => {
   };
 
   const prevTab = () => {
-    const tabs: TabType[] = ["sobre", "requisitos", "beneficios", "configuracoes"];
+    const tabs: TabType[] = ["sobre", "requirements", "benefits", "configuracoes"];
     const currentIndex = tabs.indexOf(activeTab);
     if (currentIndex > 0) {
       setActiveTab(tabs[currentIndex - 1]);
@@ -160,51 +192,64 @@ const JobCreationForm: React.FC = () => {
           <Tabs value={activeTab} onValueChange={(value: string) => setActiveTab(value as TabType)} className="w-full">
             <TabsList className="grid grid-cols-4 mb-8">
               <TabsTrigger value="sobre">1. Sobre a vaga</TabsTrigger>
-              <TabsTrigger value="requisitos">2. Requisitos</TabsTrigger>
-              <TabsTrigger value="beneficios">3. Benefícios</TabsTrigger>
+              <TabsTrigger value="requirements">2. requirements</TabsTrigger>
+              <TabsTrigger value="benefits">3. Benefícios</TabsTrigger>
               <TabsTrigger value="configuracoes">4. Configurações</TabsTrigger>
             </TabsList>
 
             <TabsContent value="sobre" className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="input-titulo">Título da vaga *</Label>
+                <Label htmlFor="input-title">Título da vaga *</Label>
                 <Input
-                  id="input-titulo"
-                  name="titulo"
+                  id="input-title"
+                  name="title"
                   placeholder="Ex: Analista de Recursos Humanos"
-                  value={formData.titulo}
+                  value={formData.title}
                   onChange={handleChange}
                   required
                   maxLength={100}
                 />
               </div>
 
+              <label>Empresa</label>
+              <select
+                value={formData.companies_id}
+                onChange={(e) => setFormData({ ...formData, companies_id: e.target.value })}
+              >
+                <option value="">Selecione a empresa</option>
+                {companies.map((company) => (
+                  <option key={company.id} value={company.id}>
+                    {company.name}
+                  </option>
+                ))}
+              </select>
+
               <div className="space-y-2">
-                <Label htmlFor="input-descricao">
-                  Descrição da vaga * 
+                <Label htmlFor="input-description">
+                  Descrição da vaga *
                   <span className="text-sm text-muted-foreground ml-2">
-                    ({formData.descricao.length}/{MAX_DESCRICAO_LENGTH})
+                    ({formData.description.length}/{MAX_DESCRIPTION_LENGTH})
                   </span>
                 </Label>
                 <Textarea
-                  id="input-descricao"
-                  name="descricao"
+                  id="input-description"
+                  name="description"
                   placeholder="Descreva detalhadamente as responsabilidades e atividades do cargo..."
-                  value={formData.descricao}
+                  value={formData.description}
                   onChange={handleChange}
                   rows={6}
                   required
-                  maxLength={MAX_DESCRICAO_LENGTH}
+                  maxLength={MAX_DESCRIPTION_LENGTH}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="input-localizacao">Localização *</Label>
+                <Label htmlFor="input-location">Localização *</Label>
                 <Input
-                  id="input-localizacao"
-                  name="localizacao"
+                  id="input-location"
+                  name="location"
                   placeholder="Ex: São Paulo, SP"
-                  value={formData.localizacao}
+                  value={formData.location}
                   onChange={handleChange}
                   required
                   maxLength={100}
@@ -213,68 +258,71 @@ const JobCreationForm: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="input-salario">Salário</Label>
+                  <Label htmlFor="input-salary">Salário</Label>
                   <Input
-                    id="input-salario"
-                    name="salario"
+                    id="input-salary"
+                    name="salary"
                     placeholder="Ex: R$ 4.000,00"
-                    value={formData.salario}
+                    value={formData.salary}
                     onChange={handleChange}
                     maxLength={20}
                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="select-tipo-trabalho">Tipo de trabalho</Label>
-                  <Select 
-                    value={formData.tipo_trabalho} 
-                    onValueChange={handleSelectChange('tipo_trabalho')}
+                  <Select
+                    value={formData.job_type}
+                    onValueChange={handleSelectChange('job_type')}
                   >
                     <SelectTrigger id="select-tipo-trabalho">
                       <SelectValue placeholder="Selecione o tipo de trabalho" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="presencial">Presencial</SelectItem>
-                      <SelectItem value="hibrido">Híbrido</SelectItem>
-                      <SelectItem value="remoto">Remoto</SelectItem>
+                      {jobTypes.map((type) => (
+                        <SelectItem key={type} value={type}>
+                          {type}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
+
               </div>
             </TabsContent>
 
-            <TabsContent value="requisitos" className="space-y-4">
+            <TabsContent value="requirements" className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="input-requisitos">
-                  Requisitos da vaga * 
+                <Label htmlFor="input-requirements">
+                  requirements da vaga *
                   <span className="text-sm text-muted-foreground ml-2">
-                    ({formData.requisitos.length}/{MAX_REQUISITOS_LENGTH})
+                    ({formData.requirements.length}/{MAX_REQUIREMENTS_LENGTH})
                   </span>
                 </Label>
                 <Alert className="mb-2">
                   <InfoIcon className="h-4 w-4" />
                   <AlertDescription>
-                    Por favor, seja conciso. Este campo tem um limite de {MAX_REQUISITOS_LENGTH} caracteres.
+                    Por favor, seja conciso. Este campo tem um limite de {MAX_REQUIREMENTS_LENGTH} caracteres.
                   </AlertDescription>
                 </Alert>
                 <Textarea
-                  id="input-requisitos"
-                  name="requisitos"
-                  placeholder="Liste os requisitos e habilidades necessárias para o cargo..."
-                  value={formData.requisitos}
+                  id="input-requirements"
+                  name="requirements"
+                  placeholder="Liste os requirements e habilidades necessárias para o cargo..."
+                  value={formData.requirements}
                   onChange={handleChange}
                   rows={6}
                   required
-                  maxLength={MAX_REQUISITOS_LENGTH}
+                  maxLength={MAX_REQUIREMENTS_LENGTH}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="select-formacao">Formação acadêmica</Label>
-                <Select 
-                  value={formData.formacao} 
-                  onValueChange={handleSelectChange('formacao')}
+                <Label htmlFor="select-education">Formação acadêmica</Label>
+                <Select
+                  value={formData.education}
+                  onValueChange={handleSelectChange('education')}
                 >
-                  <SelectTrigger id="select-formacao">
+                  <SelectTrigger id="select-education">
                     <SelectValue placeholder="Selecione o nível de formação" />
                   </SelectTrigger>
                   <SelectContent>
@@ -289,23 +337,23 @@ const JobCreationForm: React.FC = () => {
               </div>
             </TabsContent>
 
-            <TabsContent value="beneficios" className="space-y-4">
+            <TabsContent value="benefits" className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="input-beneficios">
+                <Label htmlFor="input-benefits">
                   Benefícios oferecidos *
                   <span className="text-sm text-muted-foreground ml-2">
-                    ({formData.beneficios.length}/{MAX_BENEFICIOS_LENGTH})
+                    ({formData.benefits.length}/{MAX_BENEFITS_LENGTH})
                   </span>
                 </Label>
                 <Textarea
-                  id="input-beneficios"
-                  name="beneficios"
+                  id="input-benefits"
+                  name="benefits"
                   placeholder="Liste os benefícios oferecidos para esta vaga..."
-                  value={formData.beneficios}
+                  value={formData.benefits}
                   onChange={handleChange}
                   rows={6}
                   required
-                  maxLength={MAX_BENEFICIOS_LENGTH}
+                  maxLength={MAX_BENEFITS_LENGTH}
                 />
               </div>
             </TabsContent>
@@ -313,8 +361,8 @@ const JobCreationForm: React.FC = () => {
             <TabsContent value="configuracoes" className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="select-status">Status da vaga</Label>
-                <Select 
-                  value={formData.status} 
+                <Select
+                  value={formData.status}
                   onValueChange={handleSelectChange('status')}
                 >
                   <SelectTrigger id="select-status">
@@ -343,7 +391,7 @@ const JobCreationForm: React.FC = () => {
         <Button variant="outline" onClick={prevTab} disabled={activeTab === "sobre"}>
           Voltar
         </Button>
-        
+
         {activeTab === "configuracoes" ? (
           <Button onClick={handleSubmit} disabled={isSubmitting}>
             {isSubmitting ? "Criando..." : "Criar vaga"}

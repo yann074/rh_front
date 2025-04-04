@@ -137,13 +137,11 @@ const CandidateInformation: React.FC = () => {
         setUserData({
           name: user.name,
           email: user.email,
-          role: user.permission, // ou 'user.role', depende do seu backend
         });
 
       // Passo 3: Buscar enums
       const sexUserResponse = await axios.get('http://127.0.0.1:8000/api/enums/sex-user');
   
-      // Resto do seu código...
       const sexUserData = sexUserResponse.data.data;
       setSexUser(sexUserData.sexo);
       setGender(sexUserData.gender);

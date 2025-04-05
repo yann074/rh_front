@@ -15,6 +15,7 @@ import ErrorPage from '@/ErrorPage/ErrorPage';
 import Candidates from '@/components/AdminComp/Candidates'
 import Jobs from '@/components/AdminComp/Jobs'
 import CreateJobs from '@/components/AdminComp/CreateJobs'
+import Applications from '@/components/AdminComp/Applications';
 
 const CLIENT_ID = '239792615305-dh5fndio5bf43rhha3kji5qe3jpuj7uq.apps.googleusercontent.com'
 
@@ -41,6 +42,10 @@ const rotas = createBrowserRouter([
         path: "createjobs",
         element: <CreateJobs />
       },    
+      {
+        path: "app",
+        element: <Applications />
+      }
     ]
   },
   {

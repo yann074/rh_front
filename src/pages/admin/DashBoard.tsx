@@ -9,7 +9,8 @@ import {
   X,
   LogOut,
   LayoutDashboard,
-  TrendingUp
+  TrendingUp,
+  ClipboardList
 } from 'lucide-react';
 import { Link, Outlet } from 'react-router-dom';
 import {
@@ -128,7 +129,7 @@ const AdminDashboard: React.FC = () => {
         </div>
         
         {/* Sidebar Navigation */}
-        <nav className="h-60 py-4 px-2 flex flex-col space-y-2 overflow-y-auto">
+        <nav className="h-67 py-4 px-2 flex flex-col space-y-2 overflow-y-auto">
           <SidebarItem 
             icon={<LayoutDashboard />} 
             title="Dashboard" 
@@ -160,6 +161,14 @@ const AdminDashboard: React.FC = () => {
             collapsed={collapsed} 
             to="candidates" 
             onClick={() => setCurrentView("usuarios")}
+          />
+          <SidebarItem 
+            icon={<ClipboardList />} 
+            title="Applications" 
+            active={currentView === "app"}
+            collapsed={collapsed} 
+            to="app" 
+            onClick={() => setCurrentView("app")}
           />
         </nav>
         

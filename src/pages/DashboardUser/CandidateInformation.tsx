@@ -222,7 +222,7 @@ const CandidateInformation: React.FC = () => {
 
       // Mudar isso dps
       const method = 'post';
-      const endpoint = 'http://127.0.0.1:8000/api/user_personal';
+      const endpoint = 'http://127.0.0.1:8000/api/register-data';
 
       await axios({
         method,

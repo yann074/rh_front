@@ -40,6 +40,7 @@ const Applications: React.FC = () => {
             </tr>
           </thead>
           <tbody>
+            {/* FAZER DEPOIS UMA LIGAÇÃO DO ID DO USER PARA LIGAR ELE PARA O PERFIL */}
             {applications.map((app, index) => (
               <tr key={index} className="border-b hover:bg-gray-50">
                 <td className="py-2 px-4">{app.candidato}</td>

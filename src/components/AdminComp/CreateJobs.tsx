@@ -373,7 +373,7 @@ const JobCreationForm: React.FC = () => {
                   </SelectTrigger>
                   <SelectContent>
                     {statusTypes.map((status) => (
-                      <SelectItem key={status} value={status.toLowerCase()}>
+                      <SelectItem key={status} value={status}>
                         {status.charAt(0).toUpperCase() + status.slice(1)}
                       </SelectItem>
                     ))}

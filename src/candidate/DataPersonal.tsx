@@ -59,7 +59,7 @@ const DataPersonal = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.post(
-        "http://127.0.0.1:8000/api/user_personal",
+        "http://127.0.0.1:8000/api/personal-data",
         formData,
         {
           headers: {
@@ -68,11 +68,13 @@ const DataPersonal = () => {
           },
         }
       );
-
+      console.log(formData);
+      
       alert("Dados enviados com sucesso!");
       console.log(response.data);
     } catch (error: any) {
       alert("Erro ao tentar enviar os dados.");
+      console.log(formData);
       console.error("Erro no envio:", error.response?.data || error.message);
     }
   };

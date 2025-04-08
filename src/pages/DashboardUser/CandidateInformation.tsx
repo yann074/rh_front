@@ -233,6 +233,7 @@ const CandidateInformation: React.FC = () => {
           'Content-Type': 'multipart/form-data'
         }
       });
+      console.log(formData);
 
       Swal.fire({
         title: 'Sucesso!',

@@ -1,5 +1,3 @@
-"use client"
-
 import type React from "react"
 import { useState, useEffect } from "react"
 import { cn } from "@/lib/utils"
@@ -28,18 +26,33 @@ const AdminDashboard: React.FC = () => {
   const [userData, setUserData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  // Add a new state for job opportunities
+  const [jobOpportunities, setJobOpportunities] = useState<any[]>([])
 
+  // Update the useEffect to also fetch job opportunities
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true)
-        const response = await fetch("http://127.0.0.1:8000/api/users")
-        const result = await response.json()
 
-        if (result.status_code === 200) {
-          setUserData(result.data)
+        // Fetch user data
+        const userResponse = await fetch("http://127.0.0.1:8000/api/users")
+        const userData = await userResponse.json()
+
+        // Fetch job opportunities
+        const jobsResponse = await fetch("http://127.0.0.1:8000/api/opportunities")
+        const jobsData = await jobsResponse.json()
+
+        if (userData.status_code === 200) {
+          setUserData(userData.data)
         } else {
-          setError("Failed to fetch data")
+          setError("Failed to fetch user data")
+        }
+
+        if (jobsData.status_code === 200) {
+          setJobOpportunities(jobsData.data)
+        } else {
+          console.error("Failed to fetch job opportunities")
         }
       } catch (err) {
         setError("Error connecting to the server")
@@ -336,26 +349,6 @@ const AdminDashboard: React.FC = () => {
                     )}
                   </CardContent>
                 </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Vagas Populares</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {[1, 2, 3].map((i) => (
-                        <div key={i} className="border-b pb-3 last:border-b-0 last:pb-0">
-                          <p className="text-sm font-medium">Desenvolvedor {i}</p>
-                          <div className="flex justify-between mt-1">
-                            <p className="text-xs text-gray-500">30 candidatos</p>
-                            <p className="text-xs text-purple-700">Empresa {i}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-
                 <Card>
                   <CardHeader>
                     <CardTitle>Atividades Recentes</CardTitle>
@@ -376,6 +369,48 @@ const AdminDashboard: React.FC = () => {
                         </div>
                       ))}
                     </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Últimas Vagas</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {loading ? (
+                      <div className="flex items-center justify-center py-4">Carregando vagas...</div>
+                    ) : (
+                      <div className="space-y-4">
+                        {jobOpportunities.length > 0 ? (
+                          [...jobOpportunities]
+                            .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+                            .slice(0, 3)
+                            .map((job) => (
+                              <div key={job.id} className="border-b pb-3 last:border-b-0 last:pb-0">
+                                <div className="flex items-center justify-between">
+                                  <p className="text-sm font-medium">{job.title}</p>
+                                  <span
+                                    className={`text-xs px-2 py-1 rounded-full ${
+                                      job.status === "aberto" || job.status === "ativo"
+                                        ? "bg-green-100 text-green-800"
+                                        : "bg-gray-100 text-gray-800"
+                                    }`}
+                                  >
+                                    {job.status}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between mt-1">
+                                  <p className="text-xs text-gray-500">{job.job_type}</p>
+                                  <p className="text-xs text-gray-500">
+                                    {new Date(job.created_at).toLocaleDateString("pt-BR")}
+                                  </p>
+                                </div>
+                              </div>
+                            ))
+                        ) : (
+                          <p className="text-sm text-gray-500 text-center">Nenhuma vaga disponível</p>
+                        )}
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </div>

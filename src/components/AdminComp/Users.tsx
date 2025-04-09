@@ -1,160 +1,165 @@
-import { useState, useEffect } from "react";
-import axios from "axios";
-import { 
-  Trash, 
-  Paintbrush, 
-  MoreHorizontal, 
-  Shield, 
-  User, 
-  Calendar, 
-  Search, 
-  Filter
-} from "lucide-react";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from "@/components/ui/table";
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle 
-} from "@/components/ui/card";
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuLabel, 
-  DropdownMenuSeparator, 
-  DropdownMenuTrigger 
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
+import { useState, useEffect } from "react"
+import axios from "axios"
+import { Trash, Paintbrush, MoreHorizontal, Shield, User, Calendar, Search, Filter, AlertTriangle } from "lucide-react"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Button } from "@/components/ui/button"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 
-interface User {
-  id: number;
-  name: string;
-  email: string;
-  permission: string;
-  lastActive?: string;
-  status?: "Ativo" | "Inativo" | "Pendente";
-  avatarUrl?: string;
-  createdAt?: string;
-  role?: string;
+interface UserType {
+  id: number
+  name: string
+  email: string
+  permission: string
+  lastActive?: string
+  status?: "Ativo" | "Inativo" | "Pendente"
+  avatarUrl?: string
+  createdAt?: string
+  role?: string
 }
 
 export default function UserTable() {
-  const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterPermission, setFilterPermission] = useState<string>("all");
+  const [users, setUsers] = useState<UserType[]>([])
+  const [loading, setLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState("")
+  const [filterPermission, setFilterPermission] = useState<string>("all")
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [userToDelete, setUserToDelete] = useState<UserType | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
-  useEffect(() => {
-    setLoading(true);
-    axios.get("http://127.0.0.1:8000/api/users")
+  const fetchUsers = () => {
+    setLoading(true)
+    axios
+      .get("http://127.0.0.1:8000/api/users")
       .then((response) => {
-        
-        const enrichedUsers = response.data.data.Usuarios.map((user: User) => ({
+        const enrichedUsers = response.data.data.Usuarios.map((user: UserType) => ({
           ...user,
           lastActive: getRandomDate(),
           status: getRandomStatus(),
           avatarUrl: "",
           createdAt: getRandomPastDate(),
-          role: mapPermissionToRole(user.permission)
-        }));
-        setUsers(enrichedUsers);
-        setLoading(false);
+          role: mapPermissionToRole(user.permission),
+        }))
+        setUsers(enrichedUsers)
+        setLoading(false)
       })
       .catch((error) => {
-        console.error("Erro ao buscar usuários:", error);
-        setLoading(false);
-      });
-  }, []);
+        console.error("Erro ao buscar usuários:", error)
+        setLoading(false)
+      })
+  }
 
-  // dados de demonstração
+  useEffect(() => {
+    fetchUsers()
+  }, [])
+
   const getRandomDate = () => {
-    const days = Math.floor(Math.random() * 30);
-    const date = new Date();
-    date.setDate(date.getDate() - days);
-    return date.toLocaleDateString('pt-BR');
-  };
+    const days = Math.floor(Math.random() * 30)
+    const date = new Date()
+    date.setDate(date.getDate() - days)
+    return date.toLocaleDateString("pt-BR")
+  }
 
   const getRandomPastDate = () => {
-    const months = Math.floor(Math.random() * 12);
-    const date = new Date();
-    date.setMonth(date.getMonth() - months);
-    return date.toLocaleDateString('pt-BR');
-  };
+    const months = Math.floor(Math.random() * 12)
+    const date = new Date()
+    date.setMonth(date.getMonth() - months)
+    return date.toLocaleDateString("pt-BR")
+  }
 
   const getRandomStatus = (): "Ativo" | "Inativo" | "Pendente" => {
-    const statuses: ["Ativo", "Inativo", "Pendente"] = ["Ativo", "Inativo", "Pendente"];
-    return statuses[Math.floor(Math.random() * statuses.length)];
-  };
+    const statuses: ["Ativo", "Inativo", "Pendente"] = ["Ativo", "Inativo", "Pendente"]
+    return statuses[Math.floor(Math.random() * statuses.length)]
+  }
 
   const mapPermissionToRole = (permission: string): string => {
     const roles: Record<string, string> = {
-      "Admin": "Administrador",
-      "User": "Usuário",
-      "Editor": "Editor",
-      "Guest": "Convidado"
-    };
-    return roles[permission] || permission;
-  };
+      Admin: "admin",
+      User: "usuario"
+    }
+    return roles[permission] || permission
+  }
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Ativo":
-        return "bg-green-100 text-green-800";
+        return "bg-green-100 text-green-800"
       case "Inativo":
-        return "bg-gray-100 text-gray-800";
+        return "bg-gray-100 text-gray-800"
       case "Pendente":
-        return "bg-yellow-100 text-yellow-800";
+        return "bg-yellow-100 text-yellow-800"
       default:
-        return "bg-blue-100 text-blue-800";
+        return "bg-blue-100 text-blue-800"
     }
-  };
+  }
 
   const getInitials = (name: string) => {
     return name
-      .split(' ')
-      .map(part => part[0])
-      .join('')
+      .split(" ")
+      .map((part) => part[0])
+      .join("")
       .toUpperCase()
-      .substring(0, 2);
-  };
+      .substring(0, 2)
+  }
 
-  // Funções para lidar com ações
   const handleEdit = (id: number) => {
-    console.log("Editar usuário", id);
-    // Implementar lógica para editar usuário
-  };
+    console.log("Editar usuário", id)
+  }
 
-  const handleDelete = (id: number) => {
-    console.log("Deletar usuário", id);
-    // Implementar lógica para deletar usuário
-  };
+  const confirmDelete = (user: UserType) => {
+    setUserToDelete(user)
+    setDeleteDialogOpen(true)
+  }
 
-  // Filtrar usuários
-  const filteredUsers = users.filter(user => {
-    const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          user.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesPermission = filterPermission === "all" || user.permission === filterPermission;
-    return matchesSearch && matchesPermission;
-  });
+  const handleDelete = async () => {
+    if (!userToDelete) return
+
+    setIsDeleting(true)
+    try {
+      const token = localStorage.getItem("token") || sessionStorage.getItem("token")
+
+      await axios.delete(`http://127.0.0.1:8000/api/users/${userToDelete.id}`, {
+        headers: {
+          Authorization: token ? `Bearer ${token}` : undefined,
+        },
+      })
+
+      setUsers(users.filter((user) => user.id !== userToDelete.id))
+    } catch (error) {
+      console.error("Erro ao excluir usuário:", error)
+    } finally {
+      setIsDeleting(false)
+      setDeleteDialogOpen(false)
+      setUserToDelete(null)
+    }
+  }
+
+  const filteredUsers = users.filter((user) => {
+    const matchesSearch =
+      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesPermission = filterPermission === "all" || user.permission === filterPermission
+    return matchesSearch && matchesPermission
+  })
 
   return (
     <div className="space-y-6">
@@ -162,13 +167,9 @@ export default function UserTable() {
         <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <CardTitle className="text-2xl">Usuários do Sistema</CardTitle>
-            <CardDescription>
-              Gerencie todos os usuários cadastrados na plataforma.
-            </CardDescription>
+            <CardDescription>Gerencie todos os usuários cadastrados na plataforma.</CardDescription>
           </div>
-          <Button className="bg-purple-600 hover:bg-purple-700">
-            Adicionar Usuário
-          </Button>
+          <Button className="bg-purple-600 hover:bg-purple-700">Adicionar Usuário</Button>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col md:flex-row gap-4 mb-6">
@@ -182,19 +183,14 @@ export default function UserTable() {
               />
             </div>
             <div className="flex gap-2">
-              <Select
-                value={filterPermission}
-                onValueChange={setFilterPermission}
-              >
+              <Select value={filterPermission} onValueChange={setFilterPermission}>
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="Filtrar por permissão" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todas as permissões</SelectItem>
-                  <SelectItem value="Admin">Administrador</SelectItem>
-                  <SelectItem value="User">Usuário</SelectItem>
-                  <SelectItem value="Editor">Editor</SelectItem>
-                  <SelectItem value="Guest">Convidado</SelectItem>
+                  <SelectItem value="admin">Administrador</SelectItem>
+                  <SelectItem value="usuario">Usuário</SelectItem>
                 </SelectContent>
               </Select>
               <Button variant="outline" size="icon">
@@ -241,9 +237,7 @@ export default function UserTable() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge className={getStatusColor(user.status || "")}>
-                            {user.status}
-                          </Badge>
+                          <Badge className={getStatusColor(user.status || "")}>{user.status}</Badge>
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
@@ -274,7 +268,7 @@ export default function UserTable() {
                                 <Paintbrush className="mr-2 h-4 w-4 text-blue-600" />
                                 Editar
                               </DropdownMenuItem>
-                              <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(user.id)}>
+                              <DropdownMenuItem className="text-red-600" onClick={() => confirmDelete(user)}>
                                 <Trash className="mr-2 h-4 w-4" />
                                 Excluir
                               </DropdownMenuItem>
@@ -316,6 +310,34 @@ export default function UserTable() {
           </div>
         </CardContent>
       </Card>
+
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center">
+              <AlertTriangle className="h-5 w-5 text-red-500 mr-2" />
+              Confirmar exclusão
+            </DialogTitle>
+            <DialogDescription>
+              Você está prestes a excluir o usuário <strong>{userToDelete?.name}</strong>. Esta ação não pode ser
+              desfeita.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)} disabled={isDeleting}>
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {isDeleting ? "Excluindo..." : "Excluir"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
-  );
+  )
 }

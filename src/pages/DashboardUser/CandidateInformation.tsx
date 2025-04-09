@@ -1,262 +1,416 @@
+"use client"
 
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import Swal from 'sweetalert2';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Loader2, User, Save, CheckCircle, Briefcase, Camera, Phone, Mail, Calendar, Linkedin, Award, Heart, Home, SearchX } from 'lucide-react';
+import type React from "react"
+import { useState, useEffect } from "react"
+import axios from "axios"
+import Swal from "sweetalert2"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Switch } from "@/components/ui/switch"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
+import { Progress } from "@/components/ui/progress"
+import {
+  Loader2,
+  User,
+  Save,
+  CheckCircle,
+  Briefcase,
+  Camera,
+  Phone,
+  Mail,
+  Calendar,
+  Linkedin,
+  Award,
+  Heart,
+  Home,
+  MapPin,
+  DollarSign,
+  Car,
+  Instagram,
+  Facebook,
+} from "lucide-react"
+import { Textarea } from "@/components/ui/textarea"
 
 // Definition of types
 interface UserData {
-  id?: number;
-  email: string;
-  name: string;
-  role?: string;
-  created_at?: string;
+  id?: number
+  email: string
+  name: string
+  role?: string
+  created_at?: string
 }
 
 interface CandidatoData {
-  user_id?: number;
-  secondary_email: string;
-  cpf: string;
-  phone: string;
-  birth_date: string;
-  linkedin: string;
-  pcd: boolean;
-  photo: File | null;
-  photoPreview: string;
-  sex: string;
-  sexual_orientation: string;
-  race: string;
-  gender: string;
+  user_id?: number
+  secondary_email: string
+  cpf: string
+  phone: string
+  birth_date: string
+  linkedin: string
+  pcd: boolean
+  photo: File | null
+  resume: File | null
+  photoPreview: string
+  sex: string
+  sexual_orientation: string
+  race: string
+  gender: string
+  // Localização
+  address?: string
+  zip_code?: string
+  state?: string
+  city?: string
+  neighborhood?: string
+  street?: string
+  number?: string
+  complement?: string
+  // Informações adicionais
+  expected_salary?: string
+  has_driver_license?: boolean
+  driver_license_category?: string
+  instagram_link?: string
+  facebook_link?: string
 }
 
 const CandidateInformation: React.FC = () => {
-  const [loading, setLoading] = useState<boolean>(true);
-  const [saving, setSaving] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true)
+  const [saving, setSaving] = useState<boolean>(false)
   const [activeTab, setActiveTab] = useState<string>("pessoal")
 
-  const [sexUser, setSexUser] = useState<string[]>([]);
-  const [gender, setGender] = useState<string[]>([]);
-  const [orientation, setOrientation] = useState<string[]>([]);
-  const [color, setColor] = useState<string[]>([]);
+  const [sexUser, setSexUser] = useState<string[]>([])
+  const [gender, setGender] = useState<string[]>([])
+  const [orientation, setOrientation] = useState<string[]>([])
+  const [color, setColor] = useState<string[]>([])
+  const [states, setStates] = useState<string[]>([
+    "AC",
+    "AL",
+    "AP",
+    "AM",
+    "BA",
+    "CE",
+    "DF",
+    "ES",
+    "GO",
+    "MA",
+    "MT",
+    "MS",
+    "MG",
+    "PA",
+    "PB",
+    "PR",
+    "PE",
+    "PI",
+    "RJ",
+    "RN",
+    "RS",
+    "RO",
+    "RR",
+    "SC",
+    "SP",
+    "SE",
+    "TO",
+  ])
+  const [licenseCategories, setLicenseCategories] = useState<string[]>([
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "AB",
+    "AC",
+    "AD",
+    "AE",
+  ])
 
   const [userData, setUserData] = useState<UserData>({
-    email: '',
-    name: ''
-  });
+    email: "",
+    name: "",
+  })
   const [candidatoData, setCandidatoData] = useState<CandidatoData>({
-    secondary_email: '',
-    cpf: '',
-    phone: '',
-    birth_date: '',
-    linkedin: '',
+    secondary_email: "",
+    cpf: "",
+    phone: "",
+    birth_date: "",
+    linkedin: "",
     pcd: false,
     photo: null,
-    photoPreview: '',
-    sex: '',
-    sexual_orientation: '',
-    race: '',
-    gender: ''
-  });
+    resume: null,
+    photoPreview: "",
+    sex: "",
+    sexual_orientation: "",
+    race: "",
+    gender: "",
+    // Localização
+    address: "",
+    zip_code: "",
+    state: "",
+    city: "",
+    neighborhood: "",
+    street: "",
+    number: "",
+    complement: "",
+    // Informações adicionais
+    expected_salary: "",
+    has_driver_license: false,
+    driver_license_category: "",
+    instagram_link: "",
+    facebook_link: "",
+  })
 
   // Calcular o progresso do perfil
   const calculateProfileProgress = () => {
-    let personalProgress = 0;
-    let diversityProgress = 0;
+    let personalProgress = 0
+    let diversityProgress = 0
+    let locationProgress = 0
 
     // Verificar campos pessoais
-    const personalFields = ['secondary_email', 'cpf', 'phone', 'birth_date', 'linkedin', 'photoPreview'];
-    personalFields.forEach(field => {
-      if (candidatoData[field as keyof CandidatoData]) personalProgress++;
-    });
-    personalProgress = Math.round((personalProgress / personalFields.length) * 100);
+    const personalFields = ["secondary_email", "cpf", "phone", "birth_date", "linkedin", "photoPreview"]
+    personalFields.forEach((field) => {
+      if (candidatoData[field as keyof CandidatoData]) personalProgress++
+    })
+    personalProgress = Math.round((personalProgress / personalFields.length) * 100)
 
     // Verificar campos de diversidade
-    const diversityFields = ['sex', 'sexual_orientation', 'race', 'gender'];
-    diversityFields.forEach(field => {
-      if (candidatoData[field as keyof CandidatoData]) diversityProgress++;
-    });
-    diversityProgress = Math.round((diversityProgress / diversityFields.length) * 100);
+    const diversityFields = ["sex", "sexual_orientation", "race", "gender"]
+    diversityFields.forEach((field) => {
+      if (candidatoData[field as keyof CandidatoData]) diversityProgress++
+    })
+    diversityProgress = Math.round((diversityProgress / diversityFields.length) * 100)
 
-    return { personalProgress, diversityProgress };
-  };
+    // Verificar campos de localização
+    const locationFields = ["zip_code", "state", "city", "street", "number"]
+    locationFields.forEach((field) => {
+      if (candidatoData[field as keyof CandidatoData]) locationProgress++
+    })
+    locationProgress = Math.round(locationFields.length > 0 ? (locationProgress / locationFields.length) * 100 : 0)
 
-  const { personalProgress, diversityProgress } = calculateProfileProgress();
-  const totalProgress = Math.round((personalProgress + diversityProgress) / 2);
+    return { personalProgress, diversityProgress, locationProgress }
+  }
+
+  const { personalProgress, diversityProgress, locationProgress } = calculateProfileProgress()
+  const totalProgress = Math.round((personalProgress + diversityProgress + locationProgress) / 3)
 
   // token from storage
-  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+  const token = localStorage.getItem("token") || sessionStorage.getItem("token")
 
   useEffect(() => {
-    
     // User autenticado
     if (!token) {
       Swal.fire({
-        title: 'Erro!',
-        text: 'Você precisa estar logado para acessar esta página.',
-        icon: 'error',
-        confirmButtonText: 'OK',
-        background: '#ffffff',
-        confirmButtonColor: '#6d28d9'
+        title: "Erro!",
+        text: "Você precisa estar logado para acessar esta página.",
+        icon: "error",
+        confirmButtonText: "OK",
+        background: "#ffffff",
+        confirmButtonColor: "#6d28d9",
       }).then(() => {
         // Redirect to login page
-        window.location.href = '/login';
-      });
-      return;
-    } 
+        window.location.href = "/login"
+      })
+      return
+    }
 
-    fetchUserData();
-  }, []);
+    fetchUserData()
+  }, [])
 
   const fetchUserData = async () => {
     try {
-
-      const userProfileResponse = await axios.get('http://127.0.0.1:8000/api/userprofile', {
+      const userProfileResponse = await axios.get("http://127.0.0.1:8000/api/userprofile", {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      })
+
       //SEMPRE GUARDAR NO LOCALSTORAGE, NAO APAGA ESSE COMENTARIO
       //CONSEGUI PORRA
-    
-      console.log('Usuário autenticado:', userProfileResponse.data);
-      console.log('Token usado:', localStorage.getItem('token'));
-      
-      const user = userProfileResponse.data;
 
-        setUserData({
-          name: user.name,
-          email: user.email,
-        });
+      console.log("Usuário autenticado:", userProfileResponse.data)
+      console.log("Token usado:", localStorage.getItem("token"))
+
+      const user = userProfileResponse.data
+
+      setUserData({
+        name: user.name,
+        email: user.email,
+      })
 
       // Passo 3: Buscar enums
-      const sexUserResponse = await axios.get('http://127.0.0.1:8000/api/enums/sex-user');
-  
-      const sexUserData = sexUserResponse.data.data;
-      setSexUser(sexUserData.sexo);
-      setGender(sexUserData.gender);
-      setOrientation(sexUserData.orient);
-      setColor(sexUserData.color);
+      const sexUserResponse = await axios.get("http://127.0.0.1:8000/api/enums/sex-user")
 
-  
-      setLoading(false);
+      const sexUserData = sexUserResponse.data.data
+      setSexUser(sexUserData.sexo)
+      setGender(sexUserData.gender)
+      setOrientation(sexUserData.orient)
+      setColor(sexUserData.color)
+
+      setLoading(false)
     } catch (error) {
-      console.error('Erro ao buscar dados do usuário:', error);
+      console.error("Erro ao buscar dados do usuário:", error)
       Swal.fire({
-        title: 'Aviso',
-        text: 'Não foi possível obter suas informações. Por favor, tente novamente mais tarde.',
-        icon: 'warning',
-        confirmButtonText: 'OK',
-        background: '#ffffff',
-        confirmButtonColor: '#6d28d9'
-      });
-      setLoading(false);
+        title: "Aviso",
+        text: "Não foi possível obter suas informações. Por favor, tente novamente mais tarde.",
+        icon: "warning",
+        confirmButtonText: "OK",
+        background: "#ffffff",
+        confirmButtonColor: "#6d28d9",
+      })
+      setLoading(false)
     }
-  };
+  }
 
-  // Removed checkExistingCandidatoData function entirely
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void => {
+    const { name, value } = e.target
+    setCandidatoData((prev) => ({ ...prev, [name]: value }))
+  }
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    const { name, value } = e.target;
-    setCandidatoData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleSwitchChange = (checked: boolean): void => {
-    setCandidatoData(prev => ({ ...prev, pcd: checked }));
-  };
+  const handleSwitchChange = (checked: boolean, field: keyof CandidatoData): void => {
+    setCandidatoData((prev) => ({ ...prev, [field]: checked }))
+  }
 
   const handleSelectChange = (value: string, field: keyof CandidatoData): void => {
-    setCandidatoData(prev => ({ ...prev, [field]: value }));
-  };
+    setCandidatoData((prev) => ({ ...prev, [field]: value }))
+  }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    const file = e.target.files?.[0];
+    const file = e.target.files?.[0]
     if (file) {
       // Store the file object for form submission
-      setCandidatoData(prev => ({ ...prev, photo: file }));
+      setCandidatoData((prev) => ({ ...prev, photo: file }))
 
       // Create preview URL for display
-      const reader = new FileReader();
+      const reader = new FileReader()
       reader.onloadend = () => {
-        const result = reader.result as string;
-        setCandidatoData(prev => ({ ...prev, photoPreview: result }));
-      };
-      reader.readAsDataURL(file);
+        const result = reader.result as string
+        setCandidatoData((prev) => ({ ...prev, photoPreview: result }))
+      }
+      reader.readAsDataURL(file)
     }
-  };
+  }
+
+  const handleResumeChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    const file = e.target.files?.[0]
+    if (file && file.type === "application/pdf") {
+      setCandidatoData((prev) => ({ ...prev, resume: file }))
+    } else {
+      Swal.fire({
+        title: "Arquivo inválido!",
+        text: "Por favor, envie um arquivo PDF.",
+        icon: "error",
+        confirmButtonText: "OK",
+        background: "#ffffff",
+        confirmButtonColor: "#6d28d9",
+      })
+    }
+  }
+
+  // Função para buscar endereço pelo CEP
+  const fetchAddressByCep = async (cep: string) => {
+    if (cep.length < 8) return
+
+    try {
+      const formattedCep = cep.replace(/\D/g, "")
+      const response = await axios.get(`https://viacep.com.br/ws/${formattedCep}/json/`)
+
+      if (!response.data.erro) {
+        setCandidatoData((prev) => ({
+          ...prev,
+          street: response.data.logradouro || prev.street,
+          neighborhood: response.data.bairro || prev.neighborhood,
+          city: response.data.localidade || prev.city,
+          state: response.data.uf || prev.state,
+        }))
+      }
+    } catch (error) {
+      console.error("Erro ao buscar CEP:", error)
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
-    e.preventDefault();
+    e.preventDefault()
     try {
-      setSaving(true);
+      setSaving(true)
 
       // Create FormData for file upload
-      const formData = new FormData();
+      const formData = new FormData()
 
       // Add all fields to FormData
-      formData.append('secondary_email', candidatoData.secondary_email);
-      formData.append('cpf', candidatoData.cpf);
-      formData.append('phone', candidatoData.phone);
-      formData.append('birth_date', candidatoData.birth_date);
-      formData.append('linkedin', candidatoData.linkedin);
-      formData.append('pcd', candidatoData.pcd ? '1' : '0');
-      formData.append('sex', candidatoData.sex);
-      formData.append('sexual_orientation', candidatoData.sexual_orientation);
-      formData.append('race', candidatoData.race);
-      formData.append('gender', candidatoData.gender);
+      formData.append("secondary_email", candidatoData.secondary_email)
+      formData.append("cpf", candidatoData.cpf)
+      formData.append("phone", candidatoData.phone)
+      formData.append("birth_date", candidatoData.birth_date)
+      formData.append("linkedin", candidatoData.linkedin)
+      formData.append("pcd", candidatoData.pcd ? "1" : "0")
+      formData.append("sex", candidatoData.sex)
+      formData.append("sexual_orientation", candidatoData.sexual_orientation)
+      formData.append("race", candidatoData.race)
+      formData.append("gender", candidatoData.gender)
+
+      // Localização
+      formData.append("zip_code", candidatoData.zip_code || "")
+      formData.append("state", candidatoData.state || "")
+      formData.append("city", candidatoData.city || "")
+      formData.append("neighborhood", candidatoData.neighborhood || "")
+      formData.append("street", candidatoData.street || "")
+      formData.append("number", candidatoData.number || "")
+      formData.append("complement", candidatoData.complement || "")
+
+      // Informações adicionais
+      formData.append("expected_salary", candidatoData.expected_salary || "")
+      formData.append("has_driver_license", candidatoData.has_driver_license ? "1" : "0")
+      formData.append("driver_license_category", candidatoData.driver_license_category || "")
+      formData.append("instagram_link", candidatoData.instagram_link || "")
+      formData.append("facebook_link", candidatoData.facebook_link || "")
 
       // Arquivo de photo
       if (candidatoData.photo) {
-        formData.append('photo', candidatoData.photo);
+        formData.append("photo", candidatoData.photo)
+      }
+      if (candidatoData.resume) {
+        formData.append("resume", candidatoData.resume)
       }
 
       // Mudar isso dps
-      const method = 'post';
-      const endpoint = 'http://127.0.0.1:8000/api/register-data';
+      const method = "post"
+      const endpoint = "http://127.0.0.1:8000/api/register-data"
 
       await axios({
         method,
         url: endpoint,
         data: formData,
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data'
-        }
-      });
-      console.log(formData);
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      })
+      console.log(formData)
 
       Swal.fire({
-        title: 'Sucesso!',
-        text: 'Seus dados foram salvos com sucesso.',
-        icon: 'success',
-        confirmButtonText: 'OK',
-        background: '#ffffff',
-        confirmButtonColor: '#6d28d9'
-      });
+        title: "Sucesso!",
+        text: "Seus dados foram salvos com sucesso.",
+        icon: "success",
+        confirmButtonText: "OK",
+        background: "#ffffff",
+        confirmButtonColor: "#6d28d9",
+      })
     } catch (error) {
-      console.error('Erro ao salvar dados:', error);
+      console.error("Erro ao salvar dados:", error)
       Swal.fire({
-        title: 'Erro!',
-        text: 'Não foi possível salvar seus dados. Por favor, tente novamente.',
-        icon: 'error',
-        confirmButtonText: 'OK',
-        background: '#ffffff',
-        confirmButtonColor: '#6d28d9'
-      });
+        title: "Erro!",
+        text: "Não foi possível salvar seus dados. Por favor, tente novamente.",
+        icon: "error",
+        confirmButtonText: "OK",
+        background: "#ffffff",
+        confirmButtonColor: "#6d28d9",
+      })
     } finally {
-      setSaving(false);
+      setSaving(false)
     }
-  };
+  }
 
   // Rest of the component remains the same...
 
@@ -269,7 +423,7 @@ const CandidateInformation: React.FC = () => {
           <p className="mt-2 text-sm text-center text-slate-500">Estamos preparando tudo para você</p>
         </div>
       </div>
-    );
+    )
   }
 
   return (
@@ -286,10 +440,7 @@ const CandidateInformation: React.FC = () => {
             </div>
 
             <div className="flex items-center space-x-4">
-              <Button
-                variant="ghost"
-                className="text-slate-600 hover:text-indigo-600 hover:bg-indigo-50"
-              >
+              <Button variant="ghost" className="text-slate-600 hover:text-indigo-600 hover:bg-indigo-50">
                 <Home className="h-5 w-5 mr-2" />
                 Dashboard
               </Button>
@@ -318,7 +469,8 @@ const CandidateInformation: React.FC = () => {
             <div>
               <h1 className="text-3xl md:text-4xl font-bold">Meu Perfil</h1>
               <p className="mt-2 text-indigo-200 max-w-xl">
-                Complete suas informações para aumentar suas chances nas oportunidades de emprego e se destacar para os recrutadores.
+                Complete suas informações para aumentar suas chances nas oportunidades de emprego e se destacar para os
+                recrutadores.
               </p>
             </div>
 
@@ -378,7 +530,7 @@ const CandidateInformation: React.FC = () => {
                     <Button
                       size="sm"
                       className="absolute bottom-0 right-0 rounded-full bg-indigo-600 hover:bg-indigo-700 h-10 w-10 p-0 shadow-md"
-                      onClick={() => document.getElementById('photo-upload')?.click()}
+                      onClick={() => document.getElementById("photo-upload")?.click()}
                     >
                       <Camera className="h-5 w-5" />
                       <input
@@ -416,6 +568,22 @@ const CandidateInformation: React.FC = () => {
                     />
                   </div>
 
+                  <div className="mb-4">
+                    <Label htmlFor="resume" className="block text-sm font-medium text-slate-700">
+                      Currículo (PDF)
+                    </Label>
+                    <Input
+                      id="resume"
+                      type="file"
+                      accept="application/pdf"
+                      onChange={handleResumeChange}
+                      className="mt-1"
+                    />
+                  </div>
+                  {candidatoData.resume && (
+                    <p className="mt-2 text-sm text-slate-600">Arquivo selecionado: {candidatoData.resume.name}</p>
+                  )}
+
                   <div className="flex items-center justify-between bg-indigo-50 p-4 rounded-lg">
                     <Label htmlFor="pcd" className="flex items-center text-slate-700 font-medium">
                       <Award className="h-5 w-5 mr-2 text-indigo-600" />
@@ -424,7 +592,7 @@ const CandidateInformation: React.FC = () => {
                     <Switch
                       id="pcd"
                       checked={candidatoData.pcd}
-                      onCheckedChange={handleSwitchChange}
+                      onCheckedChange={(checked) => handleSwitchChange(checked, "pcd")}
                       className="data-[state=checked]:bg-indigo-600"
                     />
                   </div>
@@ -455,6 +623,14 @@ const CandidateInformation: React.FC = () => {
                     <Progress value={diversityProgress} className="h-2 bg-slate-100" />
                   </div>
 
+                  <div>
+                    <div className="flex justify-between mb-2">
+                      <span className="text-sm text-slate-600 font-medium">Localização</span>
+                      <span className="text-sm text-indigo-600 font-medium">{locationProgress}%</span>
+                    </div>
+                    <Progress value={locationProgress} className="h-2 bg-slate-100" />
+                  </div>
+
                   <div className="bg-amber-50 border border-amber-100 rounded-lg p-4">
                     <div className="flex">
                       <div className="flex-shrink-0">
@@ -481,7 +657,7 @@ const CandidateInformation: React.FC = () => {
                     <CardTitle className="text-xl text-slate-800">Editar Informações</CardTitle>
 
                     <div className="mt-4 md:mt-0">
-                      <TabsList className="grid grid-cols-2 bg-slate-100 p-1">
+                      <TabsList className="grid grid-cols-3 bg-slate-100 p-1">
                         <TabsTrigger
                           value="pessoal"
                           className="font-medium rounded-md data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm"
@@ -493,6 +669,12 @@ const CandidateInformation: React.FC = () => {
                           className="font-medium rounded-md data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm"
                         >
                           Diversidade
+                        </TabsTrigger>
+                        <TabsTrigger
+                          value="localizacao"
+                          className="font-medium rounded-md data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm"
+                        >
+                          Localização
                         </TabsTrigger>
                       </TabsList>
                     </div>
@@ -537,7 +719,7 @@ const CandidateInformation: React.FC = () => {
                         <div className="space-y-2">
                           <Label htmlFor="phone" className="flex items-center text-slate-700">
                             <Phone className="h-4 w-4 mr-2 text-indigo-500" />
-                            phone
+                            Telefone
                           </Label>
                           <Input
                             id="phone"
@@ -563,6 +745,94 @@ const CandidateInformation: React.FC = () => {
                             className="border-slate-200 focus:border-indigo-500 focus:ring-indigo-500"
                           />
                         </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="expected_salary" className="flex items-center text-slate-700">
+                            <DollarSign className="h-4 w-4 mr-2 text-indigo-500" />
+                            Pretensão Salarial
+                          </Label>
+                          <Input
+                            id="expected_salary"
+                            name="expected_salary"
+                            placeholder="R$ 0.000,00"
+                            value={candidatoData.expected_salary}
+                            onChange={handleInputChange}
+                            className="border-slate-200 focus:border-indigo-500 focus:ring-indigo-500"
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <Label htmlFor="has_driver_license" className="flex items-center text-slate-700">
+                              <Car className="h-4 w-4 mr-2 text-indigo-500" />
+                              Possui CNH
+                            </Label>
+                            <Switch
+                              id="has_driver_license"
+                              checked={candidatoData.has_driver_license}
+                              onCheckedChange={(checked) => handleSwitchChange(checked, "has_driver_license")}
+                              className="data-[state=checked]:bg-indigo-600"
+                            />
+                          </div>
+
+                          {candidatoData.has_driver_license && (
+                            <div className="mt-3">
+                              <Label htmlFor="driver_license_category" className="text-sm text-slate-700">
+                                Categoria da CNH
+                              </Label>
+                              <Select
+                                value={candidatoData.driver_license_category}
+                                onValueChange={(value) => handleSelectChange(value, "driver_license_category")}
+                              >
+                                <SelectTrigger
+                                  id="driver_license_category"
+                                  className="border-slate-200 focus:border-indigo-500 focus:ring-indigo-500"
+                                >
+                                  <SelectValue placeholder="Selecione uma categoria" />
+                                </SelectTrigger>
+                                <SelectContent className="bg-white border border-slate-200">
+                                  {licenseCategories.map((category, index) => (
+                                    <SelectItem key={index} value={category}>
+                                      {category}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="instagram_link" className="flex items-center text-slate-700">
+                            <Instagram className="h-4 w-4 mr-2 text-indigo-500" />
+                            Instagram
+                          </Label>
+                          <Input
+                            id="instagram_link"
+                            name="instagram_link"
+                            placeholder="www.instagram.com/seuperfil"
+                            value={candidatoData.instagram_link}
+                            onChange={handleInputChange}
+                            className="border-slate-200 focus:border-indigo-500 focus:ring-indigo-500"
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="facebook_link" className="flex items-center text-slate-700">
+                            <Facebook className="h-4 w-4 mr-2 text-indigo-500" />
+                            Facebook
+                          </Label>
+                          <Input
+                            id="facebook_link"
+                            name="facebook_link"
+                            placeholder="www.facebook.com/seuperfil"
+                            value={candidatoData.facebook_link}
+                            onChange={handleInputChange}
+                            className="border-slate-200 focus:border-indigo-500 focus:ring-indigo-500"
+                          />
+                        </div>
                       </div>
 
                       <div className="bg-blue-50 rounded-lg p-4 border border-blue-100">
@@ -572,7 +842,8 @@ const CandidateInformation: React.FC = () => {
                           </div>
                           <div className="ml-3">
                             <p className="text-sm text-blue-700">
-                              Seu e-mail principal é <strong>{userData.email}</strong>. O e-mail secundário é opcional e pode ser usado como contato alternativo.
+                              Seu e-mail principal é <strong>{userData.email}</strong>. O e-mail secundário é opcional e
+                              pode ser usado como contato alternativo.
                             </p>
                           </div>
                         </div>
@@ -586,7 +857,9 @@ const CandidateInformation: React.FC = () => {
                           <div>
                             <h3 className="font-medium text-indigo-800 mb-1">Informações de Diversidade</h3>
                             <p className="text-sm text-indigo-700">
-                              Estas informações são opcionais e confidenciais, utilizadas apenas para promover a diversidade e inclusão em nossos processos seletivos. Não impactam negativamente suas candidaturas.
+                              Estas informações são opcionais e confidenciais, utilizadas apenas para promover a
+                              diversidade e inclusão em nossos processos seletivos. Não impactam negativamente suas
+                              candidaturas.
                             </p>
                           </div>
                         </div>
@@ -594,17 +867,19 @@ const CandidateInformation: React.FC = () => {
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
-                          <Label htmlFor="sex" className="text-slate-700 font-medium">sex Biológico</Label>
-                          <Select
-                            value={candidatoData.sex}
-                            onValueChange={(value) => handleSelectChange(value, 'sex')}
-                          >
-                            <SelectTrigger id="sex" className="border-slate-200 focus:border-indigo-500 focus:ring-indigo-500">
+                          <Label htmlFor="sex" className="text-slate-700 font-medium">
+                            Sexo Biológico
+                          </Label>
+                          <Select value={candidatoData.sex} onValueChange={(value) => handleSelectChange(value, "sex")}>
+                            <SelectTrigger
+                              id="sex"
+                              className="border-slate-200 focus:border-indigo-500 focus:ring-indigo-500"
+                            >
                               <SelectValue placeholder="Selecione uma opção" />
                             </SelectTrigger>
                             <SelectContent className="bg-white border border-slate-200">
                               {sexUser.map((sex, index) => (
-                                <SelectItem key={index} value={sex.toLowerCase().replace(/\s+/g, '_')}>
+                                <SelectItem key={index} value={sex.toLowerCase().replace(/\s+/g, "_")}>
                                   {sex}
                                 </SelectItem>
                               ))}
@@ -618,9 +893,12 @@ const CandidateInformation: React.FC = () => {
                           </Label>
                           <Select
                             value={candidatoData.gender}
-                            onValueChange={(value) => handleSelectChange(value, 'gender')}
+                            onValueChange={(value) => handleSelectChange(value, "gender")}
                           >
-                            <SelectTrigger id="gender" className="border-slate-200 focus:border-indigo-500 focus:ring-indigo-500">
+                            <SelectTrigger
+                              id="gender"
+                              className="border-slate-200 focus:border-indigo-500 focus:ring-indigo-500"
+                            >
                               <SelectValue placeholder="Selecione uma opção" />
                             </SelectTrigger>
                             <SelectContent className="bg-white border border-slate-200">
@@ -633,16 +911,18 @@ const CandidateInformation: React.FC = () => {
                           </Select>
                         </div>
 
-
                         <div className="space-y-2">
                           <Label htmlFor="sexual_orientation" className="text-slate-700 font-medium">
                             Orientação Sexual
                           </Label>
                           <Select
                             value={candidatoData.sexual_orientation}
-                            onValueChange={(value) => handleSelectChange(value, 'sexual_orientation')}
+                            onValueChange={(value) => handleSelectChange(value, "sexual_orientation")}
                           >
-                            <SelectTrigger id="sexual_orientation" className="border-slate-200 focus:border-indigo-500 focus:ring-indigo-500">
+                            <SelectTrigger
+                              id="sexual_orientation"
+                              className="border-slate-200 focus:border-indigo-500 focus:ring-indigo-500"
+                            >
                               <SelectValue placeholder="Selecione uma opção" />
                             </SelectTrigger>
                             <SelectContent className="bg-white border border-gray-200">
@@ -655,15 +935,18 @@ const CandidateInformation: React.FC = () => {
                           </Select>
                         </div>
 
-
-
                         <div className="space-y-2">
-                          <Label htmlFor="race" className="text-gray-700">Race/Raça/Etnia</Label>
+                          <Label htmlFor="race" className="text-gray-700">
+                            Raça/Cor/Etnia
+                          </Label>
                           <Select
                             value={candidatoData.race}
-                            onValueChange={(value) => handleSelectChange(value, 'race')}
+                            onValueChange={(value) => handleSelectChange(value, "race")}
                           >
-                            <SelectTrigger id="race" className="border-gray-300 focus:border-purple-500 focus:ring-purple-500">
+                            <SelectTrigger
+                              id="race"
+                              className="border-gray-300 focus:border-purple-500 focus:ring-purple-500"
+                            >
                               <SelectValue placeholder="Selecione uma opção" />
                             </SelectTrigger>
                             <SelectContent className="bg-white border border-gray-200">
@@ -675,8 +958,133 @@ const CandidateInformation: React.FC = () => {
                             </SelectContent>
                           </Select>
                         </div>
+                      </div>
+                    </TabsContent>
 
+                    <TabsContent value="localizacao" className="mt-0 space-y-6">
+                      <div className="bg-indigo-50 p-5 rounded-lg mb-6 border border-indigo-100">
+                        <div className="flex items-start">
+                          <MapPin className="h-5 w-5 mr-3 text-indigo-600 mt-0.5" />
+                          <div>
+                            <h3 className="font-medium text-indigo-800 mb-1">Informações de Localização</h3>
+                            <p className="text-sm text-indigo-700">
+                              Preencha seu endereço completo para que possamos encontrar oportunidades próximas a você e
+                              facilitar o processo de contratação.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
 
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <Label htmlFor="zip_code" className="flex items-center text-slate-700">
+                            <MapPin className="h-4 w-4 mr-2 text-indigo-500" />
+                            CEP
+                          </Label>
+                          <Input
+                            id="zip_code"
+                            name="zip_code"
+                            placeholder="00000-000"
+                            value={candidatoData.zip_code}
+                            onChange={handleInputChange}
+                            onBlur={(e) => fetchAddressByCep(e.target.value)}
+                            className="border-slate-200 focus:border-indigo-500 focus:ring-indigo-500"
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="state" className="text-slate-700 font-medium">
+                            Estado
+                          </Label>
+                          <Select
+                            value={candidatoData.state}
+                            onValueChange={(value) => handleSelectChange(value, "state")}
+                          >
+                            <SelectTrigger
+                              id="state"
+                              className="border-slate-200 focus:border-indigo-500 focus:ring-indigo-500"
+                            >
+                              <SelectValue placeholder="Selecione um estado" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-white border border-slate-200">
+                              {states.map((state, index) => (
+                                <SelectItem key={index} value={state}>
+                                  {state}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="city" className="text-slate-700">
+                            Cidade
+                          </Label>
+                          <Input
+                            id="city"
+                            name="city"
+                            placeholder="Sua cidade"
+                            value={candidatoData.city}
+                            onChange={handleInputChange}
+                            className="border-slate-200 focus:border-indigo-500 focus:ring-indigo-500"
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="neighborhood" className="text-slate-700">
+                            Bairro
+                          </Label>
+                          <Input
+                            id="neighborhood"
+                            name="neighborhood"
+                            placeholder="Seu bairro"
+                            value={candidatoData.neighborhood}
+                            onChange={handleInputChange}
+                            className="border-slate-200 focus:border-indigo-500 focus:ring-indigo-500"
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="street" className="text-slate-700">
+                            Rua
+                          </Label>
+                          <Input
+                            id="street"
+                            name="street"
+                            placeholder="Nome da rua"
+                            value={candidatoData.street}
+                            onChange={handleInputChange}
+                            className="border-slate-200 focus:border-indigo-500 focus:ring-indigo-500"
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="number" className="text-slate-700">
+                            Número
+                          </Label>
+                          <Input
+                            id="number"
+                            name="number"
+                            placeholder="Número"
+                            value={candidatoData.number}
+                            onChange={handleInputChange}
+                            className="border-slate-200 focus:border-indigo-500 focus:ring-indigo-500"
+                          />
+                        </div>
+
+                        <div className="space-y-2 md:col-span-2">
+                          <Label htmlFor="complement" className="text-slate-700">
+                            Complemento
+                          </Label>
+                          <Textarea
+                            id="complement"
+                            name="complement"
+                            placeholder="Apartamento, bloco, referência, etc."
+                            value={candidatoData.complement}
+                            onChange={handleInputChange}
+                            className="border-slate-200 focus:border-indigo-500 focus:ring-indigo-500"
+                          />
+                        </div>
                       </div>
                     </TabsContent>
 
@@ -707,7 +1115,7 @@ const CandidateInformation: React.FC = () => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default CandidateInformation;
+export default CandidateInformation

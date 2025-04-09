@@ -53,7 +53,7 @@ const DataPersonal = () => {
     });
 
     if (selectedFile) {
-      formData.append("foto", selectedFile);
+      formData.append("photo", selectedFile);
     }
 
     try {
@@ -119,7 +119,7 @@ const DataPersonal = () => {
 
         <div className="mb-3">
           <label className="form-label">Foto</label>
-          <input type="file" accept="image/*" onChange={handleFileChange} className="form-control" name="foto" />
+          <input type="file" accept="image/*" onChange={handleFileChange} className="form-control" name="photo" />
           {preview && (
             <img
               src={preview}

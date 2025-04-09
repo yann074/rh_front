@@ -1,414 +1,260 @@
-import type React from "react"
-import { useState, useEffect } from "react"
-import axios from "axios"
-import Swal from "sweetalert2"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Switch } from "@/components/ui/switch"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
-import {
-  Loader2,
-  User,
-  Save,
-  CheckCircle,
-  Briefcase,
-  Camera,
-  Phone,
-  Mail,
-  Calendar,
-  Linkedin,
-  Award,
-  Heart,
-  Home,
-  MapPin,
-  DollarSign,
-  Car,
-  Instagram,
-  Facebook,
-} from "lucide-react"
-import { Textarea } from "@/components/ui/textarea"
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import Swal from 'sweetalert2';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { Loader2, User, Save, CheckCircle, Briefcase, Camera, Phone, Mail, Calendar, Linkedin, Award, Heart, Home, SearchX } from 'lucide-react';
 
 // Definition of types
 interface UserData {
-  id?: number
-  email: string
-  name: string
-  role?: string
-  created_at?: string
+  id?: number;
+  email: string;
+  name: string;
+  role?: string;
+  created_at?: string;
 }
 
 interface CandidatoData {
-  user_id?: number
-  secondary_email: string
-  cpf: string
-  phone: string
-  birth_date: string
-  linkedin: string
-  pcd: boolean
-  photo: File | null
-  resume: File | null
-  photoPreview: string
-  sex: string
-  sexual_orientation: string
-  race: string
-  gender: string
-  // Localização
-  address?: string
-  zip_code?: string
-  state?: string
-  city?: string
-  neighborhood?: string
-  street?: string
-  number?: string
-  complement?: string
-  // Informações adicionais
-  expected_salary?: string
-  has_driver_license?: boolean
-  driver_license_category?: string
-  instagram_link?: string
-  facebook_link?: string
+  user_id?: number;
+  secondary_email: string;
+  cpf: string;
+  phone: string;
+  birth_date: string;
+  linkedin: string;
+  pcd: boolean;
+  photo: File | null;
+  photoPreview: string;
+  sex: string;
+  sexual_orientation: string;
+  race: string;
+  gender: string;
 }
 
 const CandidateInformation: React.FC = () => {
-  const [loading, setLoading] = useState<boolean>(true)
-  const [saving, setSaving] = useState<boolean>(false)
+  const [loading, setLoading] = useState<boolean>(true);
+  const [saving, setSaving] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<string>("pessoal")
 
-  const [sexUser, setSexUser] = useState<string[]>([])
-  const [gender, setGender] = useState<string[]>([])
-  const [orientation, setOrientation] = useState<string[]>([])
-  const [color, setColor] = useState<string[]>([])
-  const [states, setStates] = useState<string[]>([
-    "AC",
-    "AL",
-    "AP",
-    "AM",
-    "BA",
-    "CE",
-    "DF",
-    "ES",
-    "GO",
-    "MA",
-    "MT",
-    "MS",
-    "MG",
-    "PA",
-    "PB",
-    "PR",
-    "PE",
-    "PI",
-    "RJ",
-    "RN",
-    "RS",
-    "RO",
-    "RR",
-    "SC",
-    "SP",
-    "SE",
-    "TO",
-  ])
-  const [licenseCategories, setLicenseCategories] = useState<string[]>([
-    "A",
-    "B",
-    "C",
-    "D",
-    "E",
-    "AB",
-    "AC",
-    "AD",
-    "AE",
-  ])
+  const [sexUser, setSexUser] = useState<string[]>([]);
+  const [gender, setGender] = useState<string[]>([]);
+  const [orientation, setOrientation] = useState<string[]>([]);
+  const [color, setColor] = useState<string[]>([]);
 
   const [userData, setUserData] = useState<UserData>({
-    email: "",
-    name: "",
-  })
+    email: '',
+    name: ''
+  });
   const [candidatoData, setCandidatoData] = useState<CandidatoData>({
-    secondary_email: "",
-    cpf: "",
-    phone: "",
-    birth_date: "",
-    linkedin: "",
+    secondary_email: '',
+    cpf: '',
+    phone: '',
+    birth_date: '',
+    linkedin: '',
     pcd: false,
     photo: null,
-    resume: null,
-    photoPreview: "",
-    sex: "",
-    sexual_orientation: "",
-    race: "",
-    gender: "",
-    // Localização
-    address: "",
-    zip_code: "",
-    state: "",
-    city: "",
-    neighborhood: "",
-    street: "",
-    number: "",
-    complement: "",
-    // Informações adicionais
-    expected_salary: "",
-    has_driver_license: false,
-    driver_license_category: "",
-    instagram_link: "",
-    facebook_link: "",
-  })
+    photoPreview: '',
+    sex: '',
+    sexual_orientation: '',
+    race: '',
+    gender: ''
+  });
 
   // Calcular o progresso do perfil
   const calculateProfileProgress = () => {
-    let personalProgress = 0
-    let diversityProgress = 0
-    let locationProgress = 0
+    let personalProgress = 0;
+    let diversityProgress = 0;
 
     // Verificar campos pessoais
-    const personalFields = ["secondary_email", "cpf", "phone", "birth_date", "linkedin", "photoPreview"]
-    personalFields.forEach((field) => {
-      if (candidatoData[field as keyof CandidatoData]) personalProgress++
-    })
-    personalProgress = Math.round((personalProgress / personalFields.length) * 100)
+    const personalFields = ['secondary_email', 'cpf', 'phone', 'birth_date', 'linkedin', 'photoPreview'];
+    personalFields.forEach(field => {
+      if (candidatoData[field as keyof CandidatoData]) personalProgress++;
+    });
+    personalProgress = Math.round((personalProgress / personalFields.length) * 100);
 
     // Verificar campos de diversidade
-    const diversityFields = ["sex", "sexual_orientation", "race", "gender"]
-    diversityFields.forEach((field) => {
-      if (candidatoData[field as keyof CandidatoData]) diversityProgress++
-    })
-    diversityProgress = Math.round((diversityProgress / diversityFields.length) * 100)
+    const diversityFields = ['sex', 'sexual_orientation', 'race', 'gender'];
+    diversityFields.forEach(field => {
+      if (candidatoData[field as keyof CandidatoData]) diversityProgress++;
+    });
+    diversityProgress = Math.round((diversityProgress / diversityFields.length) * 100);
 
-    // Verificar campos de localização
-    const locationFields = ["zip_code", "state", "city", "street", "number"]
-    locationFields.forEach((field) => {
-      if (candidatoData[field as keyof CandidatoData]) locationProgress++
-    })
-    locationProgress = Math.round(locationFields.length > 0 ? (locationProgress / locationFields.length) * 100 : 0)
+    return { personalProgress, diversityProgress };
+  };
 
-    return { personalProgress, diversityProgress, locationProgress }
-  }
-
-  const { personalProgress, diversityProgress, locationProgress } = calculateProfileProgress()
-  const totalProgress = Math.round((personalProgress + diversityProgress + locationProgress) / 3)
+  const { personalProgress, diversityProgress } = calculateProfileProgress();
+  const totalProgress = Math.round((personalProgress + diversityProgress) / 2);
 
   // token from storage
-  const token = localStorage.getItem("token") || sessionStorage.getItem("token")
+  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
 
   useEffect(() => {
+    
     // User autenticado
     if (!token) {
       Swal.fire({
-        title: "Erro!",
-        text: "Você precisa estar logado para acessar esta página.",
-        icon: "error",
-        confirmButtonText: "OK",
-        background: "#ffffff",
-        confirmButtonColor: "#6d28d9",
+        title: 'Erro!',
+        text: 'Você precisa estar logado para acessar esta página.',
+        icon: 'error',
+        confirmButtonText: 'OK',
+        background: '#ffffff',
+        confirmButtonColor: '#6d28d9'
       }).then(() => {
         // Redirect to login page
-        window.location.href = "/login"
-      })
-      return
-    }
+        window.location.href = '/login';
+      });
+      return;
+    } 
 
-    fetchUserData()
-  }, [])
+    fetchUserData();
+  }, []);
 
   const fetchUserData = async () => {
     try {
-      const userProfileResponse = await axios.get("http://127.0.0.1:8000/api/userprofile", {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      })
 
+      const userProfileResponse = await axios.get('http://127.0.0.1:8000/api/userprofile', {
+        headers: {
+          Authorization: Bearer ${localStorage.getItem('token')}
+        }
+      });
+      
       //SEMPRE GUARDAR NO LOCALSTORAGE, NAO APAGA ESSE COMENTARIO
       //CONSEGUI PORRA
+    
+      console.log('Usuário autenticado:', userProfileResponse.data);
+      console.log('Token usado:', localStorage.getItem('token'));
+      
+      const user = userProfileResponse.data;
 
-      console.log("Usuário autenticado:", userProfileResponse.data)
-      console.log("Token usado:", localStorage.getItem("token"))
-
-      const user = userProfileResponse.data
-
-      setUserData({
-        name: user.name,
-        email: user.email,
-      })
+        setUserData({
+          name: user.name,
+          email: user.email,
+        });
 
       // Passo 3: Buscar enums
-      const sexUserResponse = await axios.get("http://127.0.0.1:8000/api/enums/sex-user")
+      const sexUserResponse = await axios.get('http://127.0.0.1:8000/api/enums/sex-user');
+  
+      const sexUserData = sexUserResponse.data.data;
+      setSexUser(sexUserData.sexo);
+      setGender(sexUserData.gender);
+      setOrientation(sexUserData.orient);
+      setColor(sexUserData.color);
 
-      const sexUserData = sexUserResponse.data.data
-      setSexUser(sexUserData.sexo)
-      setGender(sexUserData.gender)
-      setOrientation(sexUserData.orient)
-      setColor(sexUserData.color)
-
-      setLoading(false)
+  
+      setLoading(false);
     } catch (error) {
-      console.error("Erro ao buscar dados do usuário:", error)
+      console.error('Erro ao buscar dados do usuário:', error);
       Swal.fire({
-        title: "Aviso",
-        text: "Não foi possível obter suas informações. Por favor, tente novamente mais tarde.",
-        icon: "warning",
-        confirmButtonText: "OK",
-        background: "#ffffff",
-        confirmButtonColor: "#6d28d9",
-      })
-      setLoading(false)
+        title: 'Aviso',
+        text: 'Não foi possível obter suas informações. Por favor, tente novamente mais tarde.',
+        icon: 'warning',
+        confirmButtonText: 'OK',
+        background: '#ffffff',
+        confirmButtonColor: '#6d28d9'
+      });
+      setLoading(false);
     }
-  }
+  };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void => {
-    const { name, value } = e.target
-    setCandidatoData((prev) => ({ ...prev, [name]: value }))
-  }
+  // Removed checkExistingCandidatoData function entirely
 
-  const handleSwitchChange = (checked: boolean, field: keyof CandidatoData): void => {
-    setCandidatoData((prev) => ({ ...prev, [field]: checked }))
-  }
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    const { name, value } = e.target;
+    setCandidatoData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSwitchChange = (checked: boolean): void => {
+    setCandidatoData(prev => ({ ...prev, pcd: checked }));
+  };
 
   const handleSelectChange = (value: string, field: keyof CandidatoData): void => {
-    setCandidatoData((prev) => ({ ...prev, [field]: value }))
-  }
+    setCandidatoData(prev => ({ ...prev, [field]: value }));
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    const file = e.target.files?.[0]
+    const file = e.target.files?.[0];
     if (file) {
       // Store the file object for form submission
-      setCandidatoData((prev) => ({ ...prev, photo: file }))
+      setCandidatoData(prev => ({ ...prev, photo: file }));
 
       // Create preview URL for display
-      const reader = new FileReader()
+      const reader = new FileReader();
       reader.onloadend = () => {
-        const result = reader.result as string
-        setCandidatoData((prev) => ({ ...prev, photoPreview: result }))
-      }
-      reader.readAsDataURL(file)
+        const result = reader.result as string;
+        setCandidatoData(prev => ({ ...prev, photoPreview: result }));
+      };
+      reader.readAsDataURL(file);
     }
-  }
-
-  const handleResumeChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    const file = e.target.files?.[0]
-    if (file && file.type === "application/pdf") {
-      setCandidatoData((prev) => ({ ...prev, resume: file }))
-    } else {
-      Swal.fire({
-        title: "Arquivo inválido!",
-        text: "Por favor, envie um arquivo PDF.",
-        icon: "error",
-        confirmButtonText: "OK",
-        background: "#ffffff",
-        confirmButtonColor: "#6d28d9",
-      })
-    }
-  }
-
-  // Função para buscar endereço pelo CEP
-  const fetchAddressByCep = async (cep: string) => {
-    if (cep.length < 8) return
-
-    try {
-      const formattedCep = cep.replace(/\D/g, "")
-      const response = await axios.get(`https://viacep.com.br/ws/${formattedCep}/json/`)
-
-      if (!response.data.erro) {
-        setCandidatoData((prev) => ({
-          ...prev,
-          street: response.data.logradouro || prev.street,
-          neighborhood: response.data.bairro || prev.neighborhood,
-          city: response.data.localidade || prev.city,
-          state: response.data.uf || prev.state,
-        }))
-      }
-    } catch (error) {
-      console.error("Erro ao buscar CEP:", error)
-    }
-  }
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
-    e.preventDefault()
+    e.preventDefault();
     try {
-      setSaving(true)
+      setSaving(true);
 
       // Create FormData for file upload
-      const formData = new FormData()
+      const formData = new FormData();
 
       // Add all fields to FormData
-      formData.append("secondary_email", candidatoData.secondary_email)
-      formData.append("cpf", candidatoData.cpf)
-      formData.append("phone", candidatoData.phone)
-      formData.append("birth_date", candidatoData.birth_date)
-      formData.append("linkedin", candidatoData.linkedin)
-      formData.append("pcd", candidatoData.pcd ? "1" : "0")
-      formData.append("sex", candidatoData.sex)
-      formData.append("sexual_orientation", candidatoData.sexual_orientation)
-      formData.append("race", candidatoData.race)
-      formData.append("gender", candidatoData.gender)
-
-      // Localização
-      formData.append("zip_code", candidatoData.zip_code || "")
-      formData.append("state", candidatoData.state || "")
-      formData.append("city", candidatoData.city || "")
-      formData.append("neighborhood", candidatoData.neighborhood || "")
-      formData.append("street", candidatoData.street || "")
-      formData.append("number", candidatoData.number || "")
-      formData.append("complement", candidatoData.complement || "")
-
-      // Informações adicionais
-      formData.append("expected_salary", candidatoData.expected_salary || "")
-      formData.append("has_driver_license", candidatoData.has_driver_license ? "1" : "0")
-      formData.append("driver_license_category", candidatoData.driver_license_category || "")
-      formData.append("instagram_link", candidatoData.instagram_link || "")
-      formData.append("facebook_link", candidatoData.facebook_link || "")
+      formData.append('secondary_email', candidatoData.secondary_email);
+      formData.append('cpf', candidatoData.cpf);
+      formData.append('phone', candidatoData.phone);
+      formData.append('birth_date', candidatoData.birth_date);
+      formData.append('linkedin', candidatoData.linkedin);
+      formData.append('pcd', candidatoData.pcd ? '1' : '0');
+      formData.append('sex', candidatoData.sex);
+      formData.append('sexual_orientation', candidatoData.sexual_orientation);
+      formData.append('race', candidatoData.race);
+      formData.append('gender', candidatoData.gender);
 
       // Arquivo de photo
       if (candidatoData.photo) {
-        formData.append("photo", candidatoData.photo)
-      }
-      if (candidatoData.resume) {
-        formData.append("resume", candidatoData.resume)
+        formData.append('photo', candidatoData.photo);
       }
 
       // Mudar isso dps
-      const method = "post"
-      const endpoint = "http://127.0.0.1:8000/api/register-data"
+      const method = 'post';
+      const endpoint = 'http://127.0.0.1:8000/api/register-data';
 
       await axios({
         method,
         url: endpoint,
         data: formData,
         headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
-      })
-      console.log(formData)
+          'Authorization': Bearer ${token},
+          'Content-Type': 'multipart/form-data'
+        }
+      });
 
       Swal.fire({
-        title: "Sucesso!",
-        text: "Seus dados foram salvos com sucesso.",
-        icon: "success",
-        confirmButtonText: "OK",
-        background: "#ffffff",
-        confirmButtonColor: "#6d28d9",
-      })
+        title: 'Sucesso!',
+        text: 'Seus dados foram salvos com sucesso.',
+        icon: 'success',
+        confirmButtonText: 'OK',
+        background: '#ffffff',
+        confirmButtonColor: '#6d28d9'
+      });
     } catch (error) {
-      console.error("Erro ao salvar dados:", error)
+      console.error('Erro ao salvar dados:', error);
       Swal.fire({
-        title: "Erro!",
-        text: "Não foi possível salvar seus dados. Por favor, tente novamente.",
-        icon: "error",
-        confirmButtonText: "OK",
-        background: "#ffffff",
-        confirmButtonColor: "#6d28d9",
-      })
+        title: 'Erro!',
+        text: 'Não foi possível salvar seus dados. Por favor, tente novamente.',
+        icon: 'error',
+        confirmButtonText: 'OK',
+        background: '#ffffff',
+        confirmButtonColor: '#6d28d9'
+      });
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
-  }
+  };
 
   // Rest of the component remains the same...
 
@@ -421,9 +267,8 @@ const CandidateInformation: React.FC = () => {
           <p className="mt-2 text-sm text-center text-slate-500">Estamos preparando tudo para você</p>
         </div>
       </div>
-    )
+    );
   }
-
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Navbar */}

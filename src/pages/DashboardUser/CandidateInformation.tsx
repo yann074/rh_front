@@ -1,262 +1,517 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import Swal from 'sweetalert2';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Loader2, User, Save, CheckCircle, Briefcase, Camera, Phone, Mail, Calendar, Linkedin, Award, Heart, Home, SearchX } from 'lucide-react';
+"use client"
+
+import type React from "react"
+import { useState, useEffect } from "react"
+import axios from "axios"
+import Swal from "sweetalert2"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Switch } from "@/components/ui/switch"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
+import { Progress } from "@/components/ui/progress"
+import { Textarea } from "@/components/ui/textarea"
+import {
+  Loader2,
+  User,
+  Save,
+  CheckCircle,
+  Briefcase,
+  Camera,
+  Phone,
+  Mail,
+  Calendar,
+  Linkedin,
+  Award,
+  Heart,
+  Home,
+  FileText,
+  MapPin,
+  DollarSign,
+  Car,
+  Instagram,
+  Facebook,
+} from "lucide-react"
 
 // Definition of types
 interface UserData {
-  id?: number;
-  email: string;
-  name: string;
-  role?: string;
-  created_at?: string;
+  id?: number
+  email: string
+  name: string
+  role?: string
+  created_at?: string
 }
 
 interface CandidatoData {
-  user_id?: number;
-  secondary_email: string;
-  cpf: string;
-  phone: string;
-  birth_date: string;
-  linkedin: string;
-  pcd: boolean;
-  photo: File | null;
-  photoPreview: string;
-  sex: string;
-  sexual_orientation: string;
-  race: string;
-  gender: string;
+  user_id?: number
+  secondary_email: string
+  cpf: string
+  phone: string
+  birth_date: string
+  linkedin: string
+  pcd: boolean
+  photo: File | null
+  photoPreview: string
+  resume?: File | null
+  resumeName?: string
+  sex: string
+  sexual_orientation: string
+  race: string
+  gender: string
+  expected_salary?: string
+  has_driver_license?: boolean
+  driver_license_category?: string
+  instagram_link?: string
+  facebook_link?: string
+  zip_code?: string
+  state?: string
+  city?: string
+  neighborhood?: string
+  street?: string
+  number?: string
+  complement?: string
+}
+
+// Add this function before the CandidateInformation component
+const formatSocialMediaUrl = (url: string | undefined, domain: string): string | null => {
+  if (!url || url.trim() === "") return null
+
+  // If it already has http:// or https://, return as is
+  if (url.startsWith("http://") || url.startsWith("https://")) {
+    return url
+  }
+
+  // If it has www. but no protocol, add https://
+  if (url.startsWith("www.")) {
+    return `https://${url}`
+  }
+
+  // If it starts with the domain name, add https://
+  if (url.includes(domain)) {
+    return `https://${url}`
+  }
+
+  // Otherwise, assume it's a username or path and construct the full URL
+  return `https://www.${domain}/${url.replace(/^\/+/, "")}`
 }
 
 const CandidateInformation: React.FC = () => {
-  const [loading, setLoading] = useState<boolean>(true);
-  const [saving, setSaving] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true)
+  const [saving, setSaving] = useState<boolean>(false)
   const [activeTab, setActiveTab] = useState<string>("pessoal")
 
-  const [sexUser, setSexUser] = useState<string[]>([]);
-  const [gender, setGender] = useState<string[]>([]);
-  const [orientation, setOrientation] = useState<string[]>([]);
-  const [color, setColor] = useState<string[]>([]);
+  const [sexUser, setSexUser] = useState<string[]>([])
+  const [gender, setGender] = useState<string[]>([])
+  const [orientation, setOrientation] = useState<string[]>([])
+  const [color, setColor] = useState<string[]>([])
 
   const [userData, setUserData] = useState<UserData>({
-    email: '',
-    name: ''
-  });
+    email: "",
+    name: "",
+  })
   const [candidatoData, setCandidatoData] = useState<CandidatoData>({
-    secondary_email: '',
-    cpf: '',
-    phone: '',
-    birth_date: '',
-    linkedin: '',
+    secondary_email: "",
+    cpf: "",
+    phone: "",
+    birth_date: "",
+    linkedin: "",
     pcd: false,
     photo: null,
-    photoPreview: '',
-    sex: '',
-    sexual_orientation: '',
-    race: '',
-    gender: ''
-  });
+    photoPreview: "",
+    resume: null,
+    resumeName: "",
+    sex: "",
+    sexual_orientation: "",
+    race: "",
+    gender: "",
+    expected_salary: "",
+    has_driver_license: false,
+    driver_license_category: "",
+    instagram_link: "",
+    facebook_link: "",
+    zip_code: "",
+    state: "",
+    city: "",
+    neighborhood: "",
+    street: "",
+    number: "",
+    complement: "",
+  })
+
+  // Add validation helpers and state for form errors
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({})
+
+  const validateForm = () => {
+    const errors: Record<string, string> = {}
+
+    // Validate social media URLs
+    if (
+      candidatoData.instagram_link &&
+      !isValidUrl(formatSocialMediaUrl(candidatoData.instagram_link, "instagram.com"))
+    ) {
+      errors.instagram_link = "Por favor, insira um link válido do Instagram"
+    }
+
+    if (candidatoData.facebook_link && !isValidUrl(formatSocialMediaUrl(candidatoData.facebook_link, "facebook.com"))) {
+      errors.facebook_link = "Por favor, insira um link válido do Facebook"
+    }
+
+    // Validate expected salary is a number
+    if (candidatoData.expected_salary && !/^R?\$?\s*\d+(?:[.,]\d{1,2})?$/.test(candidatoData.expected_salary)) {
+      errors.expected_salary = "Por favor, insira um valor numérico válido"
+    }
+
+    setFormErrors(errors)
+    return Object.keys(errors).length === 0
+  }
+
+  const isValidUrl = (url: string | null): boolean => {
+    if (!url) return true // Empty URLs are considered valid (they're optional)
+    try {
+      new URL(url)
+      return true
+    } catch (e) {
+      return false
+    }
+  }
 
   // Calcular o progresso do perfil
   const calculateProfileProgress = () => {
-    let personalProgress = 0;
-    let diversityProgress = 0;
+    let personalProgress = 0
+    let diversityProgress = 0
+    let locationProgress = 0
 
     // Verificar campos pessoais
-    const personalFields = ['secondary_email', 'cpf', 'phone', 'birth_date', 'linkedin', 'photoPreview'];
-    personalFields.forEach(field => {
-      if (candidatoData[field as keyof CandidatoData]) personalProgress++;
-    });
-    personalProgress = Math.round((personalProgress / personalFields.length) * 100);
+    const personalFields = ["secondary_email", "cpf", "phone", "birth_date", "linkedin", "photoPreview"]
+    personalFields.forEach((field) => {
+      if (candidatoData[field as keyof CandidatoData]) personalProgress++
+    })
+    personalProgress = Math.round((personalProgress / personalFields.length) * 100)
 
     // Verificar campos de diversidade
-    const diversityFields = ['sex', 'sexual_orientation', 'race', 'gender'];
-    diversityFields.forEach(field => {
-      if (candidatoData[field as keyof CandidatoData]) diversityProgress++;
-    });
-    diversityProgress = Math.round((diversityProgress / diversityFields.length) * 100);
+    const diversityFields = ["sex", "sexual_orientation", "race", "gender"]
+    diversityFields.forEach((field) => {
+      if (candidatoData[field as keyof CandidatoData]) diversityProgress++
+    })
+    diversityProgress = Math.round((diversityProgress / diversityFields.length) * 100)
 
-    return { personalProgress, diversityProgress };
-  };
+    // Verificar campos de localização
+    const locationFields = ["zip_code", "state", "city", "neighborhood", "street", "number"]
+    locationFields.forEach((field) => {
+      if (candidatoData[field as keyof CandidatoData]) locationProgress++
+    })
+    locationProgress = Math.round((locationProgress / locationFields.length) * 100)
 
-  const { personalProgress, diversityProgress } = calculateProfileProgress();
-  const totalProgress = Math.round((personalProgress + diversityProgress) / 2);
+    return { personalProgress, diversityProgress, locationProgress }
+  }
+
+  const { personalProgress, diversityProgress, locationProgress } = calculateProfileProgress()
+  const totalProgress = Math.round((personalProgress + diversityProgress + locationProgress) / 3)
 
   // token from storage
-  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+  const token = localStorage.getItem("token") || sessionStorage.getItem("token")
 
   useEffect(() => {
-    
     // User autenticado
     if (!token) {
       Swal.fire({
-        title: 'Erro!',
-        text: 'Você precisa estar logado para acessar esta página.',
-        icon: 'error',
-        confirmButtonText: 'OK',
-        background: '#ffffff',
-        confirmButtonColor: '#6d28d9'
+        title: "Erro!",
+        text: "Você precisa estar logado para acessar esta página.",
+        icon: "error",
+        confirmButtonText: "OK",
+        background: "#ffffff",
+        confirmButtonColor: "#6d28d9",
       }).then(() => {
         // Redirect to login page
-        window.location.href = '/login';
-      });
-      return;
-    } 
+        window.location.href = "/login"
+      })
+      return
+    }
 
-    fetchUserData();
-  }, []);
+    fetchUserData()
+  }, [])
 
   const fetchUserData = async () => {
     try {
-
-      const userProfileResponse = await axios.get('http://127.0.0.1:8000/api/userprofile', {
+      const userProfileResponse = await axios.get("http://127.0.0.1:8000/api/userprofile", {
         headers: {
-          Authorization: Bearer ${localStorage.getItem('token')}
-        }
-      });
-      
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      })
+
       //SEMPRE GUARDAR NO LOCALSTORAGE, NAO APAGA ESSE COMENTARIO
       //CONSEGUI PORRA
-    
-      console.log('Usuário autenticado:', userProfileResponse.data);
-      console.log('Token usado:', localStorage.getItem('token'));
-      
-      const user = userProfileResponse.data;
 
-        setUserData({
-          name: user.name,
-          email: user.email,
-        });
+      console.log("Usuário autenticado:", userProfileResponse.data)
+      console.log("Token usado:", localStorage.getItem("token"))
+
+      const user = userProfileResponse.data
+
+      setUserData({
+        name: user.name,
+        email: user.email,
+      })
 
       // Passo 3: Buscar enums
-      const sexUserResponse = await axios.get('http://127.0.0.1:8000/api/enums/sex-user');
-  
-      const sexUserData = sexUserResponse.data.data;
-      setSexUser(sexUserData.sexo);
-      setGender(sexUserData.gender);
-      setOrientation(sexUserData.orient);
-      setColor(sexUserData.color);
+      const sexUserResponse = await axios.get("http://127.0.0.1:8000/api/enums/sex-user")
 
-  
-      setLoading(false);
+      const sexUserData = sexUserResponse.data.data
+      setSexUser(sexUserData.sexo)
+      setGender(sexUserData.gender)
+      setOrientation(sexUserData.orient)
+      setColor(sexUserData.color)
+
+      setLoading(false)
     } catch (error) {
-      console.error('Erro ao buscar dados do usuário:', error);
+      console.error("Erro ao buscar dados do usuário:", error)
       Swal.fire({
-        title: 'Aviso',
-        text: 'Não foi possível obter suas informações. Por favor, tente novamente mais tarde.',
-        icon: 'warning',
-        confirmButtonText: 'OK',
-        background: '#ffffff',
-        confirmButtonColor: '#6d28d9'
-      });
-      setLoading(false);
+        title: "Aviso",
+        text: "Não foi possível obter suas informações. Por favor, tente novamente mais tarde.",
+        icon: "warning",
+        confirmButtonText: "OK",
+        background: "#ffffff",
+        confirmButtonColor: "#6d28d9",
+      })
+      setLoading(false)
     }
-  };
+  }
 
   // Removed checkExistingCandidatoData function entirely
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    const { name, value } = e.target;
-    setCandidatoData(prev => ({ ...prev, [name]: value }));
-  };
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void => {
+    const { name, value } = e.target
+    setCandidatoData((prev) => ({ ...prev, [name]: value }))
+  }
 
-  const handleSwitchChange = (checked: boolean): void => {
-    setCandidatoData(prev => ({ ...prev, pcd: checked }));
-  };
+  const handleSwitchChange = (checked: boolean, field: keyof CandidatoData): void => {
+    setCandidatoData((prev) => ({ ...prev, [field]: checked }))
+  }
 
   const handleSelectChange = (value: string, field: keyof CandidatoData): void => {
-    setCandidatoData(prev => ({ ...prev, [field]: value }));
-  };
+    setCandidatoData((prev) => ({ ...prev, [field]: value }))
+  }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    const file = e.target.files?.[0];
+    const file = e.target.files?.[0]
     if (file) {
       // Store the file object for form submission
-      setCandidatoData(prev => ({ ...prev, photo: file }));
+      setCandidatoData((prev) => ({ ...prev, photo: file }))
 
       // Create preview URL for display
-      const reader = new FileReader();
+      const reader = new FileReader()
       reader.onloadend = () => {
-        const result = reader.result as string;
-        setCandidatoData(prev => ({ ...prev, photoPreview: result }));
-      };
-      reader.readAsDataURL(file);
+        const result = reader.result as string
+        setCandidatoData((prev) => ({ ...prev, photoPreview: result }))
+      }
+      reader.readAsDataURL(file)
     }
-  };
+  }
+
+  const handleResumeChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    const file = e.target.files?.[0]
+    if (file && file.type === "application/pdf") {
+      setCandidatoData((prev) => ({
+        ...prev,
+        resume: file,
+        resumeName: file.name,
+      }))
+    } else if (file) {
+      Swal.fire({
+        title: "Formato inválido",
+        text: "Por favor, selecione apenas arquivos PDF.",
+        icon: "error",
+        confirmButtonText: "OK",
+        background: "#ffffff",
+        confirmButtonColor: "#6d28d9",
+      })
+    }
+  }
+
+  const fetchAddressByCep = async (cep: string): Promise<void> => {
+    if (!cep || cep.length !== 9) return
+
+    try {
+      const response = await axios.get(`https://viacep.com.br/ws/${cep.replace("-", "")}/json/`)
+      if (!response.data.erro) {
+        setCandidatoData((prev) => ({
+          ...prev,
+          street: response.data.logradouro,
+          neighborhood: response.data.bairro,
+          city: response.data.localidade,
+          state: response.data.uf,
+        }))
+      }
+    } catch (error) {
+      console.error("Erro ao buscar CEP:", error)
+      Swal.fire({
+        title: "Erro!",
+        text: "Não foi possível encontrar o endereço para o CEP informado.",
+        icon: "error",
+        confirmButtonText: "OK",
+        background: "#ffffff",
+        confirmButtonColor: "#6d28d9",
+      })
+    }
+  }
+
+  // Helper function to format social media URLs
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
-    e.preventDefault();
+    e.preventDefault()
+
+    // Validate form before submission
+    if (!validateForm()) {
+      Swal.fire({
+        title: "Erro de validação",
+        text: "Por favor, corrija os erros no formulário antes de enviar.",
+        icon: "error",
+        confirmButtonText: "OK",
+        background: "#ffffff",
+        confirmButtonColor: "#6d28d9",
+      })
+      return
+    }
+
     try {
-      setSaving(true);
+      setSaving(true)
 
-      // Create FormData for file upload
-      const formData = new FormData();
+      // Create data object that matches the backend structure
+      const personalData = {
+        // Address info
+        zip_code: candidatoData.zip_code,
+        state: candidatoData.state,
+        city: candidatoData.city,
+        neighborhood: candidatoData.neighborhood,
+        street: candidatoData.street,
+        number: candidatoData.number,
+        complement: candidatoData.complement,
 
-      // Add all fields to FormData
-      formData.append('secondary_email', candidatoData.secondary_email);
-      formData.append('cpf', candidatoData.cpf);
-      formData.append('phone', candidatoData.phone);
-      formData.append('birth_date', candidatoData.birth_date);
-      formData.append('linkedin', candidatoData.linkedin);
-      formData.append('pcd', candidatoData.pcd ? '1' : '0');
-      formData.append('sex', candidatoData.sex);
-      formData.append('sexual_orientation', candidatoData.sexual_orientation);
-      formData.append('race', candidatoData.race);
-      formData.append('gender', candidatoData.gender);
+        // Professional info
+        expected_salary: candidatoData.expected_salary
+          ? Number.parseFloat(candidatoData.expected_salary.replace(/[^\d,]/g, "").replace(",", "."))
+          : null,
+        has_driver_license: candidatoData.has_driver_license ? 1 : 0,
+        driver_license_category: candidatoData.driver_license_category
+          ? Number.parseInt(candidatoData.driver_license_category.replace(/\D/g, "")) || 0
+          : 0,
 
-      // Arquivo de photo
-      if (candidatoData.photo) {
-        formData.append('photo', candidatoData.photo);
+        // Social media - ensure they are valid URLs
+        instagram_link: formatSocialMediaUrl(candidatoData.instagram_link, "instagram.com"),
+        facebook_link: formatSocialMediaUrl(candidatoData.facebook_link, "facebook.com"),
       }
 
-      // Mudar isso dps
-      const method = 'post';
-      const endpoint = 'http://127.0.0.1:8000/api/register-data';
-
-      await axios({
-        method,
-        url: endpoint,
-        data: formData,
+      // Send the data to the personal-data endpoint
+      await axios.post("http://127.0.0.1:8000/api/personal-data", personalData, {
         headers: {
-          'Authorization': Bearer ${token},
-          'Content-Type': 'multipart/form-data'
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      })
+
+      // If we need to send other data like photo, resume, etc. to a different endpoint
+      if (candidatoData.photo || candidatoData.resume) {
+        // Since the register-data endpoint doesn't exist, we'll include all data in the personal-data request
+        const formData = new FormData()
+
+        // Add all the personal data we already sent as JSON
+        Object.entries(personalData).forEach(([key, value]) => {
+          if (value !== null && value !== undefined) {
+            formData.append(key, value.toString())
+          }
+        })
+
+        // Add candidate personal info
+        formData.append("secondary_email", candidatoData.secondary_email)
+        formData.append("cpf", candidatoData.cpf)
+        formData.append("phone", candidatoData.phone)
+        formData.append("birth_date", candidatoData.birth_date)
+        formData.append("linkedin", candidatoData.linkedin)
+        formData.append("pcd", candidatoData.pcd ? "1" : "0")
+        formData.append("sex", candidatoData.sex)
+        formData.append("sexual_orientation", candidatoData.sexual_orientation)
+        formData.append("race", candidatoData.race)
+        formData.append("gender", candidatoData.gender)
+
+        // Add files
+        if (candidatoData.photo) {
+          formData.append("photo", candidatoData.photo)
         }
-      });
+        if (candidatoData.resume) {
+          formData.append("resume", candidatoData.resume)
+        }
+
+        // Send everything to the personal-data endpoint using FormData
+        await axios({
+          method: "post",
+          url: "http://127.0.0.1:8000/api/personal-data",
+          data: formData,
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        })
+      } else {
+        // If there are no files, we've already sent the data as JSON above
+      }
 
       Swal.fire({
-        title: 'Sucesso!',
-        text: 'Seus dados foram salvos com sucesso.',
-        icon: 'success',
-        confirmButtonText: 'OK',
-        background: '#ffffff',
-        confirmButtonColor: '#6d28d9'
-      });
+        title: "Sucesso!",
+        text: "Seus dados foram salvos com sucesso.",
+        icon: "success",
+        confirmButtonText: "OK",
+        background: "#ffffff",
+        confirmButtonColor: "#6d28d9",
+      })
     } catch (error) {
-      console.error('Erro ao salvar dados:', error);
+      console.error("Erro ao salvar dados:", error)
       Swal.fire({
-        title: 'Erro!',
-        text: 'Não foi possível salvar seus dados. Por favor, tente novamente.',
-        icon: 'error',
-        confirmButtonText: 'OK',
-        background: '#ffffff',
-        confirmButtonColor: '#6d28d9'
-      });
+        title: "Erro!",
+        text: "Não foi possível salvar seus dados. Por favor, tente novamente.",
+        icon: "error",
+        confirmButtonText: "OK",
+        background: "#ffffff",
+        confirmButtonColor: "#6d28d9",
+      })
     } finally {
-      setSaving(false);
+      setSaving(false)
     }
-  };
+  }
 
-  // Rest of the component remains the same...
+  // Define license categories and states
+  const licenseCategories = ["A", "B", "C", "D", "E", "AB", "AC", "AD", "AE"]
+  const states = [
+    "AC",
+    "AL",
+    "AP",
+    "AM",
+    "BA",
+    "CE",
+    "DF",
+    "ES",
+    "GO",
+    "MA",
+    "MT",
+    "MS",
+    "MG",
+    "PA",
+    "PB",
+    "PR",
+    "PE",
+    "PI",
+    "RJ",
+    "RN",
+    "RS",
+    "RO",
+    "RR",
+    "SC",
+    "SP",
+    "SE",
+    "TO",
+  ]
 
   if (loading) {
     return (
@@ -267,7 +522,7 @@ const CandidateInformation: React.FC = () => {
           <p className="mt-2 text-sm text-center text-slate-500">Estamos preparando tudo para você</p>
         </div>
       </div>
-    );
+    )
   }
   return (
     <div className="min-h-screen bg-slate-50">
@@ -292,7 +547,7 @@ const CandidateInformation: React.FC = () => {
                 <span className="text-sm text-slate-600 hidden md:inline-block">Olá, {userData.name || "Usuário"}</span>
                 <Avatar className="h-9 w-9 border border-slate-200">
                   {candidatoData.photoPreview ? (
-                    <AvatarImage src={candidatoData.photoPreview} alt="photo de perfil" />
+                    <AvatarImage src={candidatoData.photoPreview || "/placeholder.svg"} alt="photo de perfil" />
                   ) : (
                     <AvatarFallback className="bg-indigo-100 text-indigo-600">
                       {userData.name ? userData.name.charAt(0).toUpperCase() : "U"}
@@ -363,7 +618,7 @@ const CandidateInformation: React.FC = () => {
                   <div className="relative">
                     <Avatar className="h-32 w-32 ring-4 ring-white shadow-md">
                       {candidatoData.photoPreview ? (
-                        <AvatarImage src={candidatoData.photoPreview} alt="photo de perfil" />
+                        <AvatarImage src={candidatoData.photoPreview || "/placeholder.svg"} alt="photo de perfil" />
                       ) : (
                         <AvatarFallback className="bg-indigo-100 text-indigo-800">
                           <User className="h-12 w-12" />
@@ -411,21 +666,27 @@ const CandidateInformation: React.FC = () => {
                     />
                   </div>
 
-                  <div className="mb-4">
-                    <Label htmlFor="resume" className="block text-sm font-medium text-slate-700">
+                  <div className="space-y-2">
+                    <Label htmlFor="resume" className="text-slate-600 flex items-center text-sm">
+                      <FileText className="h-4 w-4 mr-2 text-indigo-500" />
                       Currículo (PDF)
                     </Label>
-                    <Input
-                      id="resume"
-                      type="file"
-                      accept="application/pdf"
-                      onChange={handleResumeChange}
-                      className="mt-1"
-                    />
+                    <div className="mt-1">
+                      <Input
+                        id="resume"
+                        type="file"
+                        accept="application/pdf"
+                        onChange={handleResumeChange}
+                        className="border-slate-200 focus:border-indigo-500 focus:ring-indigo-500"
+                      />
+                      {candidatoData.resumeName && (
+                        <div className="mt-2 flex items-center text-sm text-slate-600">
+                          <FileText className="h-4 w-4 mr-2 text-indigo-500" />
+                          {candidatoData.resumeName}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  {candidatoData.resume && (
-                    <p className="mt-2 text-sm text-slate-600">Arquivo selecionado: {candidatoData.resume.name}</p>
-                  )}
 
                   <div className="flex items-center justify-between bg-indigo-50 p-4 rounded-lg">
                     <Label htmlFor="pcd" className="flex items-center text-slate-700 font-medium">
@@ -454,6 +715,7 @@ const CandidateInformation: React.FC = () => {
                     <div className="flex justify-between mb-2">
                       <span className="text-sm text-slate-600 font-medium">Dados Pessoais</span>
                       <span className="text-sm text-indigo-600 font-medium">{personalProgress}%</span>
+                    </div>
                     </div>
                     <Progress value={personalProgress} className="h-2 bg-slate-100" />
                   </div>
@@ -486,9 +748,8 @@ const CandidateInformation: React.FC = () => {
                       </div>
                     </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
           </div>
 
           {/* Main Content */}
@@ -600,8 +861,13 @@ const CandidateInformation: React.FC = () => {
                             placeholder="R$ 0.000,00"
                             value={candidatoData.expected_salary}
                             onChange={handleInputChange}
-                            className="border-slate-200 focus:border-indigo-500 focus:ring-indigo-500"
+                            className={`border-slate-200 focus:border-indigo-500 focus:ring-indigo-500 ${
+                              formErrors.expected_salary ? "border-red-500" : ""
+                            }`}
                           />
+                          {formErrors.expected_salary && (
+                            <p className="text-red-500 text-sm mt-1">{formErrors.expected_salary}</p>
+                          )}
                         </div>
 
                         <div className="space-y-2">
@@ -658,8 +924,16 @@ const CandidateInformation: React.FC = () => {
                             placeholder="www.instagram.com/seuperfil"
                             value={candidatoData.instagram_link}
                             onChange={handleInputChange}
-                            className="border-slate-200 focus:border-indigo-500 focus:ring-indigo-500"
+                            className={`border-slate-200 focus:border-indigo-500 focus:ring-indigo-500 ${
+                              formErrors.instagram_link ? "border-red-500" : ""
+                            }`}
                           />
+                          {formErrors.instagram_link && (
+                            <p className="text-sm text-red-500 mt-1">{formErrors.instagram_link}</p>
+                          )}
+                          <p className="text-xs text-slate-500 mt-1">
+                            Ex: https://www.instagram.com/seuperfil ou apenas seuperfil
+                          </p>
                         </div>
 
                         <div className="space-y-2">
@@ -673,8 +947,16 @@ const CandidateInformation: React.FC = () => {
                             placeholder="www.facebook.com/seuperfil"
                             value={candidatoData.facebook_link}
                             onChange={handleInputChange}
-                            className="border-slate-200 focus:border-indigo-500 focus:ring-indigo-500"
+                            className={`border-slate-200 focus:border-indigo-500 focus:ring-indigo-500 ${
+                              formErrors.facebook_link ? "border-red-500" : ""
+                            }`}
                           />
+                          {formErrors.facebook_link && (
+                            <p className="text-red-500 text-sm mt-1">{formErrors.facebook_link}</p>
+                          )}
+                          <p className="text-xs text-slate-500 mt-1">
+                            Ex: https://www.facebook.com/seuperfil ou apenas seuperfil
+                          </p>
                         </div>
                       </div>
 
@@ -957,7 +1239,7 @@ const CandidateInformation: React.FC = () => {
           </div>
         </div>
       </div>
-    </div>
+  </div>
   )
 }
 

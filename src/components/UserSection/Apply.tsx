@@ -17,7 +17,6 @@ export default function Apply() {
       return
     }
 
-    // Primeiro verificar se o usuário é um candidato
     checkIfUserIsCandidate()
   }, [id])
 
@@ -30,15 +29,26 @@ export default function Apply() {
         return
       }
 
+      console.log("Verificando status de candidato...")
       const response = await axios.get("http://127.0.0.1:8000/api/check_candidate", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      })
+    });
+    
 
-      setIsCandidate(response.data.isCandidate)
+      console.log("Resposta da API:", response.data)
 
-      if (response.data.isCandidate) {
+      if (response.data && response.data.data && response.data.data.is_candidate !== undefined) {
+        setIsCandidate(response.data.data.is_candidate)
+      } else {
+        console.error("Resposta da API não contém isCandidate:", response.data)
+        setError("Formato de resposta inválido do servidor.")
+        setIsLoading(false)
+        return
+      }
+
+      if (response.data.data.is_candidate) {
         applyForJob()
       } else {
         setIsLoading(false)
@@ -66,7 +76,7 @@ export default function Apply() {
 
       setSuccess(true)
       setIsLoading(false)
-      fetchUserData() // Manter para debug
+      fetchUserData()
     } catch (error) {
       console.error("Erro ao enviar candidatura:", error)
       setError("Erro ao enviar sua candidatura. Tente novamente.")
@@ -90,11 +100,11 @@ export default function Apply() {
   }
 
   const handleGoToHome = () => {
-    navigate("/") // Navegar para a página inicial
+    navigate("/")
   }
 
   const handleGoToProfile = () => {
-    navigate("/userhomepage") // Navegar para a página de perfil do usuário
+    navigate("/userhomepage")
   }
 
   if (isLoading) {
@@ -172,6 +182,5 @@ export default function Apply() {
       </div>
     )
   }
-
 
 }

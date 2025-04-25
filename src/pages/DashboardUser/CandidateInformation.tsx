@@ -378,8 +378,46 @@ const CandidateInformation: React.FC = () => {
 
     try {
       setSaving(true)
+      console.log("Iniciando envio de dados...")
 
-      // Create data object that matches the backend structure
+      // Step 1: Send candidate data with files to /user-data endpoint
+      const candidateFormData = new FormData()
+
+      // Add candidate personal info
+      candidateFormData.append("secondary_email", candidatoData.secondary_email)
+      candidateFormData.append("cpf", candidatoData.cpf)
+      candidateFormData.append("phone", candidatoData.phone)
+      candidateFormData.append("birth_date", candidatoData.birth_date)
+      candidateFormData.append("linkedin", candidatoData.linkedin)
+      candidateFormData.append("pcd", candidatoData.pcd ? "1" : "0")
+      candidateFormData.append("sex", candidatoData.sex)
+      candidateFormData.append("sexual_orientation", candidatoData.sexual_orientation)
+      candidateFormData.append("race", candidatoData.race)
+      candidateFormData.append("gender", candidatoData.gender)
+
+      // Add files
+      if (candidatoData.photo) {
+        candidateFormData.append("photo", candidatoData.photo)
+      }
+
+      if (candidatoData.resume) {
+        candidateFormData.append("resume", candidatoData.resume)
+      }
+
+      console.log("Enviando dados do candidato para a API...")
+      const candidateResponse = await axios({
+        method: "post",
+        url: "http://127.0.0.1:8000/api/user-data", // Correct endpoint with hyphen
+        data: candidateFormData,
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      })
+
+      console.log("Resposta da API (dados do candidato):", candidateResponse.data)
+
+      // Step 2: Send additional personal data to /personal-data endpoint
       const personalData = {
         // Address info
         zip_code: candidatoData.zip_code,
@@ -395,68 +433,22 @@ const CandidateInformation: React.FC = () => {
           ? Number.parseFloat(candidatoData.expected_salary.replace(/[^\d,]/g, "").replace(",", "."))
           : null,
         has_driver_license: candidatoData.has_driver_license ? 1 : 0,
-        driver_license_category: candidatoData.driver_license_category
-          ? Number.parseInt(candidatoData.driver_license_category.replace(/\D/g, "")) || 0
-          : 0,
+        driver_license_category: candidatoData.driver_license_category || "",
 
         // Social media - ensure they are valid URLs
         instagram_link: formatSocialMediaUrl(candidatoData.instagram_link, "instagram.com"),
         facebook_link: formatSocialMediaUrl(candidatoData.facebook_link, "facebook.com"),
       }
 
-      // Send the data to the personal-data endpoint
-      await axios.post("http://127.0.0.1:8000/api/personal-data", personalData, {
+      console.log("Enviando dados pessoais para a API...")
+      const personalDataResponse = await axios.post("http://127.0.0.1:8000/api/personal-data", personalData, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       })
 
-      // If we need to send other data like photo, resume, etc. to a different endpoint
-      if (candidatoData.photo || candidatoData.resume) {
-        // Since the register-data endpoint doesn't exist, we'll include all data in the personal-data request
-        const formData = new FormData()
-
-        // Add all the personal data we already sent as JSON
-        Object.entries(personalData).forEach(([key, value]) => {
-          if (value !== null && value !== undefined) {
-            formData.append(key, value.toString())
-          }
-        })
-
-        // Add candidate personal info
-        formData.append("secondary_email", candidatoData.secondary_email)
-        formData.append("cpf", candidatoData.cpf)
-        formData.append("phone", candidatoData.phone)
-        formData.append("birth_date", candidatoData.birth_date)
-        formData.append("linkedin", candidatoData.linkedin)
-        formData.append("pcd", candidatoData.pcd ? "1" : "0")
-        formData.append("sex", candidatoData.sex)
-        formData.append("sexual_orientation", candidatoData.sexual_orientation)
-        formData.append("race", candidatoData.race)
-        formData.append("gender", candidatoData.gender)
-
-        // Add files
-        if (candidatoData.photo) {
-          formData.append("photo", candidatoData.photo)
-        }
-        if (candidatoData.resume) {
-          formData.append("resume", candidatoData.resume)
-        }
-
-        // Send everything to the personal-data endpoint using FormData
-        await axios({
-          method: "post",
-          url: "http://127.0.0.1:8000/api/personal-data",
-          data: formData,
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
-          },
-        })
-      } else {
-        // If there are no files, we've already sent the data as JSON above
-      }
+      console.log("Resposta da API (dados pessoais):", personalDataResponse.data)
 
       Swal.fire({
         title: "Sucesso!",
@@ -466,11 +458,21 @@ const CandidateInformation: React.FC = () => {
         background: "#ffffff",
         confirmButtonColor: "#6d28d9",
       })
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erro ao salvar dados:", error)
+
+      let errorMessage = "Não foi possível salvar seus dados. Por favor, tente novamente."
+
+      if (error.response) {
+        console.error("Resposta de erro:", error.response.data)
+        if (error.response.data && error.response.data.message) {
+          errorMessage = error.response.data.message
+        }
+      }
+
       Swal.fire({
         title: "Erro!",
-        text: "Não foi possível salvar seus dados. Por favor, tente novamente.",
+        text: errorMessage,
         icon: "error",
         confirmButtonText: "OK",
         background: "#ffffff",
@@ -716,40 +718,40 @@ const CandidateInformation: React.FC = () => {
                       <span className="text-sm text-slate-600 font-medium">Dados Pessoais</span>
                       <span className="text-sm text-indigo-600 font-medium">{personalProgress}%</span>
                     </div>
-                    </div>
-                    <Progress value={personalProgress} className="h-2 bg-slate-100" />
                   </div>
+                  <Progress value={personalProgress} className="h-2 bg-slate-100" />
+                </div>
 
-                  <div>
-                    <div className="flex justify-between mb-2">
-                      <span className="text-sm text-slate-600 font-medium">Diversidade</span>
-                      <span className="text-sm text-indigo-600 font-medium">{diversityProgress}%</span>
-                    </div>
-                    <Progress value={diversityProgress} className="h-2 bg-slate-100" />
+                <div>
+                  <div className="flex justify-between mb-2">
+                    <span className="text-sm text-slate-600 font-medium">Diversidade</span>
+                    <span className="text-sm text-indigo-600 font-medium">{diversityProgress}%</span>
                   </div>
+                  <Progress value={diversityProgress} className="h-2 bg-slate-100" />
+                </div>
 
-                  <div>
-                    <div className="flex justify-between mb-2">
-                      <span className="text-sm text-slate-600 font-medium">Localização</span>
-                      <span className="text-sm text-indigo-600 font-medium">{locationProgress}%</span>
-                    </div>
-                    <Progress value={locationProgress} className="h-2 bg-slate-100" />
+                <div>
+                  <div className="flex justify-between mb-2">
+                    <span className="text-sm text-slate-600 font-medium">Localização</span>
+                    <span className="text-sm text-indigo-600 font-medium">{locationProgress}%</span>
                   </div>
+                  <Progress value={locationProgress} className="h-2 bg-slate-100" />
+                </div>
 
-                  <div className="bg-amber-50 border border-amber-100 rounded-lg p-4">
-                    <div className="flex">
-                      <div className="flex-shrink-0">
-                        <CheckCircle className="h-5 w-5 text-amber-500" />
-                      </div>
-                      <div className="ml-3">
-                        <p className="text-sm text-amber-800">
-                          Perfis completos têm 3x mais chances de serem descobertos por recrutadores.
-                        </p>
-                      </div>
+                <div className="bg-amber-50 border border-amber-100 rounded-lg p-4">
+                  <div className="flex">
+                    <div className="flex-shrink-0">
+                      <CheckCircle className="h-5 w-5 text-amber-500" />
+                    </div>
+                    <div className="ml-3">
+                      <p className="text-sm text-amber-800">
+                        Perfis completos têm 3x mais chances de serem descobertos por recrutadores.
+                      </p>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Main Content */}
@@ -1239,7 +1241,7 @@ const CandidateInformation: React.FC = () => {
           </div>
         </div>
       </div>
-  </div>
+    </div>
   )
 }
 

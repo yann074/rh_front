@@ -257,6 +257,8 @@ const CandidateInformation: React.FC = () => {
         email: user.email,
       })
 
+      
+
       setCandidatoData({
         secondary_email: candidate?.secondary_email || "",
         cpf: candidate?.cpf || "",
@@ -324,22 +326,26 @@ const CandidateInformation: React.FC = () => {
   const handleSelectChange = (value: string, field: keyof CandidatoData): void => {
     setCandidatoData((prev) => ({ ...prev, [field]: value }))
   }
-
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    const file = e.target.files?.[0]
+    const file = e.target.files?.[0];
     if (file) {
-      // Store the file object for form submission
-      setCandidatoData((prev) => ({ ...prev, photo: file }))
-
       // Create preview URL for display
-      const reader = new FileReader()
+      const reader = new FileReader();
+      
       reader.onloadend = () => {
-        const result = reader.result as string
-        setCandidatoData((prev) => ({ ...prev, photoPreview: result }))
-      }
-      reader.readAsDataURL(file)
+        const result = reader.result as string;
+        // Update state with both photo and photoPreview in one go
+        setCandidatoData((prev) => ({
+          ...prev,
+          photo: file, // Store the file object for form submission
+          photoPreview: result, // Store the preview URL for display
+        }));
+      };
+      
+      reader.readAsDataURL(file);
     }
-  }
+  };
+  
 
   const handleResumeChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const file = e.target.files?.[0]

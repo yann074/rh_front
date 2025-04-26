@@ -1,3 +1,5 @@
+"use client"
+
 import { useEffect, useState } from "react"
 import axios from "axios"
 import { useParams, useNavigate } from "react-router-dom"
@@ -30,32 +32,57 @@ export default function Apply() {
       }
 
       console.log("Verificando status de candidato...")
-      const response = await axios.get("http://127.0.0.1:8000/api/check_candidate", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-    });
-    
 
-      console.log("Resposta da API:", response.data)
+      try {
+        // Tenta fazer a requisição
+        const response = await axios.get("http://127.0.0.1:8000/api/check_candidate", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
 
-      if (response.data && response.data.data && response.data.data.is_candidate !== undefined) {
-        setIsCandidate(response.data.data.is_candidate)
-      } else {
-        console.error("Resposta da API não contém isCandidate:", response.data)
-        setError("Formato de resposta inválido do servidor.")
-        setIsLoading(false)
-        return
+        console.log("Resposta de sucesso:", response.data)
+
+        // Verifica se a resposta tem o formato esperado para sucesso
+        if (
+          response.data &&
+          response.data.status_code === 200 &&
+          response.data.message === "success" &&
+          response.data.data &&
+          response.data.data.is_candidate === true
+        ) {
+          console.log("Usuário é candidato - prosseguindo com a candidatura")
+          setIsCandidate(true)
+          applyForJob()
+        } else {
+          // Resposta inesperada
+          console.error("Resposta inesperada da API:", response.data)
+          setError("Resposta inesperada do servidor.")
+          setIsLoading(false)
+        }
+      } catch (apiError: any) {
+        console.log("Erro da API:", apiError.response?.data)
+
+        // Verifica se é o erro específico de "Usuário não é candidato"
+        if (
+          apiError.response &&
+          apiError.response.status === 500 &&
+          apiError.response.data &&
+          apiError.response.data.status_code === 500 &&
+          apiError.response.data.message === "Usuário não é candidato."
+        ) {
+          console.log("Usuário não é candidato - mostrando opções")
+          setIsCandidate(false)
+          setIsLoading(false)
+        } else {
+          // Outros erros
+          throw apiError // Repassa o erro para ser tratado no catch externo
+        }
       }
-
-      if (response.data.data.is_candidate) {
-        applyForJob()
-      } else {
-        setIsLoading(false)
-      }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erro ao verificar status de candidato:", error)
-      setError("Erro ao verificar seu perfil de candidato.")
+      const errorMessage = error.response?.data?.message || "Erro ao verificar seu perfil de candidato."
+      setError(errorMessage)
       setIsLoading(false)
     }
   }
@@ -64,7 +91,7 @@ export default function Apply() {
     try {
       const token = localStorage.getItem("token")
 
-      await axios.post(
+      const response = await axios.post(
         `http://127.0.0.1:8000/api/apply_opportunities/${id}`,
         { id_vaga: id },
         {
@@ -74,12 +101,14 @@ export default function Apply() {
         },
       )
 
+      console.log("Resposta da candidatura:", response.data)
       setSuccess(true)
       setIsLoading(false)
       fetchUserData()
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erro ao enviar candidatura:", error)
-      setError("Erro ao enviar sua candidatura. Tente novamente.")
+      const errorMessage = error.response?.data?.message || "Erro ao enviar sua candidatura. Tente novamente."
+      setError(errorMessage)
       setIsLoading(false)
     }
   }
@@ -107,10 +136,22 @@ export default function Apply() {
     navigate("/userhomepage")
   }
 
+  const handleTryAgain = () => {
+    setError(null)
+    setIsLoading(true)
+    checkIfUserIsCandidate()
+  }
+
+  // Adiciona logs para depuração
+  console.log("Estado atual:", { isCandidate, isLoading, error, success })
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Verificando seu perfil...</p>
+        </div>
       </div>
     )
   }
@@ -118,18 +159,32 @@ export default function Apply() {
   if (error) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative max-w-md" role="alert">
           <strong className="font-bold">Erro! </strong>
           <span className="block sm:inline">{error}</span>
+          <div className="mt-4 flex justify-end space-x-3">
+            <button
+              onClick={handleGoToHome}
+              className="inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:w-auto sm:text-sm"
+            >
+              Voltar para Página Inicial
+            </button>
+            <button
+              onClick={handleTryAgain}
+              className="inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:w-auto sm:text-sm"
+            >
+              Tentar novamente
+            </button>
+          </div>
         </div>
       </div>
     )
   }
 
-  if (!isCandidate) {
+  if (isCandidate === false) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4 z-50">
-        <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6 animate-fade-in">
+        <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
           <div className="text-center">
             <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-yellow-100 mb-4">
               <svg
@@ -178,9 +233,16 @@ export default function Apply() {
         <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative max-w-md">
           <strong className="font-bold">Sucesso! </strong>
           <span className="block sm:inline">Candidatura enviada com sucesso!</span>
+          <button
+            onClick={handleGoToHome}
+            className="mt-3 w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+          >
+            Voltar para Página Inicial
+          </button>
         </div>
       </div>
     )
   }
 
+  return null
 }

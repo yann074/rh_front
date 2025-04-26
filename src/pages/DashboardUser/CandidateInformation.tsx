@@ -1,5 +1,3 @@
-"use client"
-
 import type React from "react"
 import { useState, useEffect } from "react"
 import axios from "axios"
@@ -100,6 +98,7 @@ const formatSocialMediaUrl = (url: string | undefined, domain: string): string |
 }
 
 const CandidateInformation: React.FC = () => {
+  
   const [loading, setLoading] = useState<boolean>(true)
   const [saving, setSaving] = useState<boolean>(false)
   const [activeTab, setActiveTab] = useState<string>("pessoal")
@@ -237,7 +236,7 @@ const CandidateInformation: React.FC = () => {
 
   const fetchUserData = async () => {
     try {
-      const userProfileResponse = await axios.get("http://127.0.0.1:8000/api/userprofile", {
+      const userProfileResponse = await axios.get("http://127.0.0.1:8000/api/user-data", {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -246,14 +245,45 @@ const CandidateInformation: React.FC = () => {
       //SEMPRE GUARDAR NO LOCALSTORAGE, NAO APAGA ESSE COMENTARIO
       //CONSEGUI PORRA
 
-      console.log("Usuário autenticado:", userProfileResponse.data)
+      console.log("Usuário autenticado:", userProfileResponse.data.user)
       console.log("Token usado:", localStorage.getItem("token"))
 
-      const user = userProfileResponse.data
+      const user = userProfileResponse.data.data.user
+      const candidate = userProfileResponse.data.data.candidate
+      const address = userProfileResponse.data.data.address
 
       setUserData({
         name: user.name,
         email: user.email,
+      })
+
+      setCandidatoData({
+        secondary_email: candidate?.secondary_email || "",
+        cpf: candidate?.cpf || "",
+        phone: candidate?.phone || "",
+        birth_date: candidate?.birth_date?.split("T")[0] || "",
+        linkedin: candidate?.linkedin || "",
+        pcd: candidate?.pcd || false,
+        photo: null,
+        photoPreview: candidate?.photo || "",
+        resume: null,
+        resumeName: candidate?.resume?.split("/").pop() || "",
+        sex: candidate?.sex || "",
+        sexual_orientation: candidate?.sexual_orientation || "",
+        race: candidate?.race || "",
+        gender: candidate?.gender || "",
+        expected_salary: address?.expected_salary || "",
+        has_driver_license: Boolean(address?.has_driver_license),
+        driver_license_category: address?.driver_license_category || "",
+        instagram_link: address?.instagram_link || "",
+        facebook_link: address?.facebook_link || "",
+        zip_code: address?.zip_code || "",
+        state: address?.state || "",
+        city: address?.city || "",
+        neighborhood: address?.neighborhood || "",
+        street: address?.street || "",
+        number: address?.number || "",
+        complement: address?.complement || "",
       })
 
       // Passo 3: Buscar enums

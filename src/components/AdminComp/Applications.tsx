@@ -59,7 +59,6 @@ interface EnhancedApplication {
   orient_sexual?: string
   empresa: string
 }
-
 export default function Applications() {
   const [applications, setApplications] = useState<EnhancedApplication[]>([])
   const [loading, setLoading] = useState(true)
@@ -72,11 +71,10 @@ export default function Applications() {
     axios
       .get("http://127.0.0.1:8000/api/apply_opportunities")
       .then((response) => {
-        // Transform the application data to match the CandidateTable structure
         const transformedData = response.data.data.map((app: ApplicationType, index: number) => ({
           id: index + 1,
           name: app.candidato,
-          email: `${app.candidato.toLowerCase().replace(/\s+/g, ".")}@example.com`, // Generate a placeholder email
+          email: `${app.candidato.toLowerCase().replace(/\s+/g, ".")}@example.com`,
           position: "Candidato",
           applicationDate: app.data_aplicacao,
           status: app.status,
@@ -94,7 +92,6 @@ export default function Applications() {
       })
   }, [])
 
-  // Formatação de datas
   const formatDate = (dateString: string) => {
     if (!dateString) return ""
     try {
@@ -148,23 +145,38 @@ export default function Applications() {
       .substring(0, 2)
   }
 
-  // Funções para lidar com ações
-  const handleView = (id: number) => {
-    console.log("Ver candidatura", id)
-    // Implementar lógica para visualizar candidatura
-  }
-
-  const handleScheduleInterview = (id: number) => {
-    console.log("Agendar entrevista", id)
-    // Implementar lógica para agendar entrevista
+  const handleApprove = (id: number) => {
+    axios
+      .post(`http://127.0.0.1:8000/api/applications/${id}/approve`)
+      .then((response) => {
+        console.log("Candidatura aprovada:", response.data)
+        setApplications((prevApplications) =>
+          prevApplications.map((app) =>
+            app.id === id ? { ...app, status: "Aprovado" } : app
+          )
+        )
+      })
+      .catch((error) => {
+        console.error("Erro ao aprovar candidatura:", error)
+      })
   }
 
   const handleReject = (id: number) => {
-    console.log("Rejeitar candidatura", id)
-    // Implementar lógica para rejeitar candidatura
+    axios
+      .post(`http://127.0.0.1:8000/api/applications/${id}/reject`)
+      .then((response) => {
+        console.log("Candidatura rejeitada:", response.data)
+        setApplications((prevApplications) =>
+          prevApplications.map((app) =>
+            app.id === id ? { ...app, status: "Rejeitado" } : app
+          )
+        )
+      })
+      .catch((error) => {
+        console.error("Erro ao rejeitar candidatura:", error)
+      })
   }
 
-  // Filtrar candidaturas com base no termo de pesquisa e no filtro de vaga
   const filteredApplications = applications.filter((app) => {
     const matchesSearch =
       app.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -176,7 +188,6 @@ export default function Applications() {
     return matchesSearch && matchesPosition
   })
 
-  // Get unique vacancies for filter dropdown
   const uniqueVacancies = Array.from(new Set(applications.map((app) => app.vacancy)))
 
   return (
@@ -255,63 +266,43 @@ export default function Applications() {
                               <div className="flex items-center">
                                 <p className="font-medium">{app.name}</p>
                               </div>
-                              <div className="flex items-center text-sm text-gray-500">
-                                <Mail className="h-3 w-3 mr-1" />
+                              <div className="flex items-center text-xs text-muted-foreground">
+                                <Mail className="mr-2 h-4 w-4" />
                                 {app.email}
                               </div>
                             </div>
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge className={getStatusColor(app.status)}>
-                            <div className="flex items-center">
-                              {getStatusIcon(app.status)}
-                              {app.status}
-                            </div>
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Briefcase className="h-4 w-4 text-purple-600" />
-                            {app.vacancy}
+                          <div className={`inline-flex items-center rounded-full py-1 px-3 text-xs font-medium ${getStatusColor(app.status)}`}>
+                            {getStatusIcon(app.status)}
+                            {app.status}
                           </div>
                         </TableCell>
-                        <TableCell>
-                          <span className="text-sm font-medium">{app.empresa}</span>
-                        </TableCell>
+                        <TableCell>{app.vacancy}</TableCell>
+                        <TableCell>{app.empresa}</TableCell>
                         <TableCell>{formatDate(app.applicationDate)}</TableCell>
                         <TableCell className="text-right">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" className="h-8 w-8 p-0">
-                                <span className="sr-only">Abrir menu</span>
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem onClick={() => handleView(app.id)}>
-                                <User className="mr-2 h-4 w-4 text-blue-600" />
-                                Ver Detalhes
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleScheduleInterview(app.id)}>
-                                <Calendar className="mr-2 h-4 w-4 text-purple-600" />
-                                Agendar Entrevista
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem className="text-red-600" onClick={() => handleReject(app.id)}>
-                                <Trash className="mr-2 h-4 w-4" />
-                                Rejeitar
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleApprove(app.id)}
+                          >
+                            Aprovar
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleReject(app.id)}
+                          >
+                            Reprovar
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={7} className="h-24 text-center">
+                      <TableCell colSpan={7} className="text-center">
                         Nenhuma candidatura encontrada.
                       </TableCell>
                     </TableRow>
@@ -320,26 +311,6 @@ export default function Applications() {
               </Table>
             </div>
           )}
-
-          <div className="flex items-center justify-between mt-4">
-            <p className="text-sm text-gray-500">
-              Mostrando {filteredApplications.length} de {applications.length} candidaturas
-            </p>
-            <div className="flex items-center space-x-2">
-              <Button variant="outline" size="sm" disabled>
-                Anterior
-              </Button>
-              <Button variant="outline" size="sm" className="bg-purple-50">
-                1
-              </Button>
-              <Button variant="outline" size="sm">
-                2
-              </Button>
-              <Button variant="outline" size="sm">
-                Próximo
-              </Button>
-            </div>
-          </div>
         </CardContent>
       </Card>
     </div>

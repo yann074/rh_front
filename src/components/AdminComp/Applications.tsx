@@ -59,13 +59,13 @@ interface EnhancedApplication {
   cor?: string
   orient_sexual?: string
   empresa: string
+  approved?: boolean
 }
 export default function Applications() {
   const [applications, setApplications] = useState<EnhancedApplication[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
   const [filterPosition, setFilterPosition] = useState<string>("all")
-  
 
   useEffect(() => {
     setLoading(true)
@@ -152,14 +152,14 @@ export default function Applications() {
       .post(`http://127.0.0.1:8000/api/applications/${id}/approve`) // Certifique-se de que a URL está correta
       .then((response) => {
         console.log("Candidatura aprovada:", response.data);
-  
+
         // Atualiza o status do candidato na tabela sem precisar recarregar as candidaturas
         setApplications((prevApplications) =>
           prevApplications.map((app) =>
-            app.id === id ? { ...app, status: "Aprovado" } : app
+            app.id === id ? { ...app, status: "Aprovado", approved: true } : app
           )
         );
-        
+
         // Aqui, você pode usar o e-mail para enviar ou realizar outra ação
         console.log("Enviar e-mail de aprovação para:", email);
       })
@@ -167,20 +167,20 @@ export default function Applications() {
         console.error("Erro ao aprovar candidatura:", error);
       });
   };
-  
+
   const handleReject = (id: number, email: string) => {
     axios
       .post(`http://127.0.0.1:8000/api/applications/${id}/reject`) // Certifique-se de que a URL está correta
       .then((response) => {
         console.log("Candidatura rejeitada:", response.data);
-  
+
         // Atualiza o status do candidato na tabela sem precisar recarregar as candidaturas
         setApplications((prevApplications) =>
           prevApplications.map((app) =>
-            app.id === id ? { ...app, status: "Rejeitado" } : app
+            app.id === id ? { ...app, status: "Rejeitado", rejected: true } : app
           )
         );
-        
+
         // Aqui, você pode usar o e-mail para enviar ou realizar outra ação
         console.log("Enviar e-mail de rejeição para:", email);
       })
@@ -188,7 +188,6 @@ export default function Applications() {
         console.error("Erro ao rejeitar candidatura:", error);
       });
   };
-  
 
   const filteredApplications = applications.filter((app) => {
     const matchesSearch =
@@ -266,57 +265,59 @@ export default function Applications() {
                   {filteredApplications.length > 0 ? (
                     filteredApplications.map((app) => (
                       <TableRow key={app.id}>
-                      <TableCell className="font-medium">{app.id}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          <Avatar>
-                            <AvatarImage src={app.avatarUrl} alt={app.name} />
-                            <AvatarFallback className="bg-purple-100 text-purple-800">
-                              {getInitials(app.name)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <div className="flex items-center">
-                              <p className="font-medium">{app.name}</p>
-                            </div>
-                            <div className="flex items-center text-xs text-muted-foreground">
-                              <Mail className="mr-2 h-4 w-4" />
-                              {app.email}
+                        <TableCell className="font-medium">{app.id}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <Avatar>
+                              <AvatarImage src={app.avatarUrl} alt={app.name} />
+                              <AvatarFallback className="bg-purple-100 text-purple-800">
+                                {getInitials(app.name)}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <div className="flex items-center">
+                                <p className={`font-medium ${app.approved ? "text-green-600" : ""}`}>
+                                  {app.name}
+                                </p>
+                              </div>
+                              <div className="flex items-center text-xs text-muted-foreground">
+                                <Mail className="mr-2 h-4 w-4" />
+                                {app.email}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className={`inline-flex items-center rounded-full py-1 px-3 text-xs font-medium ${getStatusColor(app.status)}`}>
-                          {getStatusIcon(app.status)}
-                          {app.status}
-                        </div>
-                      </TableCell>
-                      <TableCell>{app.vacancy}</TableCell>
-                      <TableCell>{app.empresa}</TableCell>
-                      <TableCell>{formatDate(app.applicationDate)}</TableCell>
-                      <TableCell className="text-right">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleApprove(app.id, app.email)} // Passando o e-mail para a função
-                        >
-                          Aprovar
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleReject(app.id, app.email)} // Passando o e-mail para a função
-                        >
-                          Reprovar
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                    
+                        </TableCell>
+                        <TableCell>
+                          <div className={`inline-flex items-center rounded-full py-1 px-3 text-xs font-medium ${getStatusColor(app.status)}`}>
+                            {getStatusIcon(app.status)}
+                            {app.status}
+                          </div>
+                        </TableCell>
+                        <TableCell>{app.vacancy}</TableCell>
+                        <TableCell>{app.empresa}</TableCell>
+                        <TableCell>{formatDate(app.applicationDate)}</TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleApprove(app.id, app.email)} // Passando o e-mail para a função
+                          >
+                            Aprovar
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="ml-2"
+                            onClick={() => handleReject(app.id, app.email)} // Passando o e-mail para a função
+                          >
+                            Rejeitar
+                          </Button>
+                        </TableCell>
+                      </TableRow>
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={7} className="text-center">
+                      <TableCell colSpan={7} className="text-center py-10">
                         Nenhuma candidatura encontrada.
                       </TableCell>
                     </TableRow>

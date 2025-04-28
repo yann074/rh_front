@@ -141,10 +141,18 @@ export default function JobsTable() {
         // Falta Implementar lógica para editar vaga
     };
 
-    const handleDelete = (id: number) => {
-        console.log("Deletar vaga", id);
-        // Falta Implementar lógica para deletar vaga
+    const handleDelete = async (id: number) => {
+        if (!window.confirm("Tem certeza que deseja deletar esta vaga?")) return;
+    
+        try {
+            await axios.delete(`http://127.0.0.1:8000/api/opportunities/${id}`);
+            setVagas(prev => prev.filter(v => v.id !== id));
+        } catch (error) {
+            console.error("Erro ao deletar vaga:", error);
+            alert("Erro ao deletar. Tente novamente.");
+        }
     };
+    
 
     const handleViewDetails = async (id: number) => {
         console.log("Ver detalhes da vaga", id);

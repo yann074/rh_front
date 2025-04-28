@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
@@ -121,7 +122,7 @@ const CandidateInformation: React.FC = () => {
 
       const userProfileResponse = await axios.get('http://127.0.0.1:8000/api/userprofile', {
         headers: {
-          Authorization: Bearer ${localStorage.getItem('token')}
+          Authorization: `Bearer ${localStorage.getItem('token')}`
         }
       });
       
@@ -228,7 +229,7 @@ const CandidateInformation: React.FC = () => {
         url: endpoint,
         data: formData,
         headers: {
-          'Authorization': Bearer ${token},
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'multipart/form-data'
         }
       });
@@ -269,6 +270,7 @@ const CandidateInformation: React.FC = () => {
       </div>
     );
   }
+
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Navbar */}
@@ -283,7 +285,10 @@ const CandidateInformation: React.FC = () => {
             </div>
 
             <div className="flex items-center space-x-4">
-              <Button variant="ghost" className="text-slate-600 hover:text-indigo-600 hover:bg-indigo-50">
+              <Button
+                variant="ghost"
+                className="text-slate-600 hover:text-indigo-600 hover:bg-indigo-50"
+              >
                 <Home className="h-5 w-5 mr-2" />
                 Dashboard
               </Button>
@@ -312,8 +317,7 @@ const CandidateInformation: React.FC = () => {
             <div>
               <h1 className="text-3xl md:text-4xl font-bold">Meu Perfil</h1>
               <p className="mt-2 text-indigo-200 max-w-xl">
-                Complete suas informações para aumentar suas chances nas oportunidades de emprego e se destacar para os
-                recrutadores.
+                Complete suas informações para aumentar suas chances nas oportunidades de emprego e se destacar para os recrutadores.
               </p>
             </div>
 
@@ -373,7 +377,7 @@ const CandidateInformation: React.FC = () => {
                     <Button
                       size="sm"
                       className="absolute bottom-0 right-0 rounded-full bg-indigo-600 hover:bg-indigo-700 h-10 w-10 p-0 shadow-md"
-                      onClick={() => document.getElementById("photo-upload")?.click()}
+                      onClick={() => document.getElementById('photo-upload')?.click()}
                     >
                       <Camera className="h-5 w-5" />
                       <input
@@ -411,22 +415,6 @@ const CandidateInformation: React.FC = () => {
                     />
                   </div>
 
-                  <div className="mb-4">
-                    <Label htmlFor="resume" className="block text-sm font-medium text-slate-700">
-                      Currículo (PDF)
-                    </Label>
-                    <Input
-                      id="resume"
-                      type="file"
-                      accept="application/pdf"
-                      onChange={handleResumeChange}
-                      className="mt-1"
-                    />
-                  </div>
-                  {candidatoData.resume && (
-                    <p className="mt-2 text-sm text-slate-600">Arquivo selecionado: {candidatoData.resume.name}</p>
-                  )}
-
                   <div className="flex items-center justify-between bg-indigo-50 p-4 rounded-lg">
                     <Label htmlFor="pcd" className="flex items-center text-slate-700 font-medium">
                       <Award className="h-5 w-5 mr-2 text-indigo-600" />
@@ -435,7 +423,7 @@ const CandidateInformation: React.FC = () => {
                     <Switch
                       id="pcd"
                       checked={candidatoData.pcd}
-                      onCheckedChange={(checked) => handleSwitchChange(checked, "pcd")}
+                      onCheckedChange={handleSwitchChange}
                       className="data-[state=checked]:bg-indigo-600"
                     />
                   </div>
@@ -466,14 +454,6 @@ const CandidateInformation: React.FC = () => {
                     <Progress value={diversityProgress} className="h-2 bg-slate-100" />
                   </div>
 
-                  <div>
-                    <div className="flex justify-between mb-2">
-                      <span className="text-sm text-slate-600 font-medium">Localização</span>
-                      <span className="text-sm text-indigo-600 font-medium">{locationProgress}%</span>
-                    </div>
-                    <Progress value={locationProgress} className="h-2 bg-slate-100" />
-                  </div>
-
                   <div className="bg-amber-50 border border-amber-100 rounded-lg p-4">
                     <div className="flex">
                       <div className="flex-shrink-0">
@@ -500,7 +480,7 @@ const CandidateInformation: React.FC = () => {
                     <CardTitle className="text-xl text-slate-800">Editar Informações</CardTitle>
 
                     <div className="mt-4 md:mt-0">
-                      <TabsList className="grid grid-cols-3 bg-slate-100 p-1">
+                      <TabsList className="grid grid-cols-2 bg-slate-100 p-1">
                         <TabsTrigger
                           value="pessoal"
                           className="font-medium rounded-md data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm"
@@ -512,12 +492,6 @@ const CandidateInformation: React.FC = () => {
                           className="font-medium rounded-md data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm"
                         >
                           Diversidade
-                        </TabsTrigger>
-                        <TabsTrigger
-                          value="localizacao"
-                          className="font-medium rounded-md data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm"
-                        >
-                          Localização
                         </TabsTrigger>
                       </TabsList>
                     </div>
@@ -562,7 +536,7 @@ const CandidateInformation: React.FC = () => {
                         <div className="space-y-2">
                           <Label htmlFor="phone" className="flex items-center text-slate-700">
                             <Phone className="h-4 w-4 mr-2 text-indigo-500" />
-                            Telefone
+                            phone
                           </Label>
                           <Input
                             id="phone"
@@ -588,94 +562,6 @@ const CandidateInformation: React.FC = () => {
                             className="border-slate-200 focus:border-indigo-500 focus:ring-indigo-500"
                           />
                         </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="expected_salary" className="flex items-center text-slate-700">
-                            <DollarSign className="h-4 w-4 mr-2 text-indigo-500" />
-                            Pretensão Salarial
-                          </Label>
-                          <Input
-                            id="expected_salary"
-                            name="expected_salary"
-                            placeholder="R$ 0.000,00"
-                            value={candidatoData.expected_salary}
-                            onChange={handleInputChange}
-                            className="border-slate-200 focus:border-indigo-500 focus:ring-indigo-500"
-                          />
-                        </div>
-
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <Label htmlFor="has_driver_license" className="flex items-center text-slate-700">
-                              <Car className="h-4 w-4 mr-2 text-indigo-500" />
-                              Possui CNH
-                            </Label>
-                            <Switch
-                              id="has_driver_license"
-                              checked={candidatoData.has_driver_license}
-                              onCheckedChange={(checked) => handleSwitchChange(checked, "has_driver_license")}
-                              className="data-[state=checked]:bg-indigo-600"
-                            />
-                          </div>
-
-                          {candidatoData.has_driver_license && (
-                            <div className="mt-3">
-                              <Label htmlFor="driver_license_category" className="text-sm text-slate-700">
-                                Categoria da CNH
-                              </Label>
-                              <Select
-                                value={candidatoData.driver_license_category}
-                                onValueChange={(value) => handleSelectChange(value, "driver_license_category")}
-                              >
-                                <SelectTrigger
-                                  id="driver_license_category"
-                                  className="border-slate-200 focus:border-indigo-500 focus:ring-indigo-500"
-                                >
-                                  <SelectValue placeholder="Selecione uma categoria" />
-                                </SelectTrigger>
-                                <SelectContent className="bg-white border border-slate-200">
-                                  {licenseCategories.map((category, index) => (
-                                    <SelectItem key={index} value={category}>
-                                      {category}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="instagram_link" className="flex items-center text-slate-700">
-                            <Instagram className="h-4 w-4 mr-2 text-indigo-500" />
-                            Instagram
-                          </Label>
-                          <Input
-                            id="instagram_link"
-                            name="instagram_link"
-                            placeholder="www.instagram.com/seuperfil"
-                            value={candidatoData.instagram_link}
-                            onChange={handleInputChange}
-                            className="border-slate-200 focus:border-indigo-500 focus:ring-indigo-500"
-                          />
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="facebook_link" className="flex items-center text-slate-700">
-                            <Facebook className="h-4 w-4 mr-2 text-indigo-500" />
-                            Facebook
-                          </Label>
-                          <Input
-                            id="facebook_link"
-                            name="facebook_link"
-                            placeholder="www.facebook.com/seuperfil"
-                            value={candidatoData.facebook_link}
-                            onChange={handleInputChange}
-                            className="border-slate-200 focus:border-indigo-500 focus:ring-indigo-500"
-                          />
-                        </div>
                       </div>
 
                       <div className="bg-blue-50 rounded-lg p-4 border border-blue-100">
@@ -685,8 +571,7 @@ const CandidateInformation: React.FC = () => {
                           </div>
                           <div className="ml-3">
                             <p className="text-sm text-blue-700">
-                              Seu e-mail principal é <strong>{userData.email}</strong>. O e-mail secundário é opcional e
-                              pode ser usado como contato alternativo.
+                              Seu e-mail principal é <strong>{userData.email}</strong>. O e-mail secundário é opcional e pode ser usado como contato alternativo.
                             </p>
                           </div>
                         </div>
@@ -700,9 +585,7 @@ const CandidateInformation: React.FC = () => {
                           <div>
                             <h3 className="font-medium text-indigo-800 mb-1">Informações de Diversidade</h3>
                             <p className="text-sm text-indigo-700">
-                              Estas informações são opcionais e confidenciais, utilizadas apenas para promover a
-                              diversidade e inclusão em nossos processos seletivos. Não impactam negativamente suas
-                              candidaturas.
+                              Estas informações são opcionais e confidenciais, utilizadas apenas para promover a diversidade e inclusão em nossos processos seletivos. Não impactam negativamente suas candidaturas.
                             </p>
                           </div>
                         </div>
@@ -710,19 +593,17 @@ const CandidateInformation: React.FC = () => {
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
-                          <Label htmlFor="sex" className="text-slate-700 font-medium">
-                            Sexo Biológico
-                          </Label>
-                          <Select value={candidatoData.sex} onValueChange={(value) => handleSelectChange(value, "sex")}>
-                            <SelectTrigger
-                              id="sex"
-                              className="border-slate-200 focus:border-indigo-500 focus:ring-indigo-500"
-                            >
+                          <Label htmlFor="sex" className="text-slate-700 font-medium">sex Biológico</Label>
+                          <Select
+                            value={candidatoData.sex}
+                            onValueChange={(value) => handleSelectChange(value, 'sex')}
+                          >
+                            <SelectTrigger id="sex" className="border-slate-200 focus:border-indigo-500 focus:ring-indigo-500">
                               <SelectValue placeholder="Selecione uma opção" />
                             </SelectTrigger>
                             <SelectContent className="bg-white border border-slate-200">
                               {sexUser.map((sex, index) => (
-                                <SelectItem key={index} value={sex.toLowerCase().replace(/\s+/g, "_")}>
+                                <SelectItem key={index} value={sex.toLowerCase().replace(/\s+/g, '_')}>
                                   {sex}
                                 </SelectItem>
                               ))}
@@ -736,12 +617,9 @@ const CandidateInformation: React.FC = () => {
                           </Label>
                           <Select
                             value={candidatoData.gender}
-                            onValueChange={(value) => handleSelectChange(value, "gender")}
+                            onValueChange={(value) => handleSelectChange(value, 'gender')}
                           >
-                            <SelectTrigger
-                              id="gender"
-                              className="border-slate-200 focus:border-indigo-500 focus:ring-indigo-500"
-                            >
+                            <SelectTrigger id="gender" className="border-slate-200 focus:border-indigo-500 focus:ring-indigo-500">
                               <SelectValue placeholder="Selecione uma opção" />
                             </SelectTrigger>
                             <SelectContent className="bg-white border border-slate-200">
@@ -754,18 +632,16 @@ const CandidateInformation: React.FC = () => {
                           </Select>
                         </div>
 
+
                         <div className="space-y-2">
                           <Label htmlFor="sexual_orientation" className="text-slate-700 font-medium">
                             Orientação Sexual
                           </Label>
                           <Select
                             value={candidatoData.sexual_orientation}
-                            onValueChange={(value) => handleSelectChange(value, "sexual_orientation")}
+                            onValueChange={(value) => handleSelectChange(value, 'sexual_orientation')}
                           >
-                            <SelectTrigger
-                              id="sexual_orientation"
-                              className="border-slate-200 focus:border-indigo-500 focus:ring-indigo-500"
-                            >
+                            <SelectTrigger id="sexual_orientation" className="border-slate-200 focus:border-indigo-500 focus:ring-indigo-500">
                               <SelectValue placeholder="Selecione uma opção" />
                             </SelectTrigger>
                             <SelectContent className="bg-white border border-gray-200">
@@ -778,18 +654,15 @@ const CandidateInformation: React.FC = () => {
                           </Select>
                         </div>
 
+
+
                         <div className="space-y-2">
-                          <Label htmlFor="race" className="text-gray-700">
-                            Raça/Cor/Etnia
-                          </Label>
+                          <Label htmlFor="race" className="text-gray-700">Race/Raça/Etnia</Label>
                           <Select
                             value={candidatoData.race}
-                            onValueChange={(value) => handleSelectChange(value, "race")}
+                            onValueChange={(value) => handleSelectChange(value, 'race')}
                           >
-                            <SelectTrigger
-                              id="race"
-                              className="border-gray-300 focus:border-purple-500 focus:ring-purple-500"
-                            >
+                            <SelectTrigger id="race" className="border-gray-300 focus:border-purple-500 focus:ring-purple-500">
                               <SelectValue placeholder="Selecione uma opção" />
                             </SelectTrigger>
                             <SelectContent className="bg-white border border-gray-200">
@@ -801,133 +674,8 @@ const CandidateInformation: React.FC = () => {
                             </SelectContent>
                           </Select>
                         </div>
-                      </div>
-                    </TabsContent>
 
-                    <TabsContent value="localizacao" className="mt-0 space-y-6">
-                      <div className="bg-indigo-50 p-5 rounded-lg mb-6 border border-indigo-100">
-                        <div className="flex items-start">
-                          <MapPin className="h-5 w-5 mr-3 text-indigo-600 mt-0.5" />
-                          <div>
-                            <h3 className="font-medium text-indigo-800 mb-1">Informações de Localização</h3>
-                            <p className="text-sm text-indigo-700">
-                              Preencha seu endereço completo para que possamos encontrar oportunidades próximas a você e
-                              facilitar o processo de contratação.
-                            </p>
-                          </div>
-                        </div>
-                      </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                          <Label htmlFor="zip_code" className="flex items-center text-slate-700">
-                            <MapPin className="h-4 w-4 mr-2 text-indigo-500" />
-                            CEP
-                          </Label>
-                          <Input
-                            id="zip_code"
-                            name="zip_code"
-                            placeholder="00000-000"
-                            value={candidatoData.zip_code}
-                            onChange={handleInputChange}
-                            onBlur={(e) => fetchAddressByCep(e.target.value)}
-                            className="border-slate-200 focus:border-indigo-500 focus:ring-indigo-500"
-                          />
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="state" className="text-slate-700 font-medium">
-                            Estado
-                          </Label>
-                          <Select
-                            value={candidatoData.state}
-                            onValueChange={(value) => handleSelectChange(value, "state")}
-                          >
-                            <SelectTrigger
-                              id="state"
-                              className="border-slate-200 focus:border-indigo-500 focus:ring-indigo-500"
-                            >
-                              <SelectValue placeholder="Selecione um estado" />
-                            </SelectTrigger>
-                            <SelectContent className="bg-white border border-slate-200">
-                              {states.map((state, index) => (
-                                <SelectItem key={index} value={state}>
-                                  {state}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="city" className="text-slate-700">
-                            Cidade
-                          </Label>
-                          <Input
-                            id="city"
-                            name="city"
-                            placeholder="Sua cidade"
-                            value={candidatoData.city}
-                            onChange={handleInputChange}
-                            className="border-slate-200 focus:border-indigo-500 focus:ring-indigo-500"
-                          />
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="neighborhood" className="text-slate-700">
-                            Bairro
-                          </Label>
-                          <Input
-                            id="neighborhood"
-                            name="neighborhood"
-                            placeholder="Seu bairro"
-                            value={candidatoData.neighborhood}
-                            onChange={handleInputChange}
-                            className="border-slate-200 focus:border-indigo-500 focus:ring-indigo-500"
-                          />
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="street" className="text-slate-700">
-                            Rua
-                          </Label>
-                          <Input
-                            id="street"
-                            name="street"
-                            placeholder="Nome da rua"
-                            value={candidatoData.street}
-                            onChange={handleInputChange}
-                            className="border-slate-200 focus:border-indigo-500 focus:ring-indigo-500"
-                          />
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="number" className="text-slate-700">
-                            Número
-                          </Label>
-                          <Input
-                            id="number"
-                            name="number"
-                            placeholder="Número"
-                            value={candidatoData.number}
-                            onChange={handleInputChange}
-                            className="border-slate-200 focus:border-indigo-500 focus:ring-indigo-500"
-                          />
-                        </div>
-
-                        <div className="space-y-2 md:col-span-2">
-                          <Label htmlFor="complement" className="text-slate-700">
-                            Complemento
-                          </Label>
-                          <Textarea
-                            id="complement"
-                            name="complement"
-                            placeholder="Apartamento, bloco, referência, etc."
-                            value={candidatoData.complement}
-                            onChange={handleInputChange}
-                            className="border-slate-200 focus:border-indigo-500 focus:ring-indigo-500"
-                          />
-                        </div>
                       </div>
                     </TabsContent>
 
@@ -958,7 +706,7 @@ const CandidateInformation: React.FC = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default CandidateInformation
+export default CandidateInformation;

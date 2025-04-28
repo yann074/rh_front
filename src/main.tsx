@@ -18,6 +18,7 @@ import CreateJobs from "@/components/AdminComp/CreateJobs"
 import Applications from "@/components/AdminComp/Applications"
 import AdminRoute from "@/components/ProtectedRoutes/AdminRoute"
 import UserRoute from "@/components/ProtectedRoutes/UserRoute"
+import Company from "@/components/AdminComp/Company"
 
 const CLIENT_ID = "239792615305-dh5fndio5bf43rhha3kji5qe3jpuj7uq.apps.googleusercontent.com"
 
@@ -51,6 +52,10 @@ const rotas = createBrowserRouter([
       {
         path: "app",
         element: <Applications />,
+      },
+      {
+        path: "empresas",
+        element: <Company />,
       },
     ],
   },

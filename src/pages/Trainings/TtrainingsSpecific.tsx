@@ -86,6 +86,34 @@ export default function TrainingsSpecific() {
         }
     };
 
+    const handleDownloadCertificate = async () => {
+        if (!id) return;
+    
+        try {
+            const token = localStorage.getItem('token'); // Ou outro local onde você armazena o token
+    
+            const response = await axios.get(`http://127.0.0.1:8000/api/trainings/${id}/certificate`, {
+                responseType: 'blob', // Importante para PDF
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+    
+            // Criar URL e fazer download automático
+            const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `certificado_treinamento_${id}.pdf`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        } catch (error: any) {
+            console.error("Erro ao baixar o certificado:", error);
+            alert("Não foi possível baixar o certificado. Verifique se você está inscrito ou se o certificado está disponível.");
+        }
+    };
+
+    
     return (
         <div className="flex flex-col min-h-screen bg-gray-50">
             <Header />
@@ -203,6 +231,13 @@ export default function TrainingsSpecific() {
                                         >
                                             Inscrever-se neste treinamento
                                         </Link>
+
+                                        <button 
+                                            onClick={handleDownloadCertificate}
+                                            className="bg-[#723E98] text-white text-center py-3 px-6 rounded-xl hover:bg-purple-800 transition font-semibold flex items-center gap-2"
+                                        >
+                                            Baixar certificado em PDF
+                                        </button>
                                     </div>
                                 </div>
                             </div>

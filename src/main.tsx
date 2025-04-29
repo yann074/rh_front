@@ -19,6 +19,7 @@ import AdminRoute from "@/components/ProtectedRoutes/AdminRoute"
 import UserRoute from "@/components/ProtectedRoutes/UserRoute"
 import Company from "@/components/AdminComp/Company"
 import Trainings from "@/components/AdminComp/Trainings"
+import InitialTrainings from "./pages/Trainings/InitialTrainings"
 
 const CLIENT_ID = "239792615305-dh5fndio5bf43rhha3kji5qe3jpuj7uq.apps.googleusercontent.com"
 
@@ -72,6 +73,11 @@ const rotas = createBrowserRouter([
   {
     path: "/",
     element: <InitialJobs />,
+    errorElement: <ErrorPage />,
+  },
+  {
+    path: "/treinamentos",
+    element: <InitialTrainings />,
     errorElement: <ErrorPage />,
   },
   {

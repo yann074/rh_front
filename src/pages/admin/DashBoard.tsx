@@ -2,7 +2,7 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { Briefcase, Users, UserCircle, Menu, X, LogOut, LayoutDashboard, TrendingUp, Building2 } from "lucide-react"
+import { Briefcase, Users, UserCircle, Menu, X, LogOut, LayoutDashboard, TrendingUp, Building2, BookOpen  } from "lucide-react"
 import { Link, Outlet } from "react-router-dom"
 import {
   LineChart,
@@ -151,7 +151,7 @@ const AdminDashboard: React.FC = () => {
             onClick={() => setCurrentView("empresas")}
           />
             <SidebarItem
-                icon={<Building2 />}
+                icon={<BookOpen  />}
                 title="Capacitações"
                 active={currentView === "trainings"}
                 collapsed={collapsed}

@@ -1,275 +1,227 @@
-import { useState, useEffect } from "react";
-import axios from "axios";
-import { 
-  Trash, 
-  Paintbrush,  
-  MoreHorizontal, 
-  Award, 
-  User, 
-  Calendar, 
-  Search, 
+import { useState, useEffect } from "react"
+import axios from "axios"
+import {
+  Award,
+  User,
+  Search,
   Filter,
-  Briefcase,
-  GraduationCap,
   CheckCircle,
   Clock,
   XCircle,
-  Phone,
-  Mail
-} from "lucide-react";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from "@/components/ui/table";
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle 
-} from "@/components/ui/card";
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuLabel, 
-  DropdownMenuSeparator, 
-  DropdownMenuTrigger 
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Mail,
+} from "lucide-react"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
-interface Candidate {
-  id: number;
-  name: string;
-  email: string;
-  position: string;
-  applicationDate?: string;
-  status?: "Aprovado" | "Em Análise" | "Entrevista" | "Rejeitado" | "Contratado";
-  avatarUrl?: string;
-  experience?: string;
-  education?: string;
-  skills?: string[];
-  vacancy?: string;
-  // Campos de informações pessoais
-  telefone?: string;
-  data_nasc?: string;
-  genero?: string;
-  cor?: string;
-  orient_sexual?: string;
+// Original ApplicationType from the Applications component
+export interface ApplicationType {
+  candidato: string
+  email: string
+  vaga: string
+  empresa: string
+  data_aplicacao: string
+  status: string
 }
 
-export default function CandidateTable() {
-  const [candidates, setCandidates] = useState<Candidate[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterPosition, setFilterPosition] = useState<string>("all");
+// Extended interface to match the CandidateTable structure
+interface EnhancedApplication {
+  id: number
+  name: string
+  email: string
+  position: string
+  applicationDate: string
+  status: string
+  avatarUrl?: string
+  experience?: string
+  education?: string
+  skills?: string[]
+  vacancy: string
+  telefone?: string
+  data_nasc?: string
+  genero?: string
+  cor?: string
+  orient_sexual?: string
+  empresa: string
+  approved?: boolean
+}
+export default function Applications() {
+  const [applications, setApplications] = useState<EnhancedApplication[]>([])
+  const [loading, setLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState("")
+  const [filterPosition, setFilterPosition] = useState<string>("all")
 
   useEffect(() => {
-    setLoading(true);
-    
-    // Fetch user data
-    axios.get("http://127.0.0.1:8000/api/all")
+    setLoading(true)
+
+    axios
+      .get("http://127.0.0.1:8000/api/apply_opportunities")
       .then((response) => {
-        // Create base candidates from first API response
-        const baseUsers = response.data.data || [];
-        
-        // Fetch personal data separately
-        return axios.post("http://127.0.0.1:8000/api/user_personal")
-          .then((personalResponse) => {
-            // Create a map of user_id to personal data
-            const personalMap: Record<string, any> = {};
-            personalResponse.data.forEach((item: any) => {
-              personalMap[item.user_id] = item;
-            });
-            
-            // Combine user data with personal data
-            const enrichedCandidates = baseUsers.map((user: any) => {
-              const personal = personalMap[user.id] || {};
-              
-              return {
-                id: user.id,
-                name: user.name,
-                email: user.email,
-                position: mapToPosition(user.permission),
-                applicationDate: personal.application_date || "",
-                status: personal.status || "Em Análise",
-                avatarUrl: personal.avatar_url || "",
-                experience: personal.experience || "",
-                education: personal.education || "",
-                skills: personal.skills ? personal.skills.split(',') : [],
-                vacancy: personal.vacancy || "",
-                // Personal data
-                telefone: personal.telefone || "",
-                data_nasc: personal.data_nasc || "",
-                genero: personal.genero || "",
-                cor: personal.cor || "",
-                orient_sexual: personal.orient_sexual || ""
-              };
-            });
-            
-            setCandidates(enrichedCandidates);
-            setLoading(false);
-          });
+        const transformedData = response.data.data.map((app: ApplicationType, index: number) => ({
+          id: index + 1,
+          name: app.candidato,
+          email: app.email,
+          position: "Candidato",
+          applicationDate: app.data_aplicacao,
+          status: app.status,
+          vacancy: app.vaga,
+          empresa: app.empresa,
+          experience: "Não informado",
+        }))
+
+        setApplications(transformedData)
+        setLoading(false)
       })
       .catch((error) => {
-        console.error("Erro ao buscar dados:", error);
-        setLoading(false);
-      });
-  }, []);
+        console.error("Erro ao buscar candidaturas:", error)
+        setLoading(false)
+      })
+  }, [])
 
-   // Formatação de datas
   const formatDate = (dateString: string) => {
-    if (!dateString) return "";
+    if (!dateString) return ""
     try {
-      const date = new Date(dateString);
-      return date.toLocaleDateString('pt-BR');
+      const date = new Date(dateString)
+      return date.toLocaleDateString("pt-BR")
     } catch (e) {
-      return dateString;
+      return dateString
     }
-  };
-
-  const mapToPosition = (permission: string): string => {
-    const positions: Record<string, string> = {
-      "Admin": "Desenvolvedor Sênior",
-      "User": "Desenvolvedor Júnior",
-      "Editor": "Designer UX/UI",
-      "Guest": "Analista de Dados"
-    };
-    return positions[permission] || "Desenvolvedor Full Stack";
-  };
+  }
 
   const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Aprovado":
-        return "bg-green-100 text-green-800";
-      case "Em Análise":
-        return "bg-blue-100 text-blue-800";
-      case "Entrevista":
-        return "bg-purple-100 text-purple-800";
-      case "Rejeitado":
-        return "bg-red-100 text-red-800";
-      case "Contratado":
-        return "bg-emerald-100 text-emerald-800";
+    switch (status.toLowerCase()) {
+      case "aprovado":
+        return "bg-green-100 text-green-800"
+      case "em análise":
+        return "bg-blue-100 text-blue-800"
+      case "entrevista":
+        return "bg-purple-100 text-purple-800"
+      case "rejeitado":
+        return "bg-red-100 text-red-800"
+      case "contratado":
+        return "bg-emerald-100 text-emerald-800"
       default:
-        return "bg-gray-100 text-gray-800";
+        return "bg-gray-100 text-gray-800"
     }
-  };
+  }
 
   const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "Aprovado":
-        return <CheckCircle className="h-4 w-4 text-green-600 mr-1" />;
-      case "Em Análise":
-        return <Clock className="h-4 w-4 text-blue-600 mr-1" />;
-      case "Entrevista":
-        return <User className="h-4 w-4 text-purple-600 mr-1" />;
-      case "Rejeitado":
-        return <XCircle className="h-4 w-4 text-red-600 mr-1" />;
-      case "Contratado":
-        return <Award className="h-4 w-4 text-emerald-600 mr-1" />;
+    switch (status.toLowerCase()) {
+      case "aprovado":
+        return <CheckCircle className="h-4 w-4 text-green-600 mr-1" />
+      case "em análise":
+        return <Clock className="h-4 w-4 text-blue-600 mr-1" />
+      case "entrevista":
+        return <User className="h-4 w-4 text-purple-600 mr-1" />
+      case "rejeitado":
+        return <XCircle className="h-4 w-4 text-red-600 mr-1" />
+      case "contratado":
+        return <Award className="h-4 w-4 text-emerald-600 mr-1" />
       default:
-        return null;
+        return null
     }
-  };
+  }
 
   const getInitials = (name: string) => {
     return name
-      .split(' ')
-      .map(part => part[0])
-      .join('')
+      .split(" ")
+      .map((part) => part[0])
+      .join("")
       .toUpperCase()
-      .substring(0, 2);
+      .substring(0, 2)
+  }
+
+  const handleApprove = (id: number, email: string) => {
+    axios
+      .post(`http://127.0.0.1:8000/api/applications/${id}/approve`) // Certifique-se de que a URL está correta
+      .then((response) => {
+        console.log("Candidatura aprovada:", response.data);
+
+        // Atualiza o status do candidato na tabela sem precisar recarregar as candidaturas
+        setApplications((prevApplications) =>
+          prevApplications.map((app) =>
+            app.id === id ? { ...app, status: "Aprovado", approved: true } : app
+          )
+        );
+
+        // Aqui, você pode usar o e-mail para enviar ou realizar outra ação
+        console.log("Enviar e-mail de aprovação para:", email);
+      })
+      .catch((error) => {
+        console.error("Erro ao aprovar candidatura:", error);
+      });
   };
 
-  // Funções para lidar com ações
-  const handleView = (id: number) => {
-    console.log("Ver candidato", id);
-    // Implementar lógica para visualizar candidato
+  const handleReject = (id: number, email: string) => {
+    axios
+      .post(`http://127.0.0.1:8000/api/applications/${id}/reject`) // Certifique-se de que a URL está correta
+      .then((response) => {
+        console.log("Candidatura rejeitada:", response.data);
+
+        // Atualiza o status do candidato na tabela sem precisar recarregar as candidaturas
+        setApplications((prevApplications) =>
+          prevApplications.map((app) =>
+            app.id === id ? { ...app, status: "Rejeitado", rejected: true } : app
+          )
+        );
+
+        // Aqui, você pode usar o e-mail para enviar ou realizar outra ação
+        console.log("Enviar e-mail de rejeição para:", email);
+      })
+      .catch((error) => {
+        console.error("Erro ao rejeitar candidatura:", error);
+      });
   };
 
-  const handleScheduleInterview = (id: number) => {
-    console.log("Agendar entrevista com candidato", id);
-    // Implementar lógica para agendar entrevista
-  };
+  const filteredApplications = applications.filter((app) => {
+    const matchesSearch =
+      app.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      app.vacancy.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      app.empresa.toLowerCase().includes(searchTerm.toLowerCase())
 
-  const handleReject = (id: number) => {
-    console.log("Rejeitar candidato", id);
-    // Implementar lógica para rejeitar candidato
-  };
+    const matchesPosition = filterPosition === "all" || app.vacancy === filterPosition
 
-  // Filtrar candidatos com base no termo de pesquisa e no filtro de cargo
-  const filteredCandidates = candidates.filter(candidate => {
-    const matchesSearch = candidate.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          candidate.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesPosition = filterPosition === "all" || candidate.position === filterPosition;
-    return matchesSearch && matchesPosition;
-  });
+    return matchesSearch && matchesPosition
+  })
 
-  const getGenderIcon = (gender: string | undefined) => {
-    if (!gender) return null;
-    
-    if (gender.toLowerCase().includes("masculino")) {
-      return <span className="text-blue-500">♂</span>;
-    } else if (gender.toLowerCase().includes("feminino")) {
-      return <span className="text-pink-500">♀</span>;
-    } else {
-      return <span className="text-purple-500">⚧</span>;
-    }
-  };
+  const uniqueVacancies = Array.from(new Set(applications.map((app) => app.vacancy)))
 
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <CardTitle className="text-2xl">Candidatos às Vagas</CardTitle>
-            <CardDescription>
-              Gerencie todos os candidatos às vagas disponíveis.
-            </CardDescription>
+            <CardTitle className="text-2xl">Candidaturas Recebidas</CardTitle>
+            <CardDescription>Gerencie todas as candidaturas às vagas disponíveis.</CardDescription>
           </div>
-          <Button className="bg-purple-600 hover:bg-purple-700">
-            Adicionar Candidato
-          </Button>
+          <Button className="bg-purple-600 hover:bg-purple-700">Nova Candidatura</Button>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col md:flex-row gap-4 mb-6">
             <div className="relative flex-1">
               <Search className="absolute left-2 top-3 h-4 w-4 text-gray-400" />
               <Input
-                placeholder="Buscar candidatos..."
+                placeholder="Buscar candidaturas..."
                 className="pl-8"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
             <div className="flex gap-2">
-              <Select
-                value={filterPosition}
-                onValueChange={setFilterPosition}
-              >
+              <Select value={filterPosition} onValueChange={setFilterPosition}>
                 <SelectTrigger className="w-[220px]">
-                  <SelectValue placeholder="Filtrar por cargo" />
+                  <SelectValue placeholder="Filtrar por vaga" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todos os cargos</SelectItem>
-                  <SelectItem value="Desenvolvedor Sênior">Desenvolvedor Sênior</SelectItem>
-                  <SelectItem value="Desenvolvedor Júnior">Desenvolvedor Júnior</SelectItem>
-                  <SelectItem value="Designer UX/UI">Designer UX/UI</SelectItem>
-                  <SelectItem value="Analista de Dados">Analista de Dados</SelectItem>
+                  <SelectItem value="all">Todas as vagas</SelectItem>
+                  {uniqueVacancies.map((vacancy, index) => (
+                    <SelectItem key={index} value={vacancy}>
+                      {vacancy}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               <Button variant="outline" size="icon">
@@ -280,7 +232,7 @@ export default function CandidateTable() {
 
           {loading ? (
             <div className="text-center py-10">
-              <p className="text-gray-500">Carregando candidatos...</p>
+              <p className="text-gray-500">Carregando candidaturas...</p>
             </div>
           ) : (
             <div className="rounded-md border">
@@ -290,119 +242,70 @@ export default function CandidateTable() {
                     <TableHead className="w-[50px]">#</TableHead>
                     <TableHead className="w-[300px]">Candidato</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead>Cargo</TableHead>
                     <TableHead>Vaga</TableHead>
-                    <TableHead>Experiência</TableHead>
+                    <TableHead>Empresa</TableHead>
                     <TableHead>Data de Aplicação</TableHead>
                     <TableHead className="text-right">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredCandidates.length > 0 ? (
-                    filteredCandidates.map((candidate) => (
-                      <TableRow key={candidate.id}>
-                        <TableCell className="font-medium">{candidate.id}</TableCell>
+                  {filteredApplications.length > 0 ? (
+                    filteredApplications.map((app) => (
+                      <TableRow key={app.id}>
+                        <TableCell className="font-medium">{app.id}</TableCell>
                         <TableCell>
                           <div className="flex items-center gap-3">
                             <Avatar>
-                              <AvatarImage src={candidate.avatarUrl} alt={candidate.name} />
+                              <AvatarImage src={app.avatarUrl} alt={app.name} />
                               <AvatarFallback className="bg-purple-100 text-purple-800">
-                                {getInitials(candidate.name)}
+                                {getInitials(app.name)}
                               </AvatarFallback>
                             </Avatar>
                             <div>
                               <div className="flex items-center">
-                                <p className="font-medium">{candidate.name}</p>
-                                {getGenderIcon(candidate.genero)}
+                                <p className={`font-medium ${app.approved ? "text-green-600" : ""}`}>
+                                  {app.name}
+                                </p>
                               </div>
-                              <div className="flex items-center text-sm text-gray-500">
-                                <Mail className="h-3 w-3 mr-1" />
-                                {candidate.email}
+                              <div className="flex items-center text-xs text-muted-foreground">
+                                <Mail className="mr-2 h-4 w-4" />
+                                {app.email}
                               </div>
-                              {candidate.telefone && (
-                                <div className="flex items-center text-xs text-gray-400">
-                                  <Phone className="h-3 w-3 mr-1" />
-                                  {candidate.telefone}
-                                </div>
-                              )}
                             </div>
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge className={getStatusColor(candidate.status || "")}>
-                            <div className="flex items-center">
-                              {getStatusIcon(candidate.status || "")}
-                              {candidate.status}
-                            </div>
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            {candidate.position.includes("Sênior") && <Award className="h-4 w-4 text-yellow-600" />}
-                            {candidate.position.includes("Júnior") && <GraduationCap className="h-4 w-4 text-blue-600" />}
-                            {candidate.position.includes("Designer") && <Paintbrush className="h-4 w-4 text-purple-600" />}
-                            {candidate.position.includes("Analista") && <Briefcase className="h-4 w-4 text-green-600" />}
-                            {candidate.position}
+                          <div className={`inline-flex items-center rounded-full py-1 px-3 text-xs font-medium ${getStatusColor(app.status)}`}>
+                            {getStatusIcon(app.status)}
+                            {app.status}
                           </div>
                         </TableCell>
-                        <TableCell>
-                          <span className="text-sm font-medium">{candidate.vacancy}</span>
-                        </TableCell>
-                        <TableCell>
-                          <span className="text-sm">{candidate.experience}</span>
-                        </TableCell>
-                        <TableCell>{candidate.applicationDate}</TableCell>
+                        <TableCell>{app.vacancy}</TableCell>
+                        <TableCell>{app.empresa}</TableCell>
+                        <TableCell>{formatDate(app.applicationDate)}</TableCell>
                         <TableCell className="text-right">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" className="h-8 w-8 p-0">
-                                <span className="sr-only">Abrir menu</span>
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem onClick={() => handleView(candidate.id)}>
-                                <User className="mr-2 h-4 w-4 text-blue-600" />
-                                Ver Perfil
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleScheduleInterview(candidate.id)}>
-                                <Calendar className="mr-2 h-4 w-4 text-purple-600" />
-                                Agendar Entrevista
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuLabel>Informações Pessoais</DropdownMenuLabel>
-                              <DropdownMenuItem>
-                                <Calendar className="mr-2 h-4 w-4 text-gray-600" />
-                                Nascimento: {formatDate(candidate.data_nasc || "")}
-                              </DropdownMenuItem>
-                              <DropdownMenuItem>
-                                <User className="mr-2 h-4 w-4 text-gray-600" />
-                                Gênero: {candidate.genero || "Não informado"}
-                              </DropdownMenuItem>
-                              <DropdownMenuItem>
-                                <User className="mr-2 h-4 w-4 text-gray-600" />
-                                Cor/Raça: {candidate.cor || "Não informado"}
-                              </DropdownMenuItem>
-                              <DropdownMenuItem>
-                                <User className="mr-2 h-4 w-4 text-gray-600" />
-                                Orientação: {candidate.orient_sexual || "Não informado"}
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem className="text-red-600" onClick={() => handleReject(candidate.id)}>
-                                <Trash className="mr-2 h-4 w-4" />
-                                Rejeitar
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleApprove(app.id, app.email)} // Passando o e-mail para a função
+                          >
+                            Aprovar
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="ml-2"
+                            onClick={() => handleReject(app.id, app.email)} // Passando o e-mail para a função
+                          >
+                            Rejeitar
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={8} className="h-24 text-center">
-                        Nenhum candidato encontrado.
+                      <TableCell colSpan={7} className="text-center py-10">
+                        Nenhuma candidatura encontrada.
                       </TableCell>
                     </TableRow>
                   )}
@@ -410,28 +313,8 @@ export default function CandidateTable() {
               </Table>
             </div>
           )}
-
-          <div className="flex items-center justify-between mt-4">
-            <p className="text-sm text-gray-500">
-              Mostrando {filteredCandidates.length} de {candidates.length} candidatos
-            </p>
-            <div className="flex items-center space-x-2">
-              <Button variant="outline" size="sm" disabled>
-                Anterior
-              </Button>
-              <Button variant="outline" size="sm" className="bg-purple-50">
-                1
-              </Button>
-              <Button variant="outline" size="sm">
-                2
-              </Button>
-              <Button variant="outline" size="sm">
-                Próximo
-              </Button>
-            </div>
-          </div>
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }

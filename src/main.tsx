@@ -15,7 +15,6 @@ import ErrorPage from "@/ErrorPage/ErrorPage"
 import Candidates from "@/components/AdminComp/Candidates"
 import Jobs from "@/components/AdminComp/Jobs"
 import CreateJobs from "@/components/AdminComp/CreateJobs"
-import Applications from "@/components/AdminComp/Applications"
 import AdminRoute from "@/components/ProtectedRoutes/AdminRoute"
 import UserRoute from "@/components/ProtectedRoutes/UserRoute"
 import Company from "@/components/AdminComp/Company"
@@ -48,10 +47,6 @@ const rotas = createBrowserRouter([
       {
         path: "createjobs",
         element: <CreateJobs />,
-      },
-      {
-        path: "app",
-        element: <Applications />,
       },
       {
         path: "empresas",

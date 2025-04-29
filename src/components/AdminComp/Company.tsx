@@ -43,20 +43,31 @@ export default function CompanyTable() {
   const fetchCompanies = () => {
     setLoading(true)
     axios
-      .get("http://127.0.0.1:8000/api/companies")
-      .then((response) => {
-        const enrichedCompanies = response.data.data.Companies.map((company: CompanyType) => ({
-          ...company,
-          createdAt: company.createdAt || getRandomPastDate()
-        }))
-        setCompanies(enrichedCompanies)
-        setLoading(false)
-      })
-      .catch((error) => {
-        console.error("Erro ao buscar empresas:", error)
-        setLoading(false)
-      })
-  }
+    .get("http://127.0.0.1:8000/api/companies")
+    .then((response) => {
+      
+      // Baseado no console que você mostrou, o caminho correto parece ser response.data.data
+      let companiesData = []
+      
+      if (response.data && response.data.data && Array.isArray(response.data.data)) {
+        companiesData = response.data.data
+      }
+      
+      // Transformar os dados para o formato esperado pelo componente
+      const enrichedCompanies = companiesData.map((company: { id: any; name: any; created_at: string | number | Date }) => ({
+        id: company.id,
+        name: company.name,
+        // Formatar a data para exibição (created_at vem como "2025-04-29T00:40:13.000000Z")
+        createdAt: company.created_at ? new Date(company.created_at).toLocaleDateString('pt-BR') : '-'
+      }))
+      setCompanies(enrichedCompanies)
+      setLoading(false)
+    })
+    .catch((error) => {
+      console.error("Erro ao buscar empresas:", error)
+      setLoading(false)
+    })
+}
 
   useEffect(() => {
     fetchCompanies()

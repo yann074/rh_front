@@ -216,20 +216,22 @@ const JobCreationForm: React.FC = () => {
 
               <div className="space-y-2">
                 <Label htmlFor="companies_id">Empresa *</Label>
-                <select
-                  id="companies_id"
-                  value={formData.companies_id}
-                  onChange={(e) => setFormData({ ...formData, companies_id: e.target.value })}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-                  required
+                <Select
+                  value={formData.companies_id ? formData.companies_id.toString() : ""}
+                  onValueChange={(value) => setFormData({ ...formData, companies_id: value })}
                 >
-                  <option value="">Selecione a empresa</option>
-                  {companies.map((company) => (
-                    <option key={company.id} value={company.id}>
-                      {company.name}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger id="select-empresa">
+                    <SelectValue placeholder="Selecione a empresa" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-gray-100">
+
+                    {companies.map((company) => (
+                      <SelectItem key={company.id} value={company.id.toString()}>
+                        {company.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2">

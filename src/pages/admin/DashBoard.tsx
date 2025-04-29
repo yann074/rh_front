@@ -150,6 +150,14 @@ const AdminDashboard: React.FC = () => {
             to="empresas"
             onClick={() => setCurrentView("empresas")}
           />
+            <SidebarItem
+                icon={<Building2 />}
+                title="Capacitações"
+                active={currentView === "trainings"}
+                collapsed={collapsed}
+                to="capacitacoes" 
+                onClick={() => setCurrentView("trainings")}
+              />
         </nav>
 
         {/* Sidebar Footer */}

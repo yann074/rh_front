@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { BookOpen, Clock, Calendar, Loader2, Search, RefreshCw, Award, User, School } from 'lucide-react';
+import { Clock, Calendar, Loader2, Search, RefreshCw, Award, School } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -302,7 +302,7 @@ const InitialTrainings: React.FC = () => {
                     <Button
                       className="w-full bg-purple-700 hover:bg-purple-800 text-white transition-all duration-300 rounded-lg flex items-center justify-center gap-2"
                     >
-                      <Link to={`/trainings/${training.id}`} className="w-full h-full flex items-center justify-center">
+                      <Link to={`/treinamentoss/${training.id}`} className="w-full h-full flex items-center justify-center">
                         Ver Detalhes e Inscrever-se
                       </Link>
                     </Button>

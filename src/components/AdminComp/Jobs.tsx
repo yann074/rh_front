@@ -350,7 +350,7 @@ export default function JobsTable() {
                                                                 <MoreHorizontal className="h-4 w-4" />
                                                             </Button>
                                                         </DropdownMenuTrigger>
-                                                        <DropdownMenuContent align="end">
+                                                        <DropdownMenuContent align="end" className="bg-white border border-gray-200 shadow-lg">
                                                             <DropdownMenuLabel>Ações</DropdownMenuLabel>
                                                             <DropdownMenuSeparator />
                                                             <DropdownMenuItem onClick={() => handleViewDetails(vaga.id)}>

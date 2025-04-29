@@ -21,6 +21,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import Swal from 'sweetalert2';
 
 interface CompanyType {
   id: number
@@ -74,35 +75,55 @@ export default function CompanyTable() {
   }
 
   const handleDelete = async () => {
-    if (!companyToDelete) return
-
-    setIsDeleting(true)
+    if (!companyToDelete) return;
+  
+    setIsDeleting(true);
     try {
-      const token = localStorage.getItem("token") || sessionStorage.getItem("token")
-
+      const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+  
       await axios.delete(`http://127.0.0.1:8000/api/companies/${companyToDelete.id}`, {
         headers: {
           Authorization: token ? `Bearer ${token}` : undefined,
         },
-      })
-
-      setCompanies(companies.filter((company) => company.id !== companyToDelete.id))
-    } catch (error) {
-      console.error("Erro ao excluir empresa:", error)
+      });
+  
+      setCompanies(companies.filter((company) => company.id !== companyToDelete.id));
+  
+      // Exibe o SweetAlert2 de sucesso
+      Swal.fire({
+        title: 'Empresa excluída com sucesso!',
+        text: 'A empresa foi removida da lista.',
+        icon: 'success',
+        confirmButtonText: 'OK',
+        timer: 3000,
+        timerProgressBar: true,
+      });
+  
+    } catch (error: any) {
+      console.error("Erro ao excluir empresa:", error);
+  
+      // Exibe o SweetAlert2 de erro
+      Swal.fire({
+        title: 'Erro ao excluir empresa',
+        text: 'Ocorreu um erro ao tentar excluir a empresa. Tente novamente.',
+        icon: 'error',
+        confirmButtonText: 'OK',
+      });
+  
     } finally {
-      setIsDeleting(false)
-      setDeleteDialogOpen(false)
-      setCompanyToDelete(null)
+      setIsDeleting(false);
+      setDeleteDialogOpen(false);
+      setCompanyToDelete(null);
     }
-  }
+  };
 
   const handleAddCompany = async () => {
-    if (!newCompanyName.trim()) return
-
-    setIsAdding(true)
+    if (!newCompanyName.trim()) return;
+  
+    setIsAdding(true);
     try {
-      const token = localStorage.getItem("token") || sessionStorage.getItem("token")
-
+      const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+  
       const response = await axios.post(
         "http://127.0.0.1:8000/api/companies",
         { name: newCompanyName },
@@ -111,23 +132,43 @@ export default function CompanyTable() {
             Authorization: token ? `Bearer ${token}` : undefined,
           },
         }
-      )
-
-      // Add the new company to the state with a random date if needed
+      );
+  
+      // Adiciona a nova empresa ao estado com uma data aleatória se necessário
       const newCompany = {
         ...response.data.data,
-        createdAt: response.data.data.createdAt || getRandomPastDate()
-      }
-      
-      setCompanies([...companies, newCompany])
-      setNewCompanyName("")
-    } catch (error) {
-      console.error("Erro ao adicionar empresa:", error)
+        createdAt: response.data.data.createdAt || getRandomPastDate(),
+      };
+  
+      setCompanies([...companies, newCompany]);
+      setNewCompanyName("");
+  
+      // Exibe o SweetAlert2 de sucesso
+      Swal.fire({
+        title: 'Empresa adicionada com sucesso!',
+        text: 'A nova empresa foi cadastrada corretamente.',
+        icon: 'success',
+        confirmButtonText: 'OK',
+        timer: 3000,
+        timerProgressBar: true,
+      });
+  
+    } catch (error: any) {
+      console.error("Erro ao adicionar empresa:", error);
+  
+      // Exibe o SweetAlert2 de erro
+      Swal.fire({
+        title: 'Erro ao adicionar empresa',
+        text: 'Ocorreu um erro ao tentar cadastrar a empresa. Tente novamente.',
+        icon: 'error',
+        confirmButtonText: 'OK',
+      });
+  
     } finally {
-      setIsAdding(false)
-      setAddDialogOpen(false)
+      setIsAdding(false);
+      setAddDialogOpen(false);
     }
-  }
+  };
 
   const filteredCompanies = companies.filter((company) => {
     return company.name.toLowerCase().includes(searchTerm.toLowerCase())

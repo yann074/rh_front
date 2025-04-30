@@ -1,261 +1,484 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import Swal from 'sweetalert2';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Separator } from '@/components/ui/separator';
-import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
-import logocs from "@/assets/logocs.svg";
+import type React from "react"
+import { useState, useEffect } from "react"
+import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
+import { Briefcase, Users, UserCircle, Menu, X, LogOut, LayoutDashboard, TrendingUp, Building2, BookOpen  } from "lucide-react"
+import { Link, Outlet } from "react-router-dom"
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  Legend,
+} from "recharts"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
-const LoginPage = () => {
-  const navigate = useNavigate();
-  const [form, setForm] = useState({
-    email: '',
-    password: '',
-    rememberMe: false
-  });
-  const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
+const AdminDashboard: React.FC = () => {
+  const [collapsed, setCollapsed] = useState(false)
+  const [mobileOpen, setMobileOpen] = useState(false)
+  const [currentView, setCurrentView] = useState("dashboard")
+  const [userData, setUserData] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  // Add a new state for job opportunities
+  const [jobOpportunities, setJobOpportunities] = useState<any[]>([])
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setForm(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
+  // Update the useEffect to also fetch job opportunities
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true)
 
-  const handleCheckboxChange = (checked: boolean) => {
-    setForm(prev => ({
-      ...prev,
-      rememberMe: checked
-    }));
-  };
+        // Fetch user data
+        const userResponse = await fetch("http://127.0.0.1:8000/api/users")
+        const userData = await userResponse.json()
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setLoading(true);
+        // Fetch job opportunities
+        const jobsResponse = await fetch("http://127.0.0.1:8000/api/opportunities")
+        const jobsData = await jobsResponse.json()
 
-    axios
-      .post("http://127.0.0.1:8000/api/login", {
-        email: form.email,
-        password: form.password,
-      }, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      })
-      .then((response) => {
-        console.log("Resposta de login:", response.data);
-
-        // Verifica a estrutura da resposta para encontrar os dados do usuário
-        const userData = response.data.data?.user || response.data.data;
-        console.log("Dados do usuário:", userData);
-        
-        // Armazena o token
-        sessionStorage.setItem("token", response.data.data.token);
-        localStorage.setItem("token", response.data.data.token);
-        
-        // Armazena os dados do usuário incluindo a permissão
-        if (userData) {
-          sessionStorage.setItem("userData", JSON.stringify(userData));
-          localStorage.setItem("userData", JSON.stringify(userData));
-          console.log("Permissão do usuário:", userData.permission);
-        }
-
-        // Verifica se o usuário é admin e redireciona para o dashboard
-        if (userData && userData.permission === 'admin') {
-          console.log("Usuário é admin, redirecionando para dashboard");
-          
-          Swal.fire({
-            icon: 'success',
-            title: 'Login de administrador realizado com sucesso!',
-            text: 'Redirecionando para o dashboard...',
-            toast: true,
-            position: 'top-end',
-            showConfirmButton: false,
-            timer: 1500,
-            timerProgressBar: true,
-          });
-          
-          // Usar setTimeout para garantir que o redirecionamento aconteça após a mensagem
-          setTimeout(() => {
-            navigate("dashboard");
-          }, 1600);
+        if (userData.status_code === 200) {
+          setUserData(userData.data)
         } else {
-          console.log("Usuário regular, redirecionando para página inicial");
-          
-          Swal.fire({
-            icon: 'success',
-            title: 'Login realizado com sucesso!',
-            toast: true,
-            position: 'top-end',
-            showConfirmButton: false,
-            timer: 1500,
-            timerProgressBar: true,
-          });
-          
-          setTimeout(() => {
-            navigate("/");
-          }, 1600);
+          setError("Failed to fetch user data")
         }
-      })
-      .catch((error) => {
-        console.error("Erro de login:", error);
-        Swal.fire('Erro!', 'Credenciais inválidas. Tente novamente.', 'error');
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  };
 
-  const handleGoogleLogin = () => {
-    console.log('Login com Google iniciado');
-  };
+        if (jobsData.status_code === 200) {
+          setJobOpportunities(jobsData.data)
+        } else {
+          console.error("Failed to fetch job opportunities")
+        }
+      } catch (err) {
+        setError("Error connecting to the server")
+        console.error(err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [])
+
+  // Dados de inscrições por área de interesse (mantido pois não está na API)
+  const dadosPorArea = [
+    { area: "Desenvolvimento Web", inscritos: 250 },
+    { area: "Data Science", inscritos: 180 },
+    { area: "Mobile", inscritos: 120 },
+    { area: "DevOps", inscritos: 90 },
+    { area: "UX/UI", inscritos: 150 },
+  ]
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12">
-      <div className="w-full max-w-md">
-        {/* Logo */}
-        <div className="flex justify-center mb-8">
-          <div className="w-16 h-16 bg-purple-700 flex items-center justify-center rounded-xl shadow-lg">
-            <img src={logocs} alt="" />
+    <div className="h-screen flex bg-gray-100">
+      {/* Mobile Sidebar Overlay */}
+      {mobileOpen && <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={() => setMobileOpen(false)} />}
+
+      {/* Sidebar */}
+      <aside
+        className={cn(
+          "fixed lg:static inset-y-0 left-0 z-50 flex flex-col w-64 bg-white border-r border-gray-200 transition-all duration-300 ease-in-out",
+          {
+            "-translate-x-full lg:translate-x-0 lg:w-20": collapsed,
+            "translate-x-0": mobileOpen,
+            "-translate-x-full lg:translate-x-0": !mobileOpen,
+          },
+        )}
+      >
+        {/* Sidebar Header */}
+        <div className="h-16 flex items-center justify-between px-4 border-b border-gray-200">
+          <div
+            className={cn("flex items-center", {
+              "justify-center w-full": collapsed,
+            })}
+          >
+            <Briefcase className="h-6 w-6 text-purple-700 flex-shrink-0" />
+            {!collapsed && <span className="ml-2 text-lg font-semibold text-purple-700">CS Instituto</span>}
           </div>
+          <Button variant="ghost" size="icon" className="lg:flex hidden" onClick={() => setCollapsed(!collapsed)}>
+            <Menu className="h-5 w-5" />
+          </Button>
+          <Button variant="ghost" size="icon" className="lg:hidden flex" onClick={() => setMobileOpen(false)}>
+            <X className="h-5 w-5" />
+          </Button>
         </div>
 
-        <Card className="border-none shadow-xl">
-          <CardHeader className="space-y-1 text-center">
-            <CardTitle className="text-2xl font-bold">Bem-vindo de volta</CardTitle>
-            <CardDescription>
-              Entre com suas credenciais para acessar sua conta
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Google Login Button */}
-            <Button
-              variant="outline"
-              className="w-full flex items-center justify-center gap-2 py-5"
-              onClick={handleGoogleLogin}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
-                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
-                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
-                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
-                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
-                <path d="M1 1h22v22H1z" fill="none" />
-              </svg>
-              Continuar com Google
+        {/* Sidebar Navigation */}
+        <nav className="h-67 py-4 px-2 flex flex-col space-y-2 overflow-y-auto">
+          <SidebarItem
+            icon={<LayoutDashboard />}
+            title="Dashboard"
+            active={currentView === "dashboard"}
+            collapsed={collapsed}
+            to="/dashboard"
+            onClick={() => setCurrentView("dashboard")}
+          />
+          <SidebarItem
+            icon={<Users />}
+            title="Banco de Talentos"
+            active={currentView === "bancodetalentos"}
+            collapsed={collapsed}
+            to="bancodetalentos"
+            onClick={() => setCurrentView("bancodetalentos")}
+          />
+          <SidebarItem
+            icon={<Briefcase />}
+            title="Vagas"
+            active={currentView === "vagas"}
+            collapsed={collapsed}
+            to="adminjobs"
+            onClick={() => setCurrentView("vagas")}
+          />
+          <SidebarItem
+            icon={<UserCircle />}
+            title="Usuários"
+            active={currentView === "usuarios"}
+            collapsed={collapsed}
+            to="candidates"
+            onClick={() => setCurrentView("usuarios")}
+          />
+          <SidebarItem
+            icon={<Building2 />}
+            title="Empresas"
+            active={currentView === "empresas"}
+            collapsed={collapsed}
+            to="empresas"
+            onClick={() => setCurrentView("empresas")}
+          />
+            <SidebarItem
+                icon={<BookOpen  />}
+                title="Capacitações"
+                active={currentView === "trainings"}
+                collapsed={collapsed}
+                to="capacitacoes" 
+                onClick={() => setCurrentView("trainings")}
+              />
+        </nav>
+
+        {/* Sidebar Footer */}
+        <div className="p-4 border-t border-gray-200">
+          <SidebarItem
+            icon={<LogOut />}
+            title="Sair"
+            collapsed={collapsed}
+            to="/login"
+            className="text-red-500 hover:text-red-600 hover:bg-red-50"
+          />
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Top Navbar */}
+        <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-5">
+          <div className="flex items-center">
+            <Button variant="ghost" size="icon" className="lg:hidden mr-2" onClick={() => setMobileOpen(true)}>
+              <Menu className="h-5 w-5" />
             </Button>
+            <h1 className="text-lg font-semibold">
+              {currentView === "dashboard" && "Painel Administrativo"}
+              {currentView === "bancodetalentos" && "Banco de Talentos"}
+              {currentView === "vagas" && "Gestão de Vagas"}
+              {currentView === "usuarios" && "Gerenciamento de Usuários"}
+            </h1>
+          </div>
+          <div className="flex items-center space-x-2">
+            <div className="w-8 h-8 rounded-full bg-purple-700 flex items-center justify-center text-white">A</div>
+            <span className="text-sm font-medium">Admin</span>
+          </div>
+        </header>
 
-            <div className="flex items-center space-x-2">
-              <Separator className="flex-grow" />
-              <span className="text-xs text-gray-500">OU</span>
-              <Separator className="flex-grow" />
+        {/* Page Content */}
+        <main className="flex-1 overflow-y-auto p-6 bg-gray-100">
+          {currentView === "dashboard" ? (
+            <div className="max-w-7xl mx-auto">
+              <h2 className="text-2xl font-bold mb-6">Dashboard</h2>
+
+              {/* Stats Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">Total de Inscritos</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{userData ? userData["Count IDs"] : "-"}</div>
+                    <p className="text-xs text-muted-foreground">candidatos no banco de talentos</p>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">Crescimento Mensal</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-green-600">
+                      {userData && userData["Usuarios por data"].length > 0
+                        ? `${userData["Usuarios por data"].reduce((sum: number, item: any) => sum + item.inscritos, 0)}%`
+                        : "-"}
+                    </div>
+                    <p className="text-xs text-muted-foreground">em relação ao mês anterior</p>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">Taxa de Conversão</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">
+                      {userData
+                        ? `${Math.round((userData["Usuarios"].filter((user: any) => user.active).length / userData["Count IDs"]) * 100)}%`
+                        : "-"}
+                    </div>
+                    <p className="text-xs text-muted-foreground">candidatos ativos</p>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">
+                      Usuários Administradores
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">
+                      {userData ? userData["Usuarios"].filter((user: any) => user.permission === "admin").length : "-"}
+                    </div>
+                    <p className="text-xs text-muted-foreground">com permissões especiais</p>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Charts */}
+              <Tabs defaultValue="diario" className="mb-6">
+                <div className="mb-4 flex items-center justify-between">
+                  <h3 className="text-lg font-semibold flex items-center">
+                    <TrendingUp className="h-5 w-5 mr-2 text-purple-700" />
+                    Inscrições de Usuários
+                  </h3>
+                  <TabsList>
+                    <TabsTrigger value="diario">Diário</TabsTrigger>
+                    <TabsTrigger value="areas">Por Área</TabsTrigger>
+                  </TabsList>
+                </div>
+
+                <TabsContent value="diario">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Inscrições Diárias</CardTitle>
+                      <CardDescription>Total de novos candidatos registrados por dia</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      {loading ? (
+                        <div className="h-80 flex items-center justify-center">Carregando dados...</div>
+                      ) : error ? (
+                        <div className="h-80 flex items-center justify-center text-red-500">{error}</div>
+                      ) : (
+                        <div className="h-80">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <LineChart
+                              data={userData["Usuarios por data"]}
+                              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                            >
+                              <CartesianGrid strokeDasharray="3 3" />
+                              <XAxis dataKey="dia" />
+                              <YAxis />
+                              <Tooltip />
+                              <Line
+                                type="monotone"
+                                dataKey="inscritos"
+                                stroke="#8884d8"
+                                activeDot={{ r: 8 }}
+                                strokeWidth={2}
+                              />
+                            </LineChart>
+                          </ResponsiveContainer>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="areas">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Inscrições por Área de Interesse</CardTitle>
+                      <CardDescription>Distribuição dos candidatos por especialidade</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-80">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart data={dadosPorArea} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="area" />
+                            <YAxis />
+                            <Tooltip />
+                            <Legend />
+                            <Bar dataKey="inscritos" fill="#8884d8" />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              </Tabs>
+
+              {/* Placeholder Content */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Últimas Inscrições</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {loading ? (
+                      <div className="flex items-center justify-center py-4">Carregando dados...</div>
+                    ) : error ? (
+                      <div className="flex items-center justify-center py-4 text-red-500">{error}</div>
+                    ) : (
+                      <div className="space-y-4">
+                        {userData &&
+                          userData["Usuarios"].slice(0, 3).map((user: any) => (
+                            <div key={user.id} className="flex items-center space-x-3">
+                              <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-700">
+                                {user.name.charAt(0)}
+                              </div>
+                              <div>
+                                <p className="text-sm font-medium">{user.name}</p>
+                                <p className="text-xs text-gray-500">{user.email}</p>
+                              </div>
+                            </div>
+                          ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Atividades Recentes</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {[
+                        { acao: "Nova vaga publicada", tempo: "10 min atrás" },
+                        { acao: "Candidato contratado", tempo: "2 horas atrás" },
+                        { acao: "Perfil atualizado", tempo: "5 horas atrás" },
+                      ].map((item, i) => (
+                        <div
+                          key={i}
+                          className="flex items-center justify-between border-b pb-3 last:border-b-0 last:pb-0"
+                        >
+                          <p className="text-sm">{item.acao}</p>
+                          <p className="text-xs text-gray-500">{item.tempo}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Últimas Vagas</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {loading ? (
+                      <div className="flex items-center justify-center py-4">Carregando vagas...</div>
+                    ) : (
+                      <div className="space-y-4">
+                        {jobOpportunities.length > 0 ? (
+                          [...jobOpportunities]
+                            .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+                            .slice(0, 3)
+                            .map((job) => (
+                              <div key={job.id} className="border-b pb-3 last:border-b-0 last:pb-0">
+                                <div className="flex items-center justify-between">
+                                  <p className="text-sm font-medium">{job.title}</p>
+                                  <span
+                                    className={`text-xs px-2 py-1 rounded-full ${
+                                      job.status === "aberto" || job.status === "ativo"
+                                        ? "bg-green-100 text-green-800"
+                                        : "bg-gray-100 text-gray-800"
+                                    }`}
+                                  >
+                                    {job.status}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between mt-1">
+                                  <p className="text-xs text-gray-500">{job.job_type}</p>
+                                  <p className="text-xs text-gray-500">
+                                    {new Date(job.created_at).toLocaleDateString("pt-BR")}
+                                  </p>
+                                </div>
+                              </div>
+                            ))
+                        ) : (
+                          <p className="text-sm text-gray-500 text-center">Nenhuma vaga disponível</p>
+                        )}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
             </div>
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <div className="relative">
-                  <div className="absolute left-3 top-3 text-gray-400">
-                    <Mail size={16} />
-                  </div>
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    placeholder="seu@email.com"
-                    value={form.email}
-                    onChange={handleChange}
-                    className="pl-10"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <Label htmlFor="password">Senha</Label>
-                  <a
-                    href="#"
-                    className="text-xs text-purple-700 hover:underline"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      navigate("/recuperar-senha");
-                    }}
-                  >
-                    Esqueceu a senha?
-                  </a>
-                </div>
-                <div className="relative">
-                  <div className="absolute left-3 top-3 text-gray-400">
-                    <Lock size={16} />
-                  </div>
-                  <Input
-                    id="password"
-                    name="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="••••••••"
-                    value={form.password}
-                    onChange={handleChange}
-                    className="pl-10"
-                    required
-                  />
-                  <button
-                    type="button"
-                    className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="rememberMe"
-                  checked={form.rememberMe}
-                  onCheckedChange={handleCheckboxChange}
-                />
-                <Label htmlFor="rememberMe" className="text-sm cursor-pointer">Lembrar de mim</Label>
-              </div>
-
-              <Button
-                type="submit"
-                className="w-full bg-purple-700 hover:bg-purple-800 text-white"
-                disabled={loading}
-              >
-                {loading ? 'Entrando...' : 'Entrar'}
-              </Button>
-            </form>
-          </CardContent>
-          <CardFooter className="justify-center">
-            <div className="text-sm text-center">
-              Ainda não tem conta?{' '}
-              <a
-                href="#"
-                className="text-purple-700 hover:underline font-medium"
-                onClick={(e) => {
-                  e.preventDefault();
-                  navigate("/register");
-                }}
-              >
-                Cadastre-se
-              </a>
-            </div>
-          </CardFooter>
-        </Card>
-
-        <div className="mt-4 text-center text-xs text-gray-500">
-          &copy; {new Date().getFullYear()} CS Instituto. Todos os direitos reservados.
-        </div>
+          ) : (
+            // Outlet para renderizar componentes aninhados (Banco de Talentos, Vagas, Usuários)
+            <Outlet />
+          )}
+        </main>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default LoginPage;
+interface SidebarItemProps {
+  icon: React.ReactNode
+  title: string
+  active?: boolean
+  collapsed?: boolean
+  to?: string
+  className?: string
+  onClick?: () => void
+}
+
+const SidebarItem: React.FC<SidebarItemProps> = ({
+  icon,
+  title,
+  active = false,
+  collapsed = false,
+  to,
+  className = "",
+  onClick,
+}) => {
+  const baseClasses = cn(
+    "w-full p-2 rounded-md transition-colors flex",
+    collapsed ? "justify-center" : "items-center",
+    active ? "bg-purple-50 text-purple-700" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900",
+    className,
+  )
+
+  const content = (
+    <>
+      <span className="flex-shrink-0">{icon}</span>
+      {!collapsed && <span className="ml-3">{title}</span>}
+    </>
+  )
+
+  if (to) {
+    return (
+      <Link to={to} className={baseClasses} onClick={onClick}>
+        {content}
+      </Link>
+    )
+  }
+
+  return (
+    <button className={baseClasses} onClick={onClick}>
+      {content}
+    </button>
+  )
+}
+
+export default AdminDashboard

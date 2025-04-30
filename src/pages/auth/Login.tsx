@@ -50,7 +50,7 @@ const LoginPage = () => {
         },
       })
       .then((response) => {
-        console.log(response.data);
+        const { token, permission } = response.data.data;
 
         Swal.fire({
           icon: 'success',
@@ -65,19 +65,10 @@ const LoginPage = () => {
             toast.addEventListener('mouseleave', Swal.resumeTimer);
           }
         });
-
-        // Armazena o token e dados do usuário
-        sessionStorage.setItem("token", response.data.data.token);
-        localStorage.setItem("token", response.data.data.token);
         
-        // Armazena os dados do usuário incluindo a permissão
-        if (response.data.data.user) {
-          sessionStorage.setItem("userData", JSON.stringify(response.data.data.user));
-          localStorage.setItem("userData", JSON.stringify(response.data.data.user));
-        }
+        localStorage.setItem("token", token);
 
-        // Verifica se o usuário é admin e redireciona para o dashboard
-        if (response.data.data.user && response.data.data.user.permission === 'admin') {
+        if (permission === 'admin') {
           navigate("/dashboard");
         } else {
           navigate("/");
@@ -99,7 +90,6 @@ const LoginPage = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12">
       <div className="w-full max-w-md">
-        {/* Logo */}
         <div className="flex justify-center mb-8">
           <div className="w-16 h-16 bg-purple-700 flex items-center justify-center rounded-xl shadow-lg">
             <img src={logocs} alt="" />
@@ -114,7 +104,6 @@ const LoginPage = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Google Login Button */}
             <Button
               variant="outline"
               className="w-full flex items-center justify-center gap-2 py-5"

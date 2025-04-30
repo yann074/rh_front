@@ -21,6 +21,7 @@ import Company from "@/components/AdminComp/Company"
 import Trainings from "@/components/AdminComp/Trainings"
 import InitialTrainings from "./pages/Trainings/InitialTrainings"
 import TrainingsSpecific from "./pages/Trainings/TtrainingsSpecific"
+import StatusResponse from "./pages/ResponseApply/StatusResponse"
 
 const CLIENT_ID = "239792615305-dh5fndio5bf43rhha3kji5qe3jpuj7uq.apps.googleusercontent.com"
 
@@ -113,6 +114,15 @@ const rotas = createBrowserRouter([
     element: (
       <UserRoute>
         <UserHomePage />
+      </UserRoute>
+    ),
+    errorElement: <ErrorPage />,
+  },
+  {
+    path: "statusresponse/:id",
+    element: (
+      <UserRoute>
+        <StatusResponse />
       </UserRoute>
     ),
     errorElement: <ErrorPage />,

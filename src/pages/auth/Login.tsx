@@ -66,11 +66,22 @@ const LoginPage = () => {
           }
         });
 
-        // Armazena o token e redireciona
+        // Armazena o token e dados do usuário
         sessionStorage.setItem("token", response.data.data.token);
         localStorage.setItem("token", response.data.data.token);
+        
+        // Armazena os dados do usuário incluindo a permissão
+        if (response.data.data.user) {
+          sessionStorage.setItem("userData", JSON.stringify(response.data.data.user));
+          localStorage.setItem("userData", JSON.stringify(response.data.data.user));
+        }
 
-        navigate("/");
+        // Verifica se o usuário é admin e redireciona para o dashboard
+        if (response.data.data.user && response.data.data.user.permission === 'admin') {
+          navigate("/dashboard");
+        } else {
+          navigate("/");
+        }
       })
       .catch((error) => {
         console.error("Erro de login:", error);
@@ -82,9 +93,7 @@ const LoginPage = () => {
   };
 
   const handleGoogleLogin = () => {
-
     console.log('Login com Google iniciado');
-
   };
 
   return (

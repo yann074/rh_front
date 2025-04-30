@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import axios from "axios"
-import { Trash, MoreHorizontal, Building, Calendar, Search, Filter, AlertTriangle } from "lucide-react"
+import { Trash, MoreHorizontal, Building, Calendar, Search, Filter, AlertTriangle, FileText, MapPin, Phone, } from "lucide-react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import {
@@ -26,6 +26,9 @@ import Swal from 'sweetalert2';
 interface CompanyType {
   id: number
   name: string
+  address?: string
+  phone?: string
+  cnpj?: string
   createdAt?: string
 }
 
@@ -39,35 +42,40 @@ export default function CompanyTable() {
   const [addDialogOpen, setAddDialogOpen] = useState(false)
   const [newCompanyName, setNewCompanyName] = useState("")
   const [isAdding, setIsAdding] = useState(false)
+  const [newCompanyAddress, setNewCompanyAddress] = useState('');
+  const [newCompanyPhone, setNewCompanyPhone] = useState('');
+  const [newCompanyCNPJ, setNewCompanyCNPJ] = useState('');
 
   const fetchCompanies = () => {
     setLoading(true)
     axios
-    .get("http://127.0.0.1:8000/api/companies")
-    .then((response) => {
-      
-      // Baseado no console que você mostrou, o caminho correto parece ser response.data.data
-      let companiesData = []
-      
-      if (response.data && response.data.data && Array.isArray(response.data.data)) {
-        companiesData = response.data.data
-      }
-      
-      // Transformar os dados para o formato esperado pelo componente
-      const enrichedCompanies = companiesData.map((company: { id: any; name: any; created_at: string | number | Date }) => ({
-        id: company.id,
-        name: company.name,
-        // Formatar a data para exibição (created_at vem como "2025-04-29T00:40:13.000000Z")
-        createdAt: company.created_at ? new Date(company.created_at).toLocaleDateString('pt-BR') : '-'
-      }))
-      setCompanies(enrichedCompanies)
-      setLoading(false)
-    })
-    .catch((error) => {
-      console.error("Erro ao buscar empresas:", error)
-      setLoading(false)
-    })
-}
+      .get("http://127.0.0.1:8000/api/companies")
+      .then((response) => {
+
+        // Baseado no console que você mostrou, o caminho correto parece ser response.data.data
+        let companiesData = []
+
+        if (response.data && response.data.data && Array.isArray(response.data.data)) {
+          companiesData = response.data.data
+        }
+
+        const enrichedCompanies = companiesData.map((company: { id: any; name: any; created_at: string | number | Date; cnpj: string; phone: string; address: string }) => ({
+          id: company.id,
+          name: company.name,
+          phone: company.phone,
+          address: company.address,
+          cnpj: company.cnpj,
+          // Formatar a data para exibição (created_at vem como "2025-04-29T00:40:13.000000Z")
+          createdAt: company.created_at ? new Date(company.created_at).toLocaleDateString('pt-BR') : '-'
+        }))
+        setCompanies(enrichedCompanies)
+        setLoading(false)
+      })
+      .catch((error) => {
+        console.error("Erro ao buscar empresas:", error)
+        setLoading(false)
+      })
+  }
 
   useEffect(() => {
     fetchCompanies()
@@ -87,19 +95,19 @@ export default function CompanyTable() {
 
   const handleDelete = async () => {
     if (!companyToDelete) return;
-  
+
     setIsDeleting(true);
     try {
       const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-  
+
       await axios.delete(`http://127.0.0.1:8000/api/companies/${companyToDelete.id}`, {
         headers: {
           Authorization: token ? `Bearer ${token}` : undefined,
         },
       });
-  
+
       setCompanies(companies.filter((company) => company.id !== companyToDelete.id));
-  
+
       // Exibe o SweetAlert2 de sucesso
       Swal.fire({
         title: 'Empresa excluída com sucesso!',
@@ -109,10 +117,10 @@ export default function CompanyTable() {
         timer: 3000,
         timerProgressBar: true,
       });
-  
+
     } catch (error: any) {
       console.error("Erro ao excluir empresa:", error);
-  
+
       // Exibe o SweetAlert2 de erro
       Swal.fire({
         title: 'Erro ao excluir empresa',
@@ -120,7 +128,7 @@ export default function CompanyTable() {
         icon: 'error',
         confirmButtonText: 'OK',
       });
-  
+
     } finally {
       setIsDeleting(false);
       setDeleteDialogOpen(false);
@@ -130,30 +138,36 @@ export default function CompanyTable() {
 
   const handleAddCompany = async () => {
     if (!newCompanyName.trim()) return;
-  
+
     setIsAdding(true);
     try {
       const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-  
+
       const response = await axios.post(
         "http://127.0.0.1:8000/api/companies",
-        { name: newCompanyName },
+        {
+          name: newCompanyName,
+          address: newCompanyAddress,
+          phone: newCompanyPhone,
+          cnpj: newCompanyCNPJ,
+        },
         {
           headers: {
             Authorization: token ? `Bearer ${token}` : undefined,
           },
         }
-      );
-  
+      )
+
+
       // Adiciona a nova empresa ao estado com uma data aleatória se necessário
       const newCompany = {
         ...response.data.data,
         createdAt: response.data.data.createdAt || getRandomPastDate(),
       };
-  
+
       setCompanies([...companies, newCompany]);
       setNewCompanyName("");
-  
+
       // Exibe o SweetAlert2 de sucesso
       Swal.fire({
         title: 'Empresa adicionada com sucesso!',
@@ -163,10 +177,10 @@ export default function CompanyTable() {
         timer: 3000,
         timerProgressBar: true,
       });
-  
+
     } catch (error: any) {
       console.error("Erro ao adicionar empresa:", error);
-  
+
       // Exibe o SweetAlert2 de erro
       Swal.fire({
         title: 'Erro ao adicionar empresa',
@@ -174,7 +188,7 @@ export default function CompanyTable() {
         icon: 'error',
         confirmButtonText: 'OK',
       });
-  
+
     } finally {
       setIsAdding(false);
       setAddDialogOpen(false);
@@ -182,7 +196,7 @@ export default function CompanyTable() {
   };
 
   const filteredCompanies = companies.filter((company) => {
-    return company.name.toLowerCase().includes(searchTerm.toLowerCase())
+    return company.name?.toLowerCase().includes(searchTerm.toLowerCase())
   })
 
   return (
@@ -193,8 +207,8 @@ export default function CompanyTable() {
             <CardTitle className="text-2xl">Empresas Cadastradas</CardTitle>
             <CardDescription>Gerencie todas as empresas cadastradas na plataforma.</CardDescription>
           </div>
-          <Button 
-            className="bg-purple-600 hover:bg-purple-700" 
+          <Button
+            className="bg-purple-600 hover:bg-purple-700"
             onClick={() => setAddDialogOpen(true)}
           >
             Adicionar Empresa
@@ -230,6 +244,9 @@ export default function CompanyTable() {
                     <TableHead className="w-[50px]">#</TableHead>
                     <TableHead className="w-[300px]">Nome da Empresa</TableHead>
                     <TableHead>Criado em</TableHead>
+                    <TableHead>CNPJ</TableHead>
+                    <TableHead>Endereço</TableHead>
+                    <TableHead>Telefone</TableHead>
                     <TableHead className="text-right">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -252,6 +269,24 @@ export default function CompanyTable() {
                           <div className="flex items-center gap-2">
                             <Calendar className="h-4 w-4 text-gray-400" />
                             <span>{company.createdAt}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <FileText className="h-4 w-4 text-gray-400" />
+                            <span>{company.cnpj}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <MapPin className="h-4 w-4 text-gray-400" />
+                            <span>{company.address}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Phone className="h-4 w-4 text-gray-400" />
+                            <span>{company.phone}</span>
                           </div>
                         </TableCell>
                         <TableCell className="text-right">
@@ -336,23 +371,39 @@ export default function CompanyTable() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
       {/* Add Company Dialog */}
       <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
         <DialogContent className="bg-white border border-gray-200 shadow-lg">
           <DialogHeader>
             <DialogTitle>Adicionar Nova Empresa</DialogTitle>
             <DialogDescription>
-              Preencha o campo abaixo para adicionar uma nova empresa ao sistema.
+              Preencha os campos abaixo para adicionar uma nova empresa ao sistema.
             </DialogDescription>
           </DialogHeader>
-          <div className="py-4">
+
+          <div className="py-4 space-y-3">
             <Input
               placeholder="Nome da empresa"
               value={newCompanyName}
               onChange={(e) => setNewCompanyName(e.target.value)}
             />
+            <Input
+              placeholder="Endereço"
+              value={newCompanyAddress}
+              onChange={(e) => setNewCompanyAddress(e.target.value)}
+            />
+            <Input
+              placeholder="Telefone"
+              value={newCompanyPhone}
+              onChange={(e) => setNewCompanyPhone(e.target.value)}
+            />
+            <Input
+              placeholder="CNPJ"
+              value={newCompanyCNPJ}
+              onChange={(e) => setNewCompanyCNPJ(e.target.value)}
+            />
           </div>
+
           <DialogFooter>
             <Button variant="outline" onClick={() => setAddDialogOpen(false)} disabled={isAdding}>
               Cancelar
@@ -367,6 +418,7 @@ export default function CompanyTable() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
     </div>
   )
 }

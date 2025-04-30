@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
-import Swal from 'sweetalert2';
-import { Check, Clock, X, CalendarCheck, Loader2 } from 'lucide-react';
+import { Check, X, CalendarCheck, Loader2 } from 'lucide-react';
 import Header from '@/components/layouts/Header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 

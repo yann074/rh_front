@@ -162,7 +162,7 @@ export default function TrainingsSpecific() {
                                     className="text-purple-700 hover:text-purple-900 hover:bg-purple-100" 
                                     asChild
                                 >
-                                    <Link to="/trainings" className="flex items-center">
+                                    <Link to="/treinamentos" className="flex items-center">
                                         <ChevronLeft className="h-4 w-4 mr-1" />
                                         Voltar para lista de treinamentos
                                     </Link>
@@ -245,7 +245,7 @@ export default function TrainingsSpecific() {
                     ) : (
                         <div className="text-center py-10">
                             <p className="text-gray-600">Treinamento não encontrado.</p>
-                            <Link to="/trainings" className="text-purple-600 hover:underline mt-4 inline-block">
+                            <Link to="/treinamentos" className="text-purple-600 hover:underline mt-4 inline-block">
                                 Voltar para lista de treinamentos
                             </Link>
                         </div>

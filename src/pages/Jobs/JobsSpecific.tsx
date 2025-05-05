@@ -3,7 +3,6 @@ import Header from "@/components/layouts/Header";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
 import { 
   ArrowLeft, 
   MapPin, 
@@ -11,7 +10,6 @@ import {
   Briefcase, 
   GraduationCap, 
   DollarSign,
-  Clock,
   CheckCircle,
   Share2,
   Bookmark,

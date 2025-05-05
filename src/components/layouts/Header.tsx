@@ -30,7 +30,7 @@ export default function Header() {
     };
 
     return (
-        <header className="bg-white border-b sticky top-0 z-10">
+        <header className="bg-white border-b sticky top-0 z-50">
             <div className="container mx-auto px-4 py-4 flex justify-between items-center">
                 <div className="flex items-center">
                     <div className="w-12 h-12 bg-purple-700 flex items-center justify-center rounded-md mr-3">
@@ -46,7 +46,7 @@ export default function Header() {
                                 <UserCircle className="h-7 w-7 text-purple-700" />
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="start">                       
+                        <DropdownMenuContent align="start" className="bg-white">                       
                             <DropdownMenuItem onSelect={handleLogout}>
                                 Sair
                             </DropdownMenuItem>

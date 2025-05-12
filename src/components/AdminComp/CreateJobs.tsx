@@ -287,7 +287,7 @@ const JobCreationForm: React.FC = () => {
                     <SelectTrigger id="select-tipo-trabalho">
                       <SelectValue placeholder="Selecione o tipo de trabalho" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-gray-100">
                       {jobTypes.map((type) => (
                         <SelectItem key={type} value={type}>
                           {type}
@@ -335,7 +335,7 @@ const JobCreationForm: React.FC = () => {
                   <SelectTrigger id="select-education">
                     <SelectValue placeholder="Selecione o nível de formação" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-gray-100">
                     <SelectItem value="ensino_medio">Ensino Médio</SelectItem>
                     <SelectItem value="tecnico">Técnico</SelectItem>
                     <SelectItem value="superior">Superior</SelectItem>
@@ -378,7 +378,7 @@ const JobCreationForm: React.FC = () => {
                   <SelectTrigger id="select-status">
                     <SelectValue placeholder="Selecione o status da vaga" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-gray-100">
                     {statusTypes.map((status) => (
                       <SelectItem key={status} value={status}>
                         {status.charAt(0).toUpperCase() + status.slice(1)}

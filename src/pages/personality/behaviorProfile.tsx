@@ -1,5 +1,3 @@
-"use client"
-
 import React, { useEffect } from "react"
 import axios from "axios"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -50,6 +48,8 @@ const BehaviorProfile = () => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = React.useState(0)
   const [submitting, setSubmitting] = React.useState(false)
 
+
+
   useEffect(() => {
     fetchQuestions()
   }, [])
@@ -83,7 +83,6 @@ const BehaviorProfile = () => {
   const handleSubmit = async () => {
     setSubmitting(true)
     try {
-      // Format answers for backend
       const formattedAnswers: BackendAnswerFormat[] = Object.entries(answers).map(([questionId, value]) => ({
         id_question: Number.parseInt(questionId),
         answer_option: value,
@@ -91,9 +90,12 @@ const BehaviorProfile = () => {
 
       console.log("Formatted answers for backend:", formattedAnswers)
 
-      // Send answers to backend
-      await axios.post("http://127.0.0.1:8000/api/submit-answers", {
+      await axios.post("http://127.0.0.1:8000/api/responsequestions", {
         answers: formattedAnswers,
+      }, {
+        headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+        }
       })
 
       setSubmitted(true)

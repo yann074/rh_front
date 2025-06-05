@@ -84,7 +84,7 @@ const RegisterPage = () => {
 
 
         sessionStorage.setItem("token", response.data.token);
-        navigate("/");
+        navigate("/login");
       })
       .catch((error) => {
         console.error("Erro de cadastro:", error);

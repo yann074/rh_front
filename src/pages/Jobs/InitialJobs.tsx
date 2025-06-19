@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axios, {AxiosError} from 'axios';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -59,52 +59,64 @@ const InitialJobs: React.FC = () => {
     }
   }, [vagas, activeFilter, searchTerm]);
 
-  const fetchVagas = async () => {
-    setIsLoading(true);
-    setLoading(true);
+const fetchVagas = async () => {
+    // 1. Simplifica para um único estado de loading e limpa erros anteriores
+    setLoading(true); 
+    setError(null);
+
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/opportunities');
+        // 2. Executa as chamadas de API em paralelo para mais performance
+        const [vagasRes, companiesRes] = await Promise.all([
+            axios.get('http://127.0.0.1:8000/api/opportunities'),
+            axios.get('http://127.0.0.1:8000/api/companies'),
+        ]);
 
-      const [companyRes] = await Promise.all([
-        axios.get('http://127.0.0.1:8000/api/companies'),
-      ])
-      setCompanies(companyRes.data.data);
+        // 3. Extrai os dados de forma consistente (assumindo axios)
+        const companiesData = companiesRes.data?.data || [];
+        setCompanies(companiesData);
 
-      if (!response.ok) {
-        throw new Error('Falha ao buscar vagas');
-      }
+        // 4. Trata as diferentes estruturas de resposta da API de vagas de forma concisa
+        let vagasData: Vaga[] = [];
+        const responseData = vagasRes.data;
+        
+        if (Array.isArray(responseData)) {
+            vagasData = responseData;
+        } else if (Array.isArray(responseData?.data)) {
+            vagasData = responseData.data;
+        } else if (Array.isArray(responseData?.vagas)) {
+            vagasData = responseData.vagas;
+        } else {
+            // Se a estrutura for inesperada, lança um erro para o bloco catch
+            console.error('Estrutura de resposta da API de vagas inesperada:', responseData);
+            throw new Error('Não foi possível processar os dados recebidos.');
+        }
+        
+        // A lógica de fallback
+        const vagasComIdTratado = vagasData.map(vaga => ({
+            ...vaga,
+            companies_id: vaga.companies_id || "Mersan",
+        }));
 
-      const responseData: ApiResponse = await response.json();
+        setVagas(vagasComIdTratado);
+        // A atualização de `filteredVagas` deve ocorrer em um `useEffect` que observa a mudança em `vagas`
 
-      let vagasData: Vaga[] = [];
-
-      if (Array.isArray(responseData)) {
-        vagasData = responseData;
-      } else if (responseData.data && Array.isArray(responseData.data)) {
-        vagasData = responseData.data;
-      } else if (responseData.vagas && Array.isArray(responseData.vagas)) {
-        vagasData = responseData.vagas;
-      } else {
-        console.error('Unexpected API response structure:', responseData);
-        throw new Error('Formato de resposta da API inesperado');
-      }
-
-
-      const vagasWithCompany = vagasData.map(vaga => ({
-        ...vaga,
-        companies_id: vaga.companies_id || "Mersan" // Use a companies_id existente ou "Mersan" como padrão
-      }));
-
-      setVagas(vagasWithCompany);
-      setFilteredVagas(vagasWithCompany);
     } catch (err) {
-      console.error('Error fetching jobs:', err);
-      setError(err instanceof Error ? err.message : 'Erro desconhecido');
+        console.error('Falha ao buscar dados:', err);
+
+        // 5. Define uma mensagem de erro amigável e útil para o usuário
+        if (err instanceof AxiosError && !err.response) {
+            // Erro de rede (servidor offline, CORS, sem conexão)
+            setError('Oops! Parece que estamos com dificuldades para nos conectar ao servidor. Por favor, verifique sua conexão com a internet e tente novamente.');
+        } else {
+            // Outros erros (ex: erro de servidor 500, vaga não encontrada 404)
+            setError('Houve um imprevisto ao carregar as vagas. Nossa equipe já foi notificada. Por favor, tente novamente mais tarde.');
+        }
     } finally {
-      setLoading(false);
-      setIsLoading(false);
+        // 6. Garante que o loading seja desativado, independentemente de sucesso ou falha
+        setLoading(false);
+        // Removido setIsLoading(false) para usar um único estado de loading
     }
-  };
+};
 
   const filterJobs = (filter: string, term: string = searchTerm) => {
     let result = [...vagas];

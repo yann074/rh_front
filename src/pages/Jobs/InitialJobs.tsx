@@ -196,7 +196,7 @@ const fetchVagas = async () => {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
               <Input
                 type="text"
-                placeholder="Busque por cargo, companies_id ou localização..."
+                placeholder="Busque por cargo ou localização..."
                 className="pl-10 pr-4 py-6 rounded-full bg-white text-gray-800 w-full focus:ring-2 focus:ring-purple-500"
                 value={searchTerm}
                 onChange={handleSearch}

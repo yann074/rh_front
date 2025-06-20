@@ -1,5 +1,6 @@
 import type React from "react"
 import { useState, useEffect } from "react"
+import { Link } from "react-router-dom" // Importe o Link para navegação
 import axios from "axios"
 import Swal from "sweetalert2"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -33,9 +34,10 @@ import {
   Car,
   Instagram,
   Facebook,
+  Lightbulb, // Ícone adicionado para o novo card
 } from "lucide-react"
 
-// Definition of types
+// ... (O restante das suas interfaces e funções permanece o mesmo) ...
 interface UserData {
   id?: number
   email: string
@@ -97,8 +99,8 @@ const formatSocialMediaUrl = (url: string | undefined, domain: string): string |
   return `https://www.${domain}/${url.replace(/^\/+/, "")}`
 }
 
+
 const CandidateInformation: React.FC = () => {
-  
   const [loading, setLoading] = useState<boolean>(true)
   const [saving, setSaving] = useState<boolean>(false)
   const [activeTab, setActiveTab] = useState<string>("pessoal")
@@ -257,7 +259,7 @@ const CandidateInformation: React.FC = () => {
         email: user.email,
       })
 
-      
+
 
       setCandidatoData({
         secondary_email: candidate?.secondary_email || "",
@@ -331,7 +333,7 @@ const CandidateInformation: React.FC = () => {
     if (file) {
       // Create preview URL for display
       const reader = new FileReader();
-      
+
       reader.onloadend = () => {
         const result = reader.result as string;
         // Update state with both photo and photoPreview in one go
@@ -341,11 +343,11 @@ const CandidateInformation: React.FC = () => {
           photoPreview: result, // Store the preview URL for display
         }));
       };
-      
+
       reader.readAsDataURL(file);
     }
   };
-  
+
 
   const handleResumeChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const file = e.target.files?.[0]
@@ -788,6 +790,26 @@ const CandidateInformation: React.FC = () => {
                 </div>
               </CardContent>
             </Card>
+            <Link to="/behaviorprofile" className="block hover:shadow-lg transition-shadow duration-300 rounded-xl">
+              <Card className="border-none shadow-md rounded-xl overflow-hidden group">
+                <div className="p-6 bg-gradient-to-br from-purple-600 to-indigo-700 text-white text-center">
+                  <div className="flex justify-center mb-4">
+                    <div className="bg-white/20 p-3 rounded-full">
+                      <Lightbulb className="h-8 w-8 text-white" />
+                    </div>
+                  </div>
+                  <CardTitle className="text-xl font-bold">Descubra seu Perfil Comportamental</CardTitle>
+                  <p className="mt-2 text-indigo-100 text-sm">
+                    Responda algumas perguntas e receba uma análise completa das suas competências e estilo de trabalho.
+                  </p>
+                </div>
+                <div className="bg-white p-4 text-center">
+                  <span className="font-semibold text-indigo-600 group-hover:underline">
+                    Começar Análise Agora &rarr;
+                  </span>
+                </div>
+              </Card>
+            </Link>
           </div>
 
           {/* Main Content */}
@@ -899,9 +921,8 @@ const CandidateInformation: React.FC = () => {
                             placeholder="R$ 0.000,00"
                             value={candidatoData.expected_salary}
                             onChange={handleInputChange}
-                            className={`border-slate-200 focus:border-indigo-500 focus:ring-indigo-500 ${
-                              formErrors.expected_salary ? "border-red-500" : ""
-                            }`}
+                            className={`border-slate-200 focus:border-indigo-500 focus:ring-indigo-500 ${formErrors.expected_salary ? "border-red-500" : ""
+                              }`}
                           />
                           {formErrors.expected_salary && (
                             <p className="text-red-500 text-sm mt-1">{formErrors.expected_salary}</p>
@@ -962,9 +983,8 @@ const CandidateInformation: React.FC = () => {
                             placeholder="www.instagram.com/seuperfil"
                             value={candidatoData.instagram_link}
                             onChange={handleInputChange}
-                            className={`border-slate-200 focus:border-indigo-500 focus:ring-indigo-500 ${
-                              formErrors.instagram_link ? "border-red-500" : ""
-                            }`}
+                            className={`border-slate-200 focus:border-indigo-500 focus:ring-indigo-500 ${formErrors.instagram_link ? "border-red-500" : ""
+                              }`}
                           />
                           {formErrors.instagram_link && (
                             <p className="text-sm text-red-500 mt-1">{formErrors.instagram_link}</p>
@@ -985,9 +1005,8 @@ const CandidateInformation: React.FC = () => {
                             placeholder="www.facebook.com/seuperfil"
                             value={candidatoData.facebook_link}
                             onChange={handleInputChange}
-                            className={`border-slate-200 focus:border-indigo-500 focus:ring-indigo-500 ${
-                              formErrors.facebook_link ? "border-red-500" : ""
-                            }`}
+                            className={`border-slate-200 focus:border-indigo-500 focus:ring-indigo-500 ${formErrors.facebook_link ? "border-red-500" : ""
+                              }`}
                           />
                           {formErrors.facebook_link && (
                             <p className="text-red-500 text-sm mt-1">{formErrors.facebook_link}</p>
@@ -1115,7 +1134,7 @@ const CandidateInformation: React.FC = () => {
                             <SelectContent className="bg-white border border-gray-200">
                               {color.map((cor, index) => (
                                 <SelectItem key={index} value={cor}>
-                                  {cor}
+                                  _aviso-imagem_               {cor}
                                 </SelectItem>
                               ))}
                             </SelectContent>
@@ -1128,7 +1147,7 @@ const CandidateInformation: React.FC = () => {
                       <div className="bg-indigo-50 p-5 rounded-lg mb-6 border border-indigo-100">
                         <div className="flex items-start">
                           <MapPin className="h-5 w-5 mr-3 text-indigo-600 mt-0.5" />
-                          <div>
+                          _alerta_             <div>
                             <h3 className="font-medium text-indigo-800 mb-1">Informações de Localização</h3>
                             <p className="text-sm text-indigo-700">
                               Preencha seu endereço completo para que possamos encontrar oportunidades próximas a você e
@@ -1208,7 +1227,7 @@ const CandidateInformation: React.FC = () => {
                         </div>
 
                         <div className="space-y-2">
-                          <Label htmlFor="street" className="text-slate-700">
+                          _aviso_imagem_     <Label htmlFor="street" className="text-slate-700">
                             Rua
                           </Label>
                           <Input

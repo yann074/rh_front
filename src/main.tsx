@@ -23,6 +23,7 @@ import InitialTrainings from "./pages/Trainings/InitialTrainings"
 import TrainingsSpecific from "./pages/Trainings/TtrainingsSpecific"
 import StatusResponse from "./pages/ResponseApply/StatusResponse"
 import BehaviorProfile from "./pages/personality/behaviorProfile"
+import ResultBehaviorProfile from "./pages/personality/ResultBehaviorProfile"
 
 const CLIENT_ID = "239792615305-dh5fndio5bf43rhha3kji5qe3jpuj7uq.apps.googleusercontent.com"
 
@@ -132,6 +133,12 @@ const rotas = createBrowserRouter([
     path: "behaviorProfile",
     element: (
         <BehaviorProfile />
+    ),
+  },
+  {
+    path: "resultbehaviorProfile",
+    element: (
+        <ResultBehaviorProfile />
     ),
   },
   {

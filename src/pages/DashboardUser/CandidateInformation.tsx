@@ -1134,7 +1134,7 @@ const CandidateInformation: React.FC = () => {
                             <SelectContent className="bg-white border border-gray-200">
                               {color.map((cor, index) => (
                                 <SelectItem key={index} value={cor}>
-                                  _aviso-imagem_               {cor}
+                                                {cor}
                                 </SelectItem>
                               ))}
                             </SelectContent>
@@ -1147,7 +1147,7 @@ const CandidateInformation: React.FC = () => {
                       <div className="bg-indigo-50 p-5 rounded-lg mb-6 border border-indigo-100">
                         <div className="flex items-start">
                           <MapPin className="h-5 w-5 mr-3 text-indigo-600 mt-0.5" />
-                          _alerta_             <div>
+                          <div>
                             <h3 className="font-medium text-indigo-800 mb-1">Informações de Localização</h3>
                             <p className="text-sm text-indigo-700">
                               Preencha seu endereço completo para que possamos encontrar oportunidades próximas a você e
@@ -1227,7 +1227,7 @@ const CandidateInformation: React.FC = () => {
                         </div>
 
                         <div className="space-y-2">
-                          _aviso_imagem_     <Label htmlFor="street" className="text-slate-700">
+                          <Label htmlFor="street" className="text-slate-700">
                             Rua
                           </Label>
                           <Input

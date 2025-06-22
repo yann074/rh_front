@@ -222,7 +222,7 @@ export default function JobsTable() {
                         </CardDescription>
                     </div>
                     <Link to="/dashboard/createjobs">
-                        <Button className="bg-purple-600 hover:bg-purple-700">
+                        <Button className="bg-white hover:bg-purple-200">
                             Adicionar Nova Vaga
                         </Button>
                     </Link>

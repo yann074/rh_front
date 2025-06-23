@@ -578,10 +578,12 @@ const CandidateInformation: React.FC = () => {
             </div>
 
             <div className="flex items-center space-x-4">
+              <Link to="/">
               <Button variant="ghost" className="text-slate-600 hover:text-indigo-600 hover:bg-indigo-50">
                 <Home className="h-5 w-5 mr-2" />
-                Dashboard
+                Início
               </Button>
+              </Link>
 
               <div className="flex items-center space-x-3">
                 <span className="text-sm text-slate-600 hidden md:inline-block">Olá, {userData.name || "Usuário"}</span>
@@ -1273,7 +1275,7 @@ const CandidateInformation: React.FC = () => {
                     <div className="mt-8 pt-6 border-t border-gray-100">
                       <Button
                         type="submit"
-                        className="w-full md:w-auto bg-purple-700 hover:bg-purple-800"
+                        className="w-full md:w-auto bg-white hover:bg-purple-300"
                         disabled={saving}
                       >
                         {saving ? (

@@ -29,6 +29,11 @@ export default function Header() {
         navigate("/login");
     };
 
+    // Função para navegar para a página de edição de perfil
+    const handleEditProfile = () => {
+        navigate("/userhomepage");
+    };
+
     return (
         <header className="bg-white border-b sticky top-0 z-50">
             <div className="container mx-auto px-4 py-4 flex justify-between items-center">
@@ -46,8 +51,12 @@ export default function Header() {
                                 <UserCircle className="h-7 w-7 text-purple-700" />
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="start" className="bg-white">                       
-                            <DropdownMenuItem onSelect={handleLogout}>
+                        <DropdownMenuContent align="start" className="bg-white">
+                            {/* Item adicionado para editar o perfil */}
+                            <DropdownMenuItem onSelect={handleEditProfile} className="cursor-pointer">
+                                Editar Perfil
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onSelect={handleLogout} className="cursor-pointer">
                                 Sair
                             </DropdownMenuItem>
                         </DropdownMenuContent>

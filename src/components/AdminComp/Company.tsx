@@ -208,7 +208,7 @@ export default function CompanyTable() {
             <CardDescription>Gerencie todas as empresas cadastradas na plataforma.</CardDescription>
           </div>
           <Button
-            className="bg-purple-600 hover:bg-purple-700"
+            className="bg-white hover:bg-purple-200"
             onClick={() => setAddDialogOpen(true)}
           >
             Adicionar Empresa

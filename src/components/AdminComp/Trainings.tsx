@@ -186,7 +186,7 @@ export default function TrainingsTable() {
 
           <Dialog open={modalOpen} onOpenChange={setModalOpen}>
             <DialogTrigger asChild>
-              <Button>Novo Treinamento</Button>
+              <Button className="bg-white hover:bg-purple-200">Novo Treinamento</Button>
             </DialogTrigger>
             <DialogContent className="bg-white sm:max-w-[600px]">
               <DialogHeader>

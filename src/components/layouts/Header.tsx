@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import logocs from "@/assets/logocs.svg";
 import { Button } from '@/components/ui/button';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { UserCircle } from 'lucide-react';
 import { 
   DropdownMenu,
@@ -9,29 +9,49 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useNavigate } from 'react-router-dom';
 
 export default function Header() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [isAdmin, setIsAdmin] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
-        // Verificar se existe token no localStorage
         const token = localStorage.getItem("token") || sessionStorage.getItem("token");
         setIsLoggedIn(!!token);
+
+        if (token) {
+            const userDataString = localStorage.getItem("user") || sessionStorage.getItem("user");
+            if (userDataString) {
+                try {
+                    const userData = JSON.parse(userDataString);
+                    if (userData && userData.permission === 'admin') {
+                        setIsAdmin(true);
+                    }
+                } catch (error) {
+                    console.error("Erro ao analisar dados do usuário:", error);
+                    setIsAdmin(false);
+                }
+            }
+        }
     }, []);
 
     const handleLogout = () => {
-        // Remover token
         localStorage.removeItem("token");
+        localStorage.removeItem("user");
         sessionStorage.removeItem("token");
+        sessionStorage.removeItem("user");
+
         setIsLoggedIn(false);
+        setIsAdmin(false);
         navigate("/login");
     };
 
-    // Função para navegar para a página de edição de perfil
     const handleEditProfile = () => {
         navigate("/userhomepage");
+    };
+
+    const handleGoToDashboard = () => {
+        navigate("/dashboard");
     };
 
     return (
@@ -52,7 +72,11 @@ export default function Header() {
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="start" className="bg-white">
-                            {/* Item adicionado para editar o perfil */}
+                            {isAdmin && (
+                                <DropdownMenuItem onSelect={handleGoToDashboard} className="cursor-pointer">
+                                    Dashboard
+                                </DropdownMenuItem>
+                            )}
                             <DropdownMenuItem onSelect={handleEditProfile} className="cursor-pointer">
                                 Editar Perfil
                             </DropdownMenuItem>
@@ -62,7 +86,7 @@ export default function Header() {
                         </DropdownMenuContent>
                     </DropdownMenu>
                 ) : (
-                    <Button className="bg-purple-700 hover:bg-purple-800 text-white">
+                    <Button asChild className="bg-purple-700 hover:bg-purple-800 text-white">
                         <Link to="/login">Entrar</Link>
                     </Button>
                 )}

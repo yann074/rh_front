@@ -169,7 +169,6 @@ export default function UserTable() {
             <CardTitle className="text-2xl">Usuários do Sistema</CardTitle>
             <CardDescription>Gerencie todos os usuários cadastrados na plataforma.</CardDescription>
           </div>
-          <Button className="bg-purple-600 hover:bg-purple-700">Adicionar Usuário</Button>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col md:flex-row gap-4 mb-6">

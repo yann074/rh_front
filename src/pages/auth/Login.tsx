@@ -50,7 +50,9 @@ const LoginPage = () => {
         },
       })
       .then((response) => {
-        const { token, permission } = response.data.data;
+        // A sua API retorna um objeto 'data' com 'token' e os dados do usuário
+        // Usamos desestruturação para capturar tudo
+        const { token, ...userData } = response.data.data;
 
         Swal.fire({
           icon: 'success',
@@ -65,10 +67,19 @@ const LoginPage = () => {
             toast.addEventListener('mouseleave', Swal.resumeTimer);
           }
         });
-        
-        localStorage.setItem("token", token);
+    
+        // 1. Escolhe o storage com base na opção "Lembrar de mim"
+        const storage = form.rememberMe ? localStorage : sessionStorage;
 
-        if (permission === 'admin') {
+        // 2. Salva o token
+        storage.setItem("token", token);
+
+        // 3. Salva o objeto do usuário (que contém a 'permission') como uma string JSON
+        // O Header irá ler isso para saber se o usuário é admin
+        storage.setItem("user", JSON.stringify(userData));
+        // ======================================================================
+
+        if (userData.permission === 'admin') {
           navigate("/dashboard");
         } else {
           navigate("/");

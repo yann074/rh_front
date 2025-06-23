@@ -2,7 +2,7 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { Briefcase, Users, UserCircle, Menu, X, LogOut, LayoutDashboard, TrendingUp, Building2, BookOpen  } from "lucide-react"
+import { Briefcase, Users, UserCircle, Menu, X, LogOut, LayoutDashboard, TrendingUp, Building2, BookOpen, ExternalLink } from "lucide-react" // Adicionado ExternalLink
 import { Link, Outlet } from "react-router-dom"
 import {
   LineChart,
@@ -26,20 +26,16 @@ const AdminDashboard: React.FC = () => {
   const [userData, setUserData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  // Add a new state for job opportunities
   const [jobOpportunities, setJobOpportunities] = useState<any[]>([])
 
-  // Update the useEffect to also fetch job opportunities
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true)
 
-        // Fetch user data
         const userResponse = await fetch("http://127.0.0.1:8000/api/users")
         const userData = await userResponse.json()
 
-        // Fetch job opportunities
         const jobsResponse = await fetch("http://127.0.0.1:8000/api/opportunities")
         const jobsData = await jobsResponse.json()
 
@@ -65,7 +61,6 @@ const AdminDashboard: React.FC = () => {
     fetchData()
   }, [])
 
-  // Dados de inscrições por área de interesse (mantido pois não está na API)
   const dadosPorArea = [
     { area: "Desenvolvimento Web", inscritos: 250 },
     { area: "Data Science", inscritos: 180 },
@@ -91,7 +86,7 @@ const AdminDashboard: React.FC = () => {
         )}
       >
         {/* Sidebar Header */}
-        <div className="h-16 flex items-center justify-between px-4 border-b border-gray-200">
+        <div className="h-16 flex items-center justify-between px-4 border-b border-gray-200 flex-shrink-0">
           <div
             className={cn("flex items-center", {
               "justify-center w-full": collapsed,
@@ -108,8 +103,8 @@ const AdminDashboard: React.FC = () => {
           </Button>
         </div>
 
-        {/* Sidebar Navigation */}
-        <nav className="h-67 py-4 px-2 flex flex-col space-y-2 overflow-y-auto">
+        {/* Sidebar Navigation - ATUALIZADO */}
+        <nav className="flex-1 py-4 px-2 flex flex-col space-y-2 overflow-y-auto">
           <SidebarItem
             icon={<LayoutDashboard />}
             title="Dashboard"
@@ -160,14 +155,14 @@ const AdminDashboard: React.FC = () => {
               />
         </nav>
 
-        {/* Sidebar Footer */}
-        <div className="p-4 border-t border-gray-200">
+        {/* Sidebar Footer - ATUALIZADO */}
+        <div className="mt-auto border-t border-gray-200 flex-shrink-0">
           <SidebarItem
             icon={<LogOut />}
             title="Sair"
             collapsed={collapsed}
             to="/login"
-            className="text-red-500 hover:text-red-600 hover:bg-red-50"
+            className="text-red-500 hover:text-red-600 hover:bg-red-50 p-4 rounded-none"
           />
         </div>
       </aside>
@@ -197,7 +192,16 @@ const AdminDashboard: React.FC = () => {
         <main className="flex-1 overflow-y-auto p-6 bg-gray-100">
           {currentView === "dashboard" ? (
             <div className="max-w-7xl mx-auto">
-              <h2 className="text-2xl font-bold mb-6">Dashboard</h2>
+              {/* TÍTULO E BOTÃO ATUALIZADOS */}
+              <div className="flex justify-between items-center mb-6">
+                 <h2 className="text-2xl font-bold">Dashboard</h2>
+                 <Button asChild className="bg-white hover:bg-gray-50">
+                    <Link to="/">
+                        <ExternalLink className="mr-2 h-4 w-4" />
+                        Ver Página de Vagas
+                    </Link>
+                 </Button>
+              </div>
 
               {/* Stats Cards */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
@@ -453,10 +457,10 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   onClick,
 }) => {
   const baseClasses = cn(
-    "w-full p-2 rounded-md transition-colors flex",
+    "w-full p-2 rounded-md transition-colors flex", // Padding padrão p-2 e rounded-md
     collapsed ? "justify-center" : "items-center",
     active ? "bg-purple-50 text-purple-700" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900",
-    className,
+    className, // Classes externas (como p-4 e rounded-none) irão sobrescrever as padrões
   )
 
   const content = (

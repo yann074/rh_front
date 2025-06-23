@@ -238,81 +238,106 @@ const CandidateInformation: React.FC = () => {
 
   const fetchUserData = async () => {
     try {
-      const userProfileResponse = await axios.get("http://127.0.0.1:8000/api/user-data", {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      })
+        const userProfileResponse = await axios.get("http://127.0.0.1:8000/api/user-data", {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
 
-      //SEMPRE GUARDAR NO LOCALSTORAGE, NAO APAGA ESSE COMENTARIO
-      //CONSEGUI PORRA
+        const user = userProfileResponse.data.data.user;
+        const candidate = userProfileResponse.data.data.candidate;
+        const address = userProfileResponse.data.data.address;
 
-      console.log("Usuário autenticado:", userProfileResponse.data.user)
-      console.log("Token usado:", localStorage.getItem("token"))
+        // Atualiza os estados com os dados recebidos
+        setUserData({
+            name: user.name,
+            email: user.email,
+        });
 
-      const user = userProfileResponse.data.data.user
-      const candidate = userProfileResponse.data.data.candidate
-      const address = userProfileResponse.data.data.address
+        setCandidatoData({
+            secondary_email: candidate?.secondary_email || "",
+            cpf: candidate?.cpf || "",
+            phone: candidate?.phone || "",
+            birth_date: candidate?.birth_date?.split("T")[0] || "",
+            linkedin: candidate?.linkedin || "",
+            pcd: candidate?.pcd || false,
+            photo: null,
+            photoPreview: candidate?.photo || "",
+            resume: null,
+            resumeName: candidate?.resume?.split("/").pop() || "",
+            sex: candidate?.sex || "",
+            sexual_orientation: candidate?.sexual_orientation || "",
+            race: candidate?.race || "",
+            gender: candidate?.gender || "",
+            expected_salary: address?.expected_salary || "",
+            has_driver_license: Boolean(address?.has_driver_license),
+            driver_license_category: address?.driver_license_category || "",
+            instagram_link: address?.instagram_link || "",
+            facebook_link: address?.facebook_link || "",
+            zip_code: address?.zip_code || "",
+            state: address?.state || "",
+            city: address?.city || "",
+            neighborhood: address?.neighborhood || "",
+            street: address?.street || "",
+            number: address?.number || "",
+            complement: address?.complement || "",
+        });
 
-      setUserData({
-        name: user.name,
-        email: user.email,
-      })
+        // Busca os enums
+        const sexUserResponse = await axios.get("http://127.0.0.1:8000/api/enums/sex-user");
+        const sexUserData = sexUserResponse.data.data;
+        setSexUser(sexUserData.sexo);
+        setGender(sexUserData.gender);
+        setOrientation(sexUserData.orient);
+        setColor(sexUserData.color);
 
+        setLoading(false);
 
-
-      setCandidatoData({
-        secondary_email: candidate?.secondary_email || "",
-        cpf: candidate?.cpf || "",
-        phone: candidate?.phone || "",
-        birth_date: candidate?.birth_date?.split("T")[0] || "",
-        linkedin: candidate?.linkedin || "",
-        pcd: candidate?.pcd || false,
-        photo: null,
-        photoPreview: candidate?.photo || "",
-        resume: null,
-        resumeName: candidate?.resume?.split("/").pop() || "",
-        sex: candidate?.sex || "",
-        sexual_orientation: candidate?.sexual_orientation || "",
-        race: candidate?.race || "",
-        gender: candidate?.gender || "",
-        expected_salary: address?.expected_salary || "",
-        has_driver_license: Boolean(address?.has_driver_license),
-        driver_license_category: address?.driver_license_category || "",
-        instagram_link: address?.instagram_link || "",
-        facebook_link: address?.facebook_link || "",
-        zip_code: address?.zip_code || "",
-        state: address?.state || "",
-        city: address?.city || "",
-        neighborhood: address?.neighborhood || "",
-        street: address?.street || "",
-        number: address?.number || "",
-        complement: address?.complement || "",
-      })
-
-      // Passo 3: Buscar enums
-      const sexUserResponse = await axios.get("http://127.0.0.1:8000/api/enums/sex-user")
-
-      const sexUserData = sexUserResponse.data.data
-      setSexUser(sexUserData.sexo)
-      setGender(sexUserData.gender)
-      setOrientation(sexUserData.orient)
-      setColor(sexUserData.color)
-
-      setLoading(false)
     } catch (error) {
-      console.error("Erro ao buscar dados do usuário:", error)
-      Swal.fire({
-        title: "Aviso",
-        text: "Não foi possível obter suas informações. Por favor, tente novamente mais tarde.",
-        icon: "warning",
-        confirmButtonText: "OK",
-        background: "#ffffff",
-        confirmButtonColor: "#6d28d9",
-      })
-      setLoading(false)
+        console.error("Erro ao buscar dados do usuário:", error);
+
+        // Bloco CATCH corrigido para TypeScript
+        if (axios.isAxiosError(error) && error.response) {
+            // Se o erro for de autorização (token inválido ou expirado)
+            if (error.response.status === 401 || error.response.status === 403) {
+                Swal.fire({
+                    title: "Sessão expirada",
+                    text: "Sua sessão expirou ou é inválida. Por favor, faça o login novamente.",
+                    icon: "warning",
+                    confirmButtonText: "OK",
+                    background: "#ffffff",
+                    confirmButtonColor: "#6d28d9",
+                }).then(() => {
+                    localStorage.clear();
+                    sessionStorage.clear();
+                    window.location.href = "/login";
+                });
+            } else {
+                // Para outros erros de API que retornaram uma resposta
+                Swal.fire({
+                    title: "Aviso",
+                    text: `Ocorreu um erro ao buscar seus dados. (Erro: ${error.response.status})`,
+                    icon: "warning",
+                    confirmButtonText: "OK",
+                    background: "#ffffff",
+                    confirmButtonColor: "#6d28d9",
+                });
+            }
+        } else {
+            // Para erros que não são do Axios (ex: falha de rede)
+            Swal.fire({
+                title: "Erro de Conexão",
+                text: "Não foi possível conectar ao servidor. Verifique sua internet e tente novamente.",
+                icon: "error",
+                confirmButtonText: "OK",
+                background: "#ffffff",
+                confirmButtonColor: "#6d28d9",
+            });
+        }
+
+        setLoading(false);
     }
-  }
+};
 
   // Removed checkExistingCandidatoData function entirely
 

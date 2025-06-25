@@ -23,8 +23,8 @@ interface Vaga {
   status: string;
   job_type: string;
   education: string;
-  companies_id?: string; // Adicionando campo para companies_id empresas
-  created_at?: string;
+  companies_id?: string;
+  created_at?: string; // O campo que usaremos
   updated_at?: string;
 }
 
@@ -60,25 +60,21 @@ const InitialJobs: React.FC = () => {
   }, [vagas, activeFilter, searchTerm]);
 
 const fetchVagas = async () => {
-    // 1. Simplifica para um único estado de loading e limpa erros anteriores
-    setLoading(true); 
+    setLoading(true);
     setError(null);
 
     try {
-        // 2. Executa as chamadas de API em paralelo para mais performance
         const [vagasRes, companiesRes] = await Promise.all([
             axios.get('http://127.0.0.1:8000/api/opportunities'),
             axios.get('http://127.0.0.1:8000/api/companies'),
         ]);
 
-        // 3. Extrai os dados de forma consistente (assumindo axios)
         const companiesData = companiesRes.data?.data || [];
         setCompanies(companiesData);
 
-        // 4. Trata as diferentes estruturas de resposta da API de vagas de forma concisa
         let vagasData: Vaga[] = [];
         const responseData = vagasRes.data;
-        
+
         if (Array.isArray(responseData)) {
             vagasData = responseData;
         } else if (Array.isArray(responseData?.data)) {
@@ -86,42 +82,33 @@ const fetchVagas = async () => {
         } else if (Array.isArray(responseData?.vagas)) {
             vagasData = responseData.vagas;
         } else {
-            // Se a estrutura for inesperada, lança um erro para o bloco catch
             console.error('Estrutura de resposta da API de vagas inesperada:', responseData);
             throw new Error('Não foi possível processar os dados recebidos.');
         }
-        
-        // A lógica de fallback
+
         const vagasComIdTratado = vagasData.map(vaga => ({
             ...vaga,
             companies_id: vaga.companies_id || "Mersan",
         }));
 
         setVagas(vagasComIdTratado);
-        // A atualização de `filteredVagas` deve ocorrer em um `useEffect` que observa a mudança em `vagas`
 
     } catch (err) {
         console.error('Falha ao buscar dados:', err);
 
-        // 5. Define uma mensagem de erro amigável e útil para o usuário
         if (err instanceof AxiosError && !err.response) {
-            // Erro de rede (servidor offline, CORS, sem conexão)
             setError('Oops! Parece que estamos com dificuldades para nos conectar ao servidor. Por favor, verifique sua conexão com a internet e tente novamente.');
         } else {
-            // Outros erros (ex: erro de servidor 500, vaga não encontrada 404)
             setError('Houve um imprevisto ao carregar as vagas. Nossa equipe já foi notificada. Por favor, tente novamente mais tarde.');
         }
     } finally {
-        // 6. Garante que o loading seja desativado, independentemente de sucesso ou falha
         setLoading(false);
-        // Removido setIsLoading(false) para usar um único estado de loading
     }
 };
 
   const filterJobs = (filter: string, term: string = searchTerm) => {
     let result = [...vagas];
 
-    // Apply text search if provided
     if (term.trim()) {
       result = result.filter(vaga =>
         vaga.title.toLowerCase().includes(term.toLowerCase()) ||
@@ -131,7 +118,6 @@ const fetchVagas = async () => {
       );
     }
 
-    // Apply category filter
     if (filter !== 'all') {
       result = result.filter(vaga => vaga.job_type.toLowerCase() === filter.toLowerCase());
     }
@@ -171,6 +157,52 @@ const fetchVagas = async () => {
     }
   };
 
+  const formatDateSince = (dateString?: string): string => {
+    if (!dateString) {
+      return 'Data não informada';
+    }
+
+    const now = new Date();
+    const past = new Date(dateString);
+    const diffInSeconds = Math.floor((now.getTime() - past.getTime()) / 1000);
+
+    // Menos de um minuto
+    if (diffInSeconds < 60) {
+      return 'Publicada agora';
+    }
+
+    // Minutos
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
+    if (diffInMinutes < 60) {
+      return `Publicada há ${diffInMinutes} ${diffInMinutes === 1 ? 'minuto' : 'minutos'}`;
+    }
+
+    // Horas
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24) {
+      return `Publicada há ${diffInHours} ${diffInHours === 1 ? 'hora' : 'horas'}`;
+    }
+
+    // Dias
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays === 1) {
+        return 'Publicada ontem';
+    }
+    if (diffInDays < 30) {
+      return `Publicada há ${diffInDays} dias`;
+    }
+
+    // Meses
+    const diffInMonths = Math.floor(diffInDays / 30);
+    if (diffInMonths < 12) {
+      return `Publicada há ${diffInMonths} ${diffInMonths === 1 ? 'mês' : 'meses'}`;
+    }
+
+    // Anos
+    const diffInYears = Math.floor(diffInDays / 365);
+    return `Publicada há ${diffInYears} ${diffInYears === 1 ? 'ano' : 'anos'}`;
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Header />
@@ -184,14 +216,11 @@ const fetchVagas = async () => {
           backgroundPosition: 'center'
         }}
       >
-        {/* Overlay to ensure text readability */}
         <div className="absolute inset-0 bg-black bg-opacity-50"></div>
-
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-4xl font-bold mb-6">Encontre a Carreira Ideal para Você</h1>
             <p className="text-xl mb-8">Conectando profissionais talentosos com as melhores oportunidades do mercado</p>
-
             <div className="relative max-w-2xl mx-auto">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
               <Input
@@ -208,7 +237,6 @@ const fetchVagas = async () => {
 
       {/* Main Content */}
       <main className="flex-grow container mx-auto px-4 py-12">
-        {/* Filters and Tabs */}
         <div className="mb-8">
           <Tabs defaultValue="all" onValueChange={setActiveFilter}>
             <div className="flex justify-between items-center mb-4">
@@ -225,7 +253,6 @@ const fetchVagas = async () => {
                 </Button>
               </div>
             </div>
-
             <div className="bg-white p-2 rounded-lg shadow-sm mb-6">
               <TabsList className="w-full grid grid-cols-4">
                 <TabsTrigger value="all" className="data-[state=active]:bg-purple-100 data-[state=active]:text-purple-800">
@@ -355,7 +382,7 @@ const fetchVagas = async () => {
 
                       <div className="mt-2 flex items-center text-sm text-gray-500">
                         <Calendar size={14} className="mr-1" />
-                        <span>Publicada há 2 dias</span>
+                        <span>{formatDateSince(vaga.created_at)}</span>
                       </div>
                     </CardContent>
 
@@ -371,19 +398,16 @@ const fetchVagas = async () => {
                   </Card>
                 );
               })}
-
             </div>
           </>
         )}
       </main>
 
-      {/* Newsletter Section */}
       <section className="bg-indigo-50 py-16">
         <div className="container mx-auto px-4">
           <div className="max-w-xl mx-auto text-center">
             <h2 className="text-2xl font-bold mb-4">Receba Novas Oportunidades</h2>
             <p className="text-gray-600 mb-6">Cadastre-se para receber as melhores vagas da sua área diretamente no seu email.</p>
-
             <div className="flex flex-col sm:flex-row gap-3">
               <Input
                 type="email"

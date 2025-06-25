@@ -54,6 +54,10 @@ export default function Header() {
         navigate("/my-applications");
     };
 
+    const handleSeeSubscriptions = () => {
+        navigate("/my-subscriptions");
+    };
+
     const handleHomePage = () => {
         navigate("/");
     };
@@ -93,6 +97,9 @@ export default function Header() {
                             </DropdownMenuItem>
                             <DropdownMenuItem onSelect={handleSeeApplications} className="cursor-pointer">
                                 Candidatura
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onSelect={handleSeeSubscriptions} className="cursor-pointer">
+                                Inscrições
                             </DropdownMenuItem>
                             <DropdownMenuItem onSelect={handleLogout} className="cursor-pointer">
                                 Sair

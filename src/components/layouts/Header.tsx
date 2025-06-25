@@ -50,6 +50,14 @@ export default function Header() {
         navigate("/userhomepage");
     };
 
+    const handleSeeApplications = () => {
+        navigate("/my-applications");
+    };
+
+    const handleHomePage = () => {
+        navigate("/");
+    };
+
     const handleGoToDashboard = () => {
         navigate("/dashboard");
     };
@@ -77,12 +85,18 @@ export default function Header() {
                                     Dashboard
                                 </DropdownMenuItem>
                             )}
+                            <DropdownMenuItem onSelect={handleHomePage} className="cursor-pointer">
+                                Início
+                            </DropdownMenuItem>
                             <DropdownMenuItem onSelect={handleEditProfile} className="cursor-pointer">
                                 Editar Perfil
                             </DropdownMenuItem>
+                            <DropdownMenuItem onSelect={handleSeeApplications} className="cursor-pointer">
+                                Candidatura
+                            </DropdownMenuItem>
                             <DropdownMenuItem onSelect={handleLogout} className="cursor-pointer">
                                 Sair
-                            </DropdownMenuItem>
+                            </DropdownMenuItem>                    
                         </DropdownMenuContent>
                     </DropdownMenu>
                 ) : (

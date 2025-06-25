@@ -1,5 +1,8 @@
-import React, { useState, useEffect, useMemo } from "react"
+import React, { useState, useEffect, useMemo, useRef } from "react" 
 import api from "@/service/Api"
+import jsPDF from "jspdf" 
+import html2canvas from "html2canvas" 
+
 import {
   Award, User, Search, Filter, CheckCircle, Clock, XCircle, Mail,
   Download, Camera, Phone, Calendar, MapPin, Loader2, ThumbsUp, ThumbsDown,
@@ -21,9 +24,7 @@ import { Badge } from "@/components/ui/badge"
 import { Bar, BarChart, CartesianGrid, PolarGrid, RadialBar, RadialBarChart, XAxis, YAxis, ResponsiveContainer, Cell } from "recharts"
 import { ChartConfig, ChartContainer, ChartTooltip } from "@/components/ui/chart"
 
-// ====================================================================
 // 1. TIPOS E INTERFACES (INCLUINDO AS DO PERFIL COMPORTAMENTAL)
-// ====================================================================
 
 interface Application {
   id: number;
@@ -88,10 +89,7 @@ interface FullProfileData {
   comparison: { [key:string]: ComparisonItem };
 }
 
-
-// ====================================================================
 // 2. CONFIGURAÇÕES DE GRÁFICOS E ÍCONES (Trazidos do ResultProfile)
-// ====================================================================
 
 const balanceChartConfig = {
   score: { label: "Score" },
@@ -126,17 +124,12 @@ const recommendationLabels: { [key: string]: string } = {
   improvement_tips: "Dicas de Melhoria"
 };
 
-// ====================================================================
-// 3. COMPONENTE PRINCIPAL 
-// ====================================================================
 
 export default function Applications() {
   // --- Estados do Componente ---
   const [applications, setApplications] = useState<Application[]>([])
   const [selectedCandidate, setSelectedCandidate] = useState<Application | null>(null)
   const [candidateProfile, setCandidateProfile] = useState<CandidateProfile | null>(null)
-  
-  // NOVO ESTADO para o perfil comportamental
   const [behavioralProfile, setBehavioralProfile] = useState<FullProfileData | null>(null)
   
   const [loading, setLoading] = useState(true)
@@ -145,6 +138,12 @@ export default function Applications() {
   const [searchTerm, setSearchTerm] = useState("")
   const [filterPosition, setFilterPosition] = useState<string>("all")
 
+  // NOVO: Estado para controlar o carregamento da exportação do PDF
+  const [isExporting, setIsExporting] = useState(false);
+  
+  // NOVO: Ref para o container do perfil que será exportado
+  const behavioralProfileRef = useRef<HTMLDivElement>(null);
+
   // --- Busca de Dados ---
   useEffect(() => {
     fetchApplications();
@@ -152,7 +151,7 @@ export default function Applications() {
 
   const fetchApplications = () => {
     setLoading(true)
-    api.get('/apply_opportunities') 
+    api.get('/apply_opportunities')
       .then((response) => {
         const transformedData = response.data.data.map((app: any) => ({
           id: app.id, name: app.candidato, email: app.email, vacancy: app.vaga,
@@ -195,7 +194,56 @@ export default function Applications() {
     });
   };
   
-  // --- Ações e Funções Auxiliares ---
+
+  // NOVO: Função para exportar o perfil comportamental para PDF
+  const handleExportPDF = async () => {
+    if (!behavioralProfileRef.current || !selectedCandidate) return;
+
+    setIsExporting(true);
+
+    try {
+        const canvas = await html2canvas(behavioralProfileRef.current, {
+            scale: 2, // Aumenta a resolução para melhor qualidade
+            useCORS: true, // Permite carregar imagens de outras origens
+            logging: false,
+        });
+
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF({
+            orientation: 'portrait',
+            unit: 'mm',
+            format: 'a4'
+        });
+
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
+        const canvasWidth = canvas.width;
+        const canvasHeight = canvas.height;
+        const ratio = canvasWidth / canvasHeight;
+
+        // Calcula a largura e altura da imagem no PDF para manter a proporção
+        const imgWidth = pdfWidth - 20; // com margem de 10mm de cada lado
+        const imgHeight = imgWidth / ratio;
+
+        // Adiciona um título ao PDF
+        pdf.setFontSize(16);
+        pdf.text(`Perfil Comportamental - ${selectedCandidate.name}`, 10, 15);
+
+        // Adiciona a imagem do componente
+        pdf.addImage(imgData, 'PNG', 10, 25, imgWidth, imgHeight);
+
+        pdf.save(`perfil-comportamental-${selectedCandidate.name.replace(/ /g, '_')}.pdf`);
+
+    } catch (error) {
+        console.error("Erro ao gerar o PDF:", error);
+        // Opcional: Adicionar um alerta para o usuário
+        alert("Ocorreu um erro ao gerar o PDF. Tente novamente.");
+    } finally {
+        setIsExporting(false);
+    }
+  };
+
+
   const handleApplicationAction = (applicationId: number, action: 'approve' | 'reject') => {
     setActionLoading(true);
     const newStatus = action === 'approve' ? 'Aprovado' : 'Rejeitado';
@@ -288,18 +336,18 @@ export default function Applications() {
               />
             </div>
             <Select value={filterPosition} onValueChange={setFilterPosition}>
-                <SelectTrigger className="w-full md:w-[220px]">
-                  <SelectValue placeholder="Filtrar por vaga" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todas as vagas</SelectItem>
-                  {Array.from(new Set(applications.map((app) => app.vacancy))).map((vacancy) => (
-                    <SelectItem key={vacancy} value={vacancy}>
-                      {vacancy}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <SelectTrigger className="w-full md:w-[220px]">
+                <SelectValue placeholder="Filtrar por vaga" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas as vagas</SelectItem>
+                {Array.from(new Set(applications.map((app) => app.vacancy))).map((vacancy) => (
+                  <SelectItem key={vacancy} value={vacancy}>
+                    {vacancy}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="rounded-md border">
             <Table>
@@ -330,9 +378,9 @@ export default function Applications() {
                         </div>
                       </TableCell>
                       <TableCell>
-                         <Badge variant="outline" className={getStatusColor(app.status)}>
-                           <div className="flex items-center">{getStatusIcon(app.status)}{app.status}</div>
-                         </Badge>
+                       <Badge variant="outline" className={getStatusColor(app.status)}>
+                         <div className="flex items-center">{getStatusIcon(app.status)}{app.status}</div>
+                       </Badge>
                       </TableCell>
                       <TableCell>{app.vacancy}</TableCell>
                       <TableCell>{formatDate(app.applicationDate)}</TableCell>
@@ -352,7 +400,7 @@ export default function Applications() {
         </CardContent>
       </Card>
 
-      {/* 4. DIALOG  COM ABAS PARA OS DOIS TIPOS DE PERFIL        */}    
+      {/* 4. DIALOG  COM ABAS PARA OS DOIS TIPOS DE PERFIL */}
       <Dialog open={!!selectedCandidate} onOpenChange={(isOpen) => !isOpen && handleCloseModal()}>
         <DialogContent className="sm:max-w-4xl bg-white max-h-[90vh] flex flex-col">
           {selectedCandidate && (
@@ -380,7 +428,24 @@ export default function Applications() {
                     {/* ABA DA ANÁLISE COMPORTAMENTAL */}
                     <TabsContent value="behavioral" className="mt-4">
                       {behavioralProfile ? (
-                        <div className="space-y-6">
+                        // ALTERADO: Adicionado ref ao container principal e botão de download
+                        <div ref={behavioralProfileRef} className="space-y-6 bg-white p-4 rounded-lg">
+                            <div className="flex justify-between items-center">
+                                <h3 className="text-lg font-semibold">Relatório Comportamental</h3>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={handleExportPDF}
+                                    disabled={isExporting}
+                                >
+                                    {isExporting ? (
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    ) : (
+                                        <Download className="mr-2 h-4 w-4" />
+                                    )}
+                                    Exportar PDF
+                                </Button>
+                            </div>
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                 <ProfileSummaryCard analysis={behavioralProfile.analysis} />
                                 <BalanceScoreCard analysis={behavioralProfile.analysis} />
@@ -396,38 +461,38 @@ export default function Applications() {
                     </TabsContent>
 
                     {/* ABA DE INFORMAÇÕES GERAIS */}
-                     <TabsContent value="contact" className="mt-4">
-                      {candidateProfile ? (
-                        <div className="grid gap-4 py-4">
-                          <div className="flex items-center gap-4">
-                            <Avatar className="h-20 w-20">
-                              <AvatarImage src={candidateProfile.photo_url} />
-                              <AvatarFallback className="bg-purple-100 text-purple-800 text-3xl">{getInitials(candidateProfile.name)}</AvatarFallback>
-                            </Avatar>
-                            <div className="space-x-2">
-                              {candidateProfile.resume_url && <a href={candidateProfile.resume_url} download target="_blank" rel="noreferrer"><Button variant="outline"><Download className="mr-2 h-4 w-4"/> Currículo</Button></a>}
-                              {candidateProfile.photo_url && <a href={candidateProfile.photo_url} target="_blank" rel="noreferrer"><Button variant="outline"><Camera className="mr-2 h-4 w-4"/> Foto</Button></a>}
-                            </div>
-                          </div>
-                          <Card>
-                            <CardContent className="pt-6 text-sm">
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <p className="flex items-center"><Mail className="w-4 h-4 mr-2 text-muted-foreground" /> {candidateProfile.email}</p>
-                                <p className="flex items-center"><Phone className="w-4 h-4 mr-2 text-muted-foreground" /> {candidateProfile.phone || "Não informado"}</p>
-                                <p className="flex items-center"><Calendar className="w-4 h-4 mr-2 text-muted-foreground" /> {formatDate(candidateProfile.birth_date)}</p>
-                                <p className="flex items-center"><MapPin className="w-4 h-4 mr-2 text-muted-foreground" /> {candidateProfile.location || "Não informado"}</p>
-                                <p className="flex items-center"><User className="w-4 h-4 mr-2 text-muted-foreground" /> {candidateProfile.sex || "Não informado"}</p>
-                                {candidateProfile.linkedin && <a href={candidateProfile.linkedin} target="_blank" rel="noreferrer" className="flex items-center text-blue-600 hover:underline col-span-full"><Award className="w-4 h-4 mr-2 text-muted-foreground" /> {candidateProfile.linkedin}</a>}
-                              </div>
-                            </CardContent>
-                          </Card>
-                        </div>
-                      ) : (
-                        <div className="text-center h-60 flex items-center justify-center text-muted-foreground">
-                          <p>Não foi possível carregar os detalhes de contato do perfil.</p>
-                        </div>
-                      )}
-                    </TabsContent>
+                      <TabsContent value="contact" className="mt-4">
+                       {candidateProfile ? (
+                         <div className="grid gap-4 py-4">
+                           <div className="flex items-center gap-4">
+                             <Avatar className="h-20 w-20">
+                               <AvatarImage src={candidateProfile.photo_url} />
+                               <AvatarFallback className="bg-purple-100 text-purple-800 text-3xl">{getInitials(candidateProfile.name)}</AvatarFallback>
+                             </Avatar>
+                             <div className="space-x-2">
+                               {candidateProfile.resume_url && <a href={candidateProfile.resume_url} download target="_blank" rel="noreferrer"><Button variant="outline"><Download className="mr-2 h-4 w-4"/> Currículo</Button></a>}
+                               {candidateProfile.photo_url && <a href={candidateProfile.photo_url} target="_blank" rel="noreferrer"><Button variant="outline"><Camera className="mr-2 h-4 w-4"/> Foto</Button></a>}
+                             </div>
+                           </div>
+                           <Card>
+                             <CardContent className="pt-6 text-sm">
+                               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                 <p className="flex items-center"><Mail className="w-4 h-4 mr-2 text-muted-foreground" /> {candidateProfile.email}</p>
+                                 <p className="flex items-center"><Phone className="w-4 h-4 mr-2 text-muted-foreground" /> {candidateProfile.phone || "Não informado"}</p>
+                                 <p className="flex items-center"><Calendar className="w-4 h-4 mr-2 text-muted-foreground" /> {formatDate(candidateProfile.birth_date)}</p>
+                                 <p className="flex items-center"><MapPin className="w-4 h-4 mr-2 text-muted-foreground" /> {candidateProfile.location || "Não informado"}</p>
+                                 <p className="flex items-center"><User className="w-4 h-4 mr-2 text-muted-foreground" /> {candidateProfile.sex || "Não informado"}</p>
+                                 {candidateProfile.linkedin && <a href={candidateProfile.linkedin} target="_blank" rel="noreferrer" className="flex items-center text-blue-600 hover:underline col-span-full"><Award className="w-4 h-4 mr-2 text-muted-foreground" /> {candidateProfile.linkedin}</a>}
+                               </div>
+                             </CardContent>
+                           </Card>
+                         </div>
+                       ) : (
+                         <div className="text-center h-60 flex items-center justify-center text-muted-foreground">
+                           <p>Não foi possível carregar os detalhes de contato do perfil.</p>
+                         </div>
+                       )}
+                      </TabsContent>
                   </Tabs>
                 )}
               </div>
@@ -436,10 +501,10 @@ export default function Applications() {
                 <div className="flex items-center">
                   <span className="text-sm text-muted-foreground mr-2">Status:</span>
                   <Badge variant="outline" className={getStatusColor(selectedCandidate.status)}>
-                      <div className="flex items-center">
-                          {getStatusIcon(selectedCandidate.status)}
-                          {selectedCandidate.status}
-                      </div>
+                    <div className="flex items-center">
+                        {getStatusIcon(selectedCandidate.status)}
+                        {selectedCandidate.status}
+                    </div>
                   </Badge>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-2">
@@ -472,8 +537,7 @@ export default function Applications() {
   )
 }
 
-// 5. SUBCOMPONENTES DE VISUALIZAÇÃO 
-
+// 5. SUBCOMPONENTES DE VISUALIZAÇÃO
 
 const ProfileSummaryCard: React.FC<{ analysis: DetailedAnalysis }> = ({ analysis }) => {
   const classification = analysis?.profile_classification

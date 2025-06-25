@@ -103,7 +103,10 @@ const ResultBehaviorProfile = () => {
       setLoading(true)
       setError(null)
       try {
-        const token = localStorage.getItem("token")
+        // 1. Pega o token do localStorage OU do sessionStorage.
+        const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+        // ====================================================================
+
         if (!token) throw new Error("Usuário não autenticado.")
 
         const response = await axios.get<FullProfileData>(
@@ -337,8 +340,8 @@ const ProfileStatsCard: React.FC<{ data: any[] }> = ({ data }) => {
 const BalanceScoreCard: React.FC<{ analysis: DetailedAnalysis }> = ({ analysis }) => {
   const balance_score = analysis?.balance_score ?? 0;
   const scoreColor = balance_score > 75 ? "hsl(142 76% 36%)" : 
-                    balance_score > 50 ? "hsl(48 96% 53%)" : 
-                    "hsl(0 84% 60%)";
+                       balance_score > 50 ? "hsl(48 96% 53%)" : 
+                       "hsl(0 84% 60%)";
 
   return (
     <Card className="border-0 shadow-lg bg-gradient-to-br from-white to-slate-50">

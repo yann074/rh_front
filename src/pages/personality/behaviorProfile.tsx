@@ -2,9 +2,6 @@ import React, { useState, useEffect, useMemo } from "react"
 import axios from "axios"
 import { useNavigate } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
-
-// --- ATUALIZAÇÃO DE IMPORTS ---
-// Componentes do shadcn/ui e ícones
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
@@ -73,7 +70,7 @@ const BehaviorProfile = () => {
           headers: { Authorization: `Bearer ${token}` },
         })
 
-        // --- LÓGICA MODIFICADA PARA USAR O DIALOG ---
+        // 1. Verifica se o usuário já respondeu ao questionário
         // 2. Se já respondeu, ativa o estado para mostrar o Dialog
         if (statusResponse.data.hasCompleted) {
           setShowRedirectDialog(true)
@@ -154,7 +151,7 @@ const BehaviorProfile = () => {
     setSubmitting(true)
     setError(null)
     try {
-      const token = localStorage.getItem("token")
+      const token = localStorage.getItem("token") || sessionStorage.getItem("token")
       if (!token) {
         throw new Error("Sessão inválida. Por favor, faça login novamente.")
       }

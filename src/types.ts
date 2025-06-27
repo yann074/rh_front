@@ -37,3 +37,10 @@ export interface CandidatoData {
   number?: string;
   complement?: string;
 }
+
+export interface EnumsData {
+  sexUser: string[];
+  gender: string[];
+  orientation: string[];
+  color: string[];
+}

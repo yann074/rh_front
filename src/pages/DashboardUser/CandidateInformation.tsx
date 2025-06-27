@@ -34,49 +34,10 @@ import {
   Car,
   Instagram,
   Facebook,
-  Lightbulb, // Ícone adicionado para o novo card
+  Lightbulb, 
 } from "lucide-react"
+import { UserData, CandidatoData } from "../../types"
 
-// ... (O restante das suas interfaces e funções permanece o mesmo) ...
-interface UserData {
-  id?: number
-  email: string
-  name: string
-  role?: string
-  created_at?: string
-}
-
-interface CandidatoData {
-  user_id?: number
-  secondary_email: string
-  cpf: string
-  phone: string
-  birth_date: string
-  linkedin: string
-  pcd: boolean
-  photo: File | null
-  photoPreview: string
-  resume?: File | null
-  resumeName?: string
-  sex: string
-  sexual_orientation: string
-  race: string
-  gender: string
-  expected_salary?: string
-  has_driver_license?: boolean
-  driver_license_category?: string
-  instagram_link?: string
-  facebook_link?: string
-  zip_code?: string
-  state?: string
-  city?: string
-  neighborhood?: string
-  street?: string
-  number?: string
-  complement?: string
-}
-
-// Add this function before the CandidateInformation component
 const formatSocialMediaUrl = (url: string | undefined, domain: string): string | null => {
   if (!url || url.trim() === "") return null
 

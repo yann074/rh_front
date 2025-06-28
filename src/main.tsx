@@ -26,6 +26,7 @@ import BehaviorProfile from "./pages/personality/behaviorProfile"
 import ResultBehaviorProfile from "./pages/personality/ResultBehaviorProfile"
 import ViewApplies from "@/components/UserSection/ViewApplies"
 import MyTrainingsPage from "@/components/UserSection/MyTrainingsPage"
+import QuemSomos from "./pages/WhoWeAre/QuemSomos"
 
 const CLIENT_ID = "239792615305-dh5fndio5bf43rhha3kji5qe3jpuj7uq.apps.googleusercontent.com"
 
@@ -79,6 +80,11 @@ const rotas = createBrowserRouter([
   {
     path: "/",
     element: <InitialJobs />,
+    errorElement: <ErrorPage />,
+  },
+  {
+    path: "/quemsomos",
+    element: <QuemSomos />,
     errorElement: <ErrorPage />,
   },
   {

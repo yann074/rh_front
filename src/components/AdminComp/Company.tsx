@@ -1,6 +1,17 @@
 import { useState, useEffect } from "react"
 import axios from "axios"
-import { Trash, MoreHorizontal, Building, Calendar, Search, Filter, AlertTriangle, FileText, MapPin, Phone, } from "lucide-react"
+import {
+  Trash,
+  MoreHorizontal,
+  Building,
+  Calendar,
+  Search,
+  Filter,
+  AlertTriangle,
+  FileText,
+  MapPin,
+  Phone,
+} from "lucide-react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import {
@@ -21,7 +32,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import Swal from 'sweetalert2';
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import Swal from "sweetalert2"
 
 interface CompanyType {
   id: number
@@ -30,6 +42,10 @@ interface CompanyType {
   phone?: string
   cnpj?: string
   createdAt?: string
+}
+
+interface ValidationErrors {
+  [key: string]: string[]
 }
 
 export default function CompanyTable() {
@@ -42,32 +58,39 @@ export default function CompanyTable() {
   const [addDialogOpen, setAddDialogOpen] = useState(false)
   const [newCompanyName, setNewCompanyName] = useState("")
   const [isAdding, setIsAdding] = useState(false)
-  const [newCompanyAddress, setNewCompanyAddress] = useState('');
-  const [newCompanyPhone, setNewCompanyPhone] = useState('');
-  const [newCompanyCNPJ, setNewCompanyCNPJ] = useState('');
+  const [newCompanyAddress, setNewCompanyAddress] = useState("")
+  const [newCompanyPhone, setNewCompanyPhone] = useState("")
+  const [newCompanyCNPJ, setNewCompanyCNPJ] = useState("")
+
+  // Estado para armazenar erros de validação
+  const [validationErrors, setValidationErrors] = useState<ValidationErrors>({})
 
   const fetchCompanies = () => {
     setLoading(true)
     axios
       .get("http://127.0.0.1:8000/api/companies")
       .then((response) => {
-
-        // Baseado no console que você mostrou, o caminho correto parece ser response.data.data
         let companiesData = []
-
         if (response.data && response.data.data && Array.isArray(response.data.data)) {
           companiesData = response.data.data
         }
-
-        const enrichedCompanies = companiesData.map((company: { id: any; name: any; created_at: string | number | Date; cnpj: string; phone: string; address: string }) => ({
-          id: company.id,
-          name: company.name,
-          phone: company.phone,
-          address: company.address,
-          cnpj: company.cnpj,
-          // Formatar a data para exibição (created_at vem como "2025-04-29T00:40:13.000000Z")
-          createdAt: company.created_at ? new Date(company.created_at).toLocaleDateString('pt-BR') : '-'
-        }))
+        const enrichedCompanies = companiesData.map(
+          (company: {
+            id: any
+            name: any
+            created_at: string | number | Date
+            cnpj: string
+            phone: string
+            address: string
+          }) => ({
+            id: company.id,
+            name: company.name,
+            phone: company.phone,
+            address: company.address,
+            cnpj: company.cnpj,
+            createdAt: company.created_at ? new Date(company.created_at).toLocaleDateString("pt-BR") : "-",
+          }),
+        )
         setCompanies(enrichedCompanies)
         setLoading(false)
       })
@@ -94,55 +117,51 @@ export default function CompanyTable() {
   }
 
   const handleDelete = async () => {
-    if (!companyToDelete) return;
+    if (!companyToDelete) return
 
-    setIsDeleting(true);
+    setIsDeleting(true)
     try {
-      const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-
+      const token = localStorage.getItem("token") || sessionStorage.getItem("token")
       await axios.delete(`http://127.0.0.1:8000/api/companies/${companyToDelete.id}`, {
         headers: {
           Authorization: token ? `Bearer ${token}` : undefined,
         },
-      });
+      })
+      setCompanies(companies.filter((company) => company.id !== companyToDelete.id))
 
-      setCompanies(companies.filter((company) => company.id !== companyToDelete.id));
-
-      // Exibe o SweetAlert2 de sucesso
       Swal.fire({
-        title: 'Empresa excluída com sucesso!',
-        text: 'A empresa foi removida da lista.',
-        icon: 'success',
-        confirmButtonText: 'OK',
+        title: "Empresa excluída com sucesso!",
+        text: "A empresa foi removida da lista.",
+        icon: "success",
+        confirmButtonText: "OK",
         timer: 3000,
         timerProgressBar: true,
-      });
-
+      })
     } catch (error: any) {
-      console.error("Erro ao excluir empresa:", error);
+      console.error("Erro ao excluir empresa:", error)
 
-      // Exibe o SweetAlert2 de erro
       Swal.fire({
-        title: 'Erro ao excluir empresa',
-        text: 'Ocorreu um erro ao tentar excluir a empresa. Tente novamente.',
-        icon: 'error',
-        confirmButtonText: 'OK',
-      });
-
+        title: "Erro ao excluir empresa",
+        text: "Ocorreu um erro ao tentar excluir a empresa. Tente novamente.",
+        icon: "error",
+        confirmButtonText: "OK",
+      })
     } finally {
-      setIsDeleting(false);
-      setDeleteDialogOpen(false);
-      setCompanyToDelete(null);
+      setIsDeleting(false)
+      setDeleteDialogOpen(false)
+      setCompanyToDelete(null)
     }
-  };
+  }
 
   const handleAddCompany = async () => {
-    if (!newCompanyName.trim()) return;
+    if (!newCompanyName.trim()) return
 
-    setIsAdding(true);
+    // Limpar erros anteriores
+    setValidationErrors({})
+    setIsAdding(true)
+
     try {
-      const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-
+      const token = localStorage.getItem("token") || sessionStorage.getItem("token")
       const response = await axios.post(
         "http://127.0.0.1:8000/api/companies",
         {
@@ -155,45 +174,62 @@ export default function CompanyTable() {
           headers: {
             Authorization: token ? `Bearer ${token}` : undefined,
           },
-        }
+        },
       )
 
-
-      // Adiciona a nova empresa ao estado com uma data aleatória se necessário
       const newCompany = {
         ...response.data.data,
         createdAt: response.data.data.createdAt || getRandomPastDate(),
-      };
+      }
 
-      setCompanies([...companies, newCompany]);
-      setNewCompanyName("");
+      setCompanies([...companies, newCompany])
 
-      // Exibe o SweetAlert2 de sucesso
+      // Limpar campos do formulário
+      setNewCompanyName("")
+      setNewCompanyAddress("")
+      setNewCompanyPhone("")
+      setNewCompanyCNPJ("")
+      setValidationErrors({})
+      setAddDialogOpen(false)
+
       Swal.fire({
-        title: 'Empresa adicionada com sucesso!',
-        text: 'A nova empresa foi cadastrada corretamente.',
-        icon: 'success',
-        confirmButtonText: 'OK',
+        title: "Empresa adicionada com sucesso!",
+        text: "A nova empresa foi cadastrada corretamente.",
+        icon: "success",
+        confirmButtonText: "OK",
         timer: 3000,
         timerProgressBar: true,
-      });
-
+      })
     } catch (error: any) {
-      console.error("Erro ao adicionar empresa:", error);
+      console.error("Erro ao adicionar empresa:", error)
 
-      // Exibe o SweetAlert2 de erro
-      Swal.fire({
-        title: 'Erro ao adicionar empresa',
-        text: 'Ocorreu um erro ao tentar cadastrar a empresa. Tente novamente.',
-        icon: 'error',
-        confirmButtonText: 'OK',
-      });
-
+      // Verificar se é um erro de validação (422)
+      if (error.response && error.response.status === 422) {
+        const errors = error.response.data.errors || {}
+        setValidationErrors(errors)
+      } else {
+        // Para outros tipos de erro, mostrar SweetAlert
+        Swal.fire({
+          title: "Erro ao adicionar empresa",
+          text: "Ocorreu um erro ao tentar cadastrar a empresa. Tente novamente.",
+          icon: "error",
+          confirmButtonText: "OK",
+        })
+      }
     } finally {
-      setIsAdding(false);
-      setAddDialogOpen(false);
+      setIsAdding(false)
     }
-  };
+  }
+
+  // Função para limpar erros quando o modal for fechado
+  const handleCloseAddDialog = () => {
+    setAddDialogOpen(false)
+    setValidationErrors({})
+    setNewCompanyName("")
+    setNewCompanyAddress("")
+    setNewCompanyPhone("")
+    setNewCompanyCNPJ("")
+  }
 
   const filteredCompanies = companies.filter((company) => {
     return company.name?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -207,10 +243,7 @@ export default function CompanyTable() {
             <CardTitle className="text-2xl">Empresas Cadastradas</CardTitle>
             <CardDescription>Gerencie todas as empresas cadastradas na plataforma.</CardDescription>
           </div>
-          <Button
-            className="bg-white hover:bg-purple-200"
-            onClick={() => setAddDialogOpen(true)}
-          >
+          <Button className="bg-white hover:bg-purple-200" onClick={() => setAddDialogOpen(true)}>
             Adicionar Empresa
           </Button>
         </CardHeader>
@@ -311,7 +344,7 @@ export default function CompanyTable() {
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={4} className="h-24 text-center">
+                      <TableCell colSpan={7} className="h-24 text-center">
                         Nenhuma empresa encontrada.
                       </TableCell>
                     </TableRow>
@@ -371,41 +404,88 @@ export default function CompanyTable() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
       {/* Add Company Dialog */}
-      <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
+      <Dialog open={addDialogOpen} onOpenChange={handleCloseAddDialog}>
         <DialogContent className="bg-white border border-gray-200 shadow-lg">
           <DialogHeader>
             <DialogTitle>Adicionar Nova Empresa</DialogTitle>
-            <DialogDescription>
-              Preencha os campos abaixo para adicionar uma nova empresa ao sistema.
-            </DialogDescription>
+            <DialogDescription>Preencha os campos abaixo para adicionar uma nova empresa ao sistema.</DialogDescription>
           </DialogHeader>
 
+          {/* Exibir erros de validação */}
+          {Object.keys(validationErrors).length > 0 && (
+            <Alert className="border-red-200 bg-red-50">
+              <AlertTriangle className="h-4 w-4 text-red-600" />
+              <AlertDescription className="text-red-800">
+                <div className="font-medium mb-2">Erro de validação:</div>
+                <ul className="list-disc list-inside space-y-1">
+                  {Object.entries(validationErrors).map(([field, errors]) => (
+                    <li key={field}>
+                      <strong>
+                        {field === "name"
+                          ? "Nome"
+                          : field === "cnpj"
+                            ? "CNPJ"
+                            : field === "address"
+                              ? "Endereço"
+                              : field === "phone"
+                                ? "Telefone"
+                                : field}
+                        :
+                      </strong>{" "}
+                      {errors.join(", ")}
+                    </li>
+                  ))}
+                </ul>
+              </AlertDescription>
+            </Alert>
+          )}
+
           <div className="py-4 space-y-3">
-            <Input
-              placeholder="Nome da empresa"
-              value={newCompanyName}
-              onChange={(e) => setNewCompanyName(e.target.value)}
-            />
-            <Input
-              placeholder="Endereço"
-              value={newCompanyAddress}
-              onChange={(e) => setNewCompanyAddress(e.target.value)}
-            />
-            <Input
-              placeholder="Telefone"
-              value={newCompanyPhone}
-              onChange={(e) => setNewCompanyPhone(e.target.value)}
-            />
-            <Input
-              placeholder="CNPJ"
-              value={newCompanyCNPJ}
-              onChange={(e) => setNewCompanyCNPJ(e.target.value)}
-            />
+            <div>
+              <Input
+                placeholder="Nome da empresa"
+                value={newCompanyName}
+                onChange={(e) => setNewCompanyName(e.target.value)}
+                className={validationErrors.name ? "border-red-500 focus:border-red-500" : ""}
+              />
+              {validationErrors.name && <p className="text-sm text-red-600 mt-1">{validationErrors.name[0]}</p>}
+            </div>
+
+            <div>
+              <Input
+                placeholder="Endereço"
+                value={newCompanyAddress}
+                onChange={(e) => setNewCompanyAddress(e.target.value)}
+                className={validationErrors.address ? "border-red-500 focus:border-red-500" : ""}
+              />
+              {validationErrors.address && <p className="text-sm text-red-600 mt-1">{validationErrors.address[0]}</p>}
+            </div>
+
+            <div>
+              <Input
+                placeholder="Telefone"
+                value={newCompanyPhone}
+                onChange={(e) => setNewCompanyPhone(e.target.value)}
+                className={validationErrors.phone ? "border-red-500 focus:border-red-500" : ""}
+              />
+              {validationErrors.phone && <p className="text-sm text-red-600 mt-1">{validationErrors.phone[0]}</p>}
+            </div>
+
+            <div>
+              <Input
+                placeholder="CNPJ"
+                value={newCompanyCNPJ}
+                onChange={(e) => setNewCompanyCNPJ(e.target.value)}
+                className={validationErrors.cnpj ? "border-red-500 focus:border-red-500" : ""}
+              />
+              {validationErrors.cnpj && <p className="text-sm text-red-600 mt-1">{validationErrors.cnpj[0]}</p>}
+            </div>
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setAddDialogOpen(false)} disabled={isAdding}>
+            <Button variant="outline" onClick={handleCloseAddDialog} disabled={isAdding}>
               Cancelar
             </Button>
             <Button
@@ -418,7 +498,6 @@ export default function CompanyTable() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
     </div>
   )
 }

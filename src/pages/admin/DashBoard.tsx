@@ -1,8 +1,9 @@
 import type React from "react"
 import { useState, useEffect } from "react"
+import api from "@/service/Api"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { Briefcase, Users, UserCircle, Menu, X, LogOut, LayoutDashboard, TrendingUp, Building2, BookOpen, ExternalLink } from "lucide-react" // Adicionado ExternalLink
+import { Briefcase, Users, UserCircle, Menu, X, LogOut, LayoutDashboard, TrendingUp, Building2, BookOpen, ExternalLink } from "lucide-react"
 import { Link, Outlet } from "react-router-dom"
 import {
   LineChart,
@@ -28,31 +29,39 @@ const AdminDashboard: React.FC = () => {
   const [error, setError] = useState<string | null>(null)
   const [jobOpportunities, setJobOpportunities] = useState<any[]>([])
 
+  // ==================== HOOK useEffect ====================
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true)
+        setError(null) // Reseta o estado de erro a cada nova busca
 
-        const userResponse = await fetch("http://127.0.0.1:8000/api/users")
-        const userData = await userResponse.json()
+        // 1. Usa Promise.all para buscar os dados de usuários e vagas em paralelo.
+        //    Isso é mais rápido do que fazer uma requisição após a outra.
+        const [usersResponse, jobsResponse] = await Promise.all([
+          api.get("/users"),       // Usa a instância 'api' para a rota de usuários
+          api.get("/opportunities") // Usa a instância 'api' para a rota de vagas
+        ]);
 
-        const jobsResponse = await fetch("http://127.0.0.1:8000/api/opportunities")
-        const jobsData = await jobsResponse.json()
-
-        if (userData.status_code === 200) {
-          setUserData(userData.data)
+        // 2. O Axios já retorna os dados em formato JSON no `response.data`.
+        //    O interceptor da sua 'api' já incluiu o token de autenticação no cabeçalho.
+        if (usersResponse.data.data) {
+          setUserData(usersResponse.data.data)
         } else {
-          setError("Failed to fetch user data")
+          setError("Falha ao carregar dados dos usuários.")
         }
 
-        if (jobsData.status_code === 200) {
-          setJobOpportunities(jobsData.data)
+        if (jobsResponse.data.data) {
+          setJobOpportunities(jobsResponse.data.data)
         } else {
-          console.error("Failed to fetch job opportunities")
+          console.error("Falha ao carregar as vagas.")
         }
-      } catch (err) {
-        setError("Error connecting to the server")
-        console.error(err)
+
+      } catch (err: any) {
+        // 3. O Axios trata erros de rede e status (4xx, 5xx) automaticamente no 'catch'.
+        const errorMessage = err.response?.data?.message || err.message || "Erro de conexão com o servidor."
+        setError(errorMessage)
+        console.error("Erro ao buscar dados do dashboard:", err)
       } finally {
         setLoading(false)
       }
@@ -60,6 +69,7 @@ const AdminDashboard: React.FC = () => {
 
     fetchData()
   }, [])
+  // =================================================================
 
   const dadosPorArea = [
     { area: "Desenvolvimento Web", inscritos: 250 },
@@ -103,7 +113,7 @@ const AdminDashboard: React.FC = () => {
           </Button>
         </div>
 
-        {/* Sidebar Navigation - ATUALIZADO */}
+        {/* Sidebar Navigation */}
         <nav className="flex-1 py-4 px-2 flex flex-col space-y-2 overflow-y-auto">
           <SidebarItem
             icon={<LayoutDashboard />}
@@ -146,16 +156,16 @@ const AdminDashboard: React.FC = () => {
             onClick={() => setCurrentView("empresas")}
           />
             <SidebarItem
-                icon={<BookOpen  />}
-                title="Capacitações"
-                active={currentView === "trainings"}
-                collapsed={collapsed}
-                to="capacitacoes" 
-                onClick={() => setCurrentView("trainings")}
-              />
+              icon={<BookOpen  />}
+              title="Capacitações"
+              active={currentView === "trainings"}
+              collapsed={collapsed}
+              to="capacitacoes" 
+              onClick={() => setCurrentView("trainings")}
+            />
         </nav>
 
-        {/* Sidebar Footer - ATUALIZADO */}
+        {/* Sidebar Footer */}
         <div className="mt-auto border-t border-gray-200 flex-shrink-0">
           <SidebarItem
             icon={<LogOut />}
@@ -192,14 +202,14 @@ const AdminDashboard: React.FC = () => {
         <main className="flex-1 overflow-y-auto p-6 bg-gray-100">
           {currentView === "dashboard" ? (
             <div className="max-w-7xl mx-auto">
-              {/* TÍTULO E BOTÃO ATUALIZADOS */}
+              {/* TÍTULO E BOTÃO */}
               <div className="flex justify-between items-center mb-6">
                  <h2 className="text-2xl font-bold">Dashboard</h2>
                  <Button asChild className="bg-white hover:bg-gray-50">
-                    <Link to="/">
-                        <ExternalLink className="mr-2 h-4 w-4" />
-                        Ver Página de Vagas
-                    </Link>
+                   <Link to="/">
+                     <ExternalLink className="mr-2 h-4 w-4" />
+                     Ver Página de Vagas
+                   </Link>
                  </Button>
               </div>
 
@@ -457,10 +467,10 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   onClick,
 }) => {
   const baseClasses = cn(
-    "w-full p-2 rounded-md transition-colors flex", // Padding padrão p-2 e rounded-md
+    "w-full p-2 rounded-md transition-colors flex", 
     collapsed ? "justify-center" : "items-center",
     active ? "bg-purple-50 text-purple-700" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900",
-    className, // Classes externas (como p-4 e rounded-none) irão sobrescrever as padrões
+    className, 
   )
 
   const content = (

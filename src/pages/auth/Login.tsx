@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '@/service/Api';
 import Swal from 'sweetalert2';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -40,18 +40,13 @@ const LoginPage = () => {
     e.preventDefault();
     setLoading(true);
 
-    axios
-      .post("http://127.0.0.1:8000/api/login", {
+    api
+      .post("/login", { 
         email: form.email,
         password: form.password,
-      }, {
-        headers: {
-          "Content-Type": "application/json",
-        },
       })
       .then((response) => {
-        // A sua API retorna um objeto 'data' com 'token' e os dados do usuário
-        // Usamos desestruturação para capturar tudo
+        // A lógica de sucesso 
         const { token, ...userData } = response.data.data;
 
         Swal.fire({
@@ -68,16 +63,9 @@ const LoginPage = () => {
           }
         });
     
-        // 1. Escolhe o storage com base na opção "Lembrar de mim"
         const storage = form.rememberMe ? localStorage : sessionStorage;
-
-        // 2. Salva o token
         storage.setItem("token", token);
-
-        // 3. Salva o objeto do usuário (que contém a 'permission') como uma string JSON
-        // O Header irá ler isso para saber se o usuário é admin
         storage.setItem("user", JSON.stringify(userData));
-        // ======================================================================
 
         if (userData.permission === 'admin') {
           navigate("/dashboard");

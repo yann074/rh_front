@@ -5,13 +5,13 @@ import { Button } from '@/components/ui/button';
 import Header from '@/components/layouts/Header';
 import Footer from '@/components/layouts/Footer';
 import { HeartHandshake, BrainCircuit, ShieldCheck, Rocket, ChevronDown } from 'lucide-react';
-import HeroBackground from '@/assets/QuemSomos.jpg'; 
-import BackgroundImage from '@/assets/whisk.png'; 
+import HeroBackground from '@/assets/QuemSomosPage/QuemSomos.jpg'; 
+import BackgroundImage from '@/assets/QuemSomosPage/whisk.png'; 
 
 // --- IMAGENS DO PASSO A PASSO ---
-import VerticalStep1 from '@/assets/vertical1.jpg';
-import VerticalStep2 from '@/assets/vertical2.jpg';
-import VerticalStep3 from '@/assets/vertical3.jpg'; 
+import VerticalStep1 from '@/assets/QuemSomosPage/vertical1.jpg';
+import VerticalStep2 from '@/assets/QuemSomosPage/vertical2.jpg';
+import VerticalStep3 from '@/assets/QuemSomosPage/vertical3.jpg'; 
 
 
 // --- Dados dos Valores da Empresa ---

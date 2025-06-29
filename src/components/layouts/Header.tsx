@@ -3,11 +3,11 @@ import logocs from "@/assets/logocs.svg";
 import { Button } from '@/components/ui/button';
 import { Link, useNavigate } from 'react-router-dom';
 import { UserCircle } from 'lucide-react';
-import { 
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
 export default function Header() {
@@ -69,13 +69,13 @@ export default function Header() {
     return (
         <header className="bg-white border-b sticky top-0 z-50">
             <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-                <div className="flex items-center">
+                <Link to="/" className="flex items-center hover:opacity-80 transition">
                     <div className="w-12 h-12 bg-purple-700 flex items-center justify-center rounded-md mr-3">
                         <img src={logocs} alt="Logo CS" />
                     </div>
                     <h1 className="text-xl font-bold">CSRH Instituto</h1>
-                </div>
-                
+                </Link>
+
                 {isLoggedIn ? (
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -103,7 +103,7 @@ export default function Header() {
                             </DropdownMenuItem>
                             <DropdownMenuItem onSelect={handleLogout} className="cursor-pointer">
                                 Sair
-                            </DropdownMenuItem>                    
+                            </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 ) : (

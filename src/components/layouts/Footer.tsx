@@ -18,8 +18,8 @@ export default function Footer() {
               <h4 className="font-semibold mb-4">Empresa</h4>
               <ul className="space-y-2">
                 <li><a href="/quemsomos" className="text-gray-600 hover:text-purple-700 text-sm">Sobre Nós</a></li>
-                <li><a href="#" className="text-gray-600 hover:text-purple-700 text-sm">Carreiras</a></li>
-                <li><a href="#" className="text-gray-600 hover:text-purple-700 text-sm">Nossa Equipe</a></li>
+                <li><a href="/" className="text-gray-600 hover:text-purple-700 text-sm">Carreiras</a></li>
+                <li><a href="/nossaequipe" className="text-gray-600 hover:text-purple-700 text-sm">Nossa Equipe</a></li>
                 <li><a href="#" className="text-gray-600 hover:text-purple-700 text-sm">Notícias</a></li>
               </ul>
             </div>

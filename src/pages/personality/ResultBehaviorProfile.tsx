@@ -110,7 +110,7 @@ const ResultBehaviorProfile = () => {
         if (!token) throw new Error("Usuário não autenticado.")
 
         const response = await axios.get<FullProfileData>(
-          "http://127.0.0.1:8000/api/profile",
+          "https://rhback-production.up.railway.app/api/profile",
           { headers: { Authorization: `Bearer ${token}` } }
         )
         

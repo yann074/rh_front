@@ -41,7 +41,7 @@ export default function Apply() {
         try {
             // A verificação do token já foi feita no useEffect.
             // A chamada da API agora usa a variável 'token' principal.
-            const response = await axios.get("http://127.0.0.1:8000/api/check_candidate", {
+            const response = await axios.get("https://rhback-production.up.railway.app/api/check_candidate", {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
@@ -80,7 +80,7 @@ export default function Apply() {
         try {
             // A chamada da API agora usa a variável 'token' principal.
             await axios.post(
-                `http://127.0.0.1:8000/api/apply_opportunities/${id}`,
+                `https://rhback-production.up.railway.app/api/apply_opportunities/${id}`,
                 { id_vaga: id },
                 {
                     headers: {
@@ -112,7 +112,7 @@ export default function Apply() {
     const fetchUserData = async () => {
         try {
             // A chamada da API agora usa a variável 'token' principal.
-            const userProfileResponse = await axios.get("http://127.0.0.1:8000/api/userprofile", {
+            const userProfileResponse = await axios.get("https://rhback-production.up.railway.app/api/userprofile", {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },

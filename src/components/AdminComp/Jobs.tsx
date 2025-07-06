@@ -83,7 +83,7 @@ export default function JobsTable() {
 
     useEffect(() => {
         setLoading(true);
-        axios.get("http://127.0.0.1:8000/api/opportunities")
+        axios.get("https://rhback-production.up.railway.app/api/opportunities")
             .then((response) => {
                 let vagasData: Vaga[] = [];
 
@@ -145,7 +145,7 @@ export default function JobsTable() {
         if (!window.confirm("Tem certeza que deseja deletar esta vaga?")) return;
     
         try {
-            await axios.delete(`http://127.0.0.1:8000/api/opportunities/${id}`);
+            await axios.delete(`https://rhback-production.up.railway.app/api/opportunities/${id}`);
             setVagas(prev => prev.filter(v => v.id !== id));
         } catch (error) {
             console.error("Erro ao deletar vaga:", error);
@@ -161,7 +161,7 @@ export default function JobsTable() {
         setDetailsError(null);
 
         try {
-            const endpoint = `http://127.0.0.1:8000/api/opportunities/${id}`;
+            const endpoint = `https://rhback-production.up.railway.app/api/opportunities/${id}`;
             console.log(`Buscando vaga: ${endpoint}`);
 
             const response = await axios.get(endpoint);

@@ -3,7 +3,7 @@ import { formatSocialMediaUrl } from "../utils/formatters";
 import { CandidatoData } from "@/types";
 
 const apiClient = axios.create({
-  baseURL: "http://127.0.0.1:8000/api",
+  baseURL: "https://rhback-production.up.railway.app/api",
 });
 
 export const setAuthToken = (token: string) => {

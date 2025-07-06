@@ -21,7 +21,7 @@ const AdminRoute = ({ children }: AdminRouteProps) => {
       }
 
       try {
-        const response = await axios.get("rhback-production.up.railway.app/api/userprofile", {
+        const response = await axios.get("https://rhback-production.up.railway.app/api/userprofile", {
           headers: {
             Authorization: `Bearer ${token}`,
           },

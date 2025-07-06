@@ -26,7 +26,7 @@ const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     axios
-        .post("http://127.0.0.1:8000/api/new_job", form, {
+        .post("https://rhback-production.up.railway.app/api/new_job", form, {
             headers: {
                 "Content-Type": "application/json"
             }

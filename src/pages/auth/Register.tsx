@@ -56,7 +56,7 @@ const RegisterPage = () => {
     setLoading(true);
 
     axios
-      .post("http://127.0.0.1:8000/api/register", {
+      .post("https://rhback-production.up.railway.app/api/register", {
         name: form.name,
         email: form.email,
         password: form.password,

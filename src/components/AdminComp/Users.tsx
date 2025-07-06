@@ -49,7 +49,7 @@ export default function UserTable() {
   const fetchUsers = () => {
     setLoading(true)
     axios
-      .get("http://127.0.0.1:8000/api/users")
+      .get("https://rhback-production.up.railway.app/api/users")
       .then((response) => {
         const enrichedUsers = response.data.data.Usuarios.map((user: UserType) => ({
           ...user,
@@ -137,7 +137,7 @@ export default function UserTable() {
     try {
       const token = localStorage.getItem("token") || sessionStorage.getItem("token")
 
-      await axios.delete(`http://127.0.0.1:8000/api/users/${userToDelete.id}`, {
+      await axios.delete(`https://rhback-production.up.railway.app/api/users/${userToDelete.id}`, {
         headers: {
           Authorization: token ? `Bearer ${token}` : undefined,
         },

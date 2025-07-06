@@ -59,7 +59,7 @@ const DataPersonal = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.post(
-        "rhback-production.up.railway.app/api/personal-data",
+        "https://rhback-production.up.railway.app/api/personal-data",
         formData,
         {
           headers: {

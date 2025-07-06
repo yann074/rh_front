@@ -66,7 +66,7 @@ const BehaviorProfile = () => {
       }
 
       try {
-        const statusResponse = await axios.get("http://127.0.0.1:8000/api/check-analysis", {
+        const statusResponse = await axios.get("https://rhback-production.up.railway.app/api/check-analysis", {
           headers: { Authorization: `Bearer ${token}` },
         })
 
@@ -79,7 +79,7 @@ const BehaviorProfile = () => {
         }
 
         // 3. Se não, busca as perguntas do questionário
-        const questionsResponse = await axios.get("http://127.0.0.1:8000/api/questions")
+        const questionsResponse = await axios.get("https://rhback-production.up.railway.app/api/questions")
         const questionsArray = questionsResponse.data.data
         if (!questionsArray || !Array.isArray(questionsArray)) {
           throw new Error("Formato de dados inesperado do servidor.")
@@ -162,7 +162,7 @@ const BehaviorProfile = () => {
         })
       )
       await axios.post(
-        "http://127.0.0.1:8000/api/responsequestions",
+        "https://rhback-production.up.railway.app/api/responsequestions",
         { answers: formattedAnswers },
         { headers: { Authorization: `Bearer ${token}` } }
       )

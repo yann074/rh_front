@@ -65,8 +65,8 @@ const fetchVagas = async () => {
 
     try {
         const [vagasRes, companiesRes] = await Promise.all([
-            axios.get('http://127.0.0.1:8000/api/opportunities'),
-            axios.get('http://127.0.0.1:8000/api/companies'),
+            axios.get('https://rhback-production.up.railway.app/api/opportunities'),
+            axios.get('https://rhback-production.up.railway.app/api/companies'),
         ]);
 
         const companiesData = companiesRes.data?.data || [];

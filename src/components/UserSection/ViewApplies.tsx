@@ -60,7 +60,7 @@ export default function ViewApplies() {
             }
 
             try {
-                const response = await axios.get("http://127.0.0.1:8000/api/my-applications", {
+                const response = await axios.get("https://rhback-production.up.railway.app/api/my-applications", {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },

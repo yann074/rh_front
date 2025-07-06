@@ -46,7 +46,7 @@ const InitialTrainings: React.FC = () => {
     setIsLoading(true);
     setLoading(true);
     try {
-      const response = await axios.get("http://127.0.0.1:8000/api/trainings");
+      const response = await axios.get("https://rhback-production.up.railway.app/api/trainings");
       
       if (response.status !== 200) {
         throw new Error('Falha ao buscar treinamentos');

@@ -68,7 +68,7 @@ export default function CompanyTable() {
   const fetchCompanies = () => {
     setLoading(true)
     axios
-      .get("http://127.0.0.1:8000/api/companies")
+      .get("https://rhback-production.up.railway.app/api/companies")
       .then((response) => {
         let companiesData = []
         if (response.data && response.data.data && Array.isArray(response.data.data)) {
@@ -122,7 +122,7 @@ export default function CompanyTable() {
     setIsDeleting(true)
     try {
       const token = localStorage.getItem("token") || sessionStorage.getItem("token")
-      await axios.delete(`http://127.0.0.1:8000/api/companies/${companyToDelete.id}`, {
+      await axios.delete(`https://rhback-production.up.railway.app/api/companies/${companyToDelete.id}`, {
         headers: {
           Authorization: token ? `Bearer ${token}` : undefined,
         },
@@ -163,7 +163,7 @@ export default function CompanyTable() {
     try {
       const token = localStorage.getItem("token") || sessionStorage.getItem("token")
       const response = await axios.post(
-        "http://127.0.0.1:8000/api/companies",
+        "https://rhback-production.up.railway.app/api/companies",
         {
           name: newCompanyName,
           address: newCompanyAddress,

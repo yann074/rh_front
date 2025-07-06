@@ -16,7 +16,7 @@ const App = () => {  // <- Remova "export" daqui
 
   const handleSubmit = (e: { preventDefault: () => void; }) => {
     e.preventDefault();
-    axios.post('http://127.0.0.1:8000/api/login', form)
+    axios.post('https://rhback-production.up.railway.app/api/login', form)
       .then(response => {
         console.log(response.data);
         if (response.data.message === "User is admin") {

@@ -65,7 +65,7 @@ export default function MyTrainingsPage() {
 
             try {
                 // 4. Endpoint alterado para o de treinamentos
-                const response = await axios.get("http://127.0.0.1:8000/api/my-trainings", {
+                const response = await axios.get("https://rhback-production.up.railway.app/api/my-trainings", {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },

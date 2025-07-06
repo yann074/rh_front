@@ -46,7 +46,7 @@ export default function JobsSpecific() {
             setError(null);
             
             try {
-                const endpoint = `http://127.0.0.1:8000/api/opportunities/${id}`;
+                const endpoint = `https://rhback-production.up.railway.app/api/opportunities/${id}`;
                 console.log(`Buscando vaga: ${endpoint}`);
                 
                 const response = await axios.get(endpoint);

@@ -105,7 +105,7 @@ export default function TrainingsSpecific() {
                 const token = localStorage.getItem("token") || sessionStorage.getItem("token");
                 const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
-                const endpoint = `http://127.0.0.1:8000/api/trainings/${id}`;
+                const endpoint = `https://rhback-production.up.railway.app/api/trainings/${id}`;
                 
                 const response = await axios.get(endpoint, { headers });
                 
@@ -179,7 +179,7 @@ export default function TrainingsSpecific() {
         }
 
         try {
-            const endpoint = `http://127.0.0.1:8000/api/trainings/${id}/subscribe`;
+            const endpoint = `https://rhback-production.up.railway.app/api/trainings/${id}/subscribe`;
             const response = await axios.post(
                 endpoint, 
                 {},

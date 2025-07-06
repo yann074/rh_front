@@ -59,7 +59,7 @@ const DataPersonal = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.post(
-        "http://127.0.0.1:8000/api/personal-data",
+        "rhback-production.up.railway.app/api/personal-data",
         formData,
         {
           headers: {
